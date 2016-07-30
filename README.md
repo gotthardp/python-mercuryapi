@@ -24,12 +24,13 @@ yum install gcc patch libxslt
 
 Build the module simply by running
 ```bash
+cd python-mercuryapi
 make
 ```
 This will download and build the [Mercury API SDK](http://www.thingmagic.com/index.php/manuals-firmware)
-and then it will build the Python module.
+and then it will build the Python module itself.
 
-Then install the module by running
+Then, install the module by running
 ```bash
 sudo python3 setup.py install
 ```
