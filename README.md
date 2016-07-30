@@ -16,8 +16,23 @@ print(reader.read())
 
 ## Installation
 
-Build the module by running
+### Linux
+First, make sure you have the required packages
 ```bash
-python3 setup.py build
+yum install gcc patch libxslt
 ```
-and then copy the `.so` file from the `build/lib*` directory (e.g. `build/lib.linux-i686-3.4\mercury.cpython-34m.so` into the the `site-packages` directory of your Python, e.g. `/usr/lib/python3.4/site-packages`.
+
+Build the module simply by running
+```bash
+make
+```
+This will download and build the [Mercury API SDK](http://www.thingmagic.com/index.php/manuals-firmware)
+and then it will build the Python module.
+
+Then install the module by running
+```bash
+sudo python3 setup.py install
+```
+
+### Windows
+Please let me know if you need this.

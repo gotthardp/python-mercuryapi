@@ -2,4 +2,8 @@
 
 from distutils.core import setup, Extension
 setup(name="mercuryapi", version="0.1",
-      ext_modules=[Extension("mercury", libraries=["mercuryapi", "ltkc", "ltkctm"], sources=["mercury.c"])])
+      ext_modules=[Extension("mercury",
+                             sources=["mercury.c"],
+                             libraries=["mercuryapi", "ltkc", "ltkctm"],
+                             include_dirs=['build/mercuryapi/include'],
+                             library_dirs=['build/mercuryapi/lib'])])
