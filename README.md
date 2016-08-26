@@ -19,7 +19,11 @@ print(reader.read())
 ### Linux
 First, make sure you have the required packages
 ```bash
-yum install gcc patch libxslt
+yum install patch libxslt gcc readline-devel
+```
+or
+```bash
+apt-get install patch xsltproc gcc libreadline-dev
 ```
 
 Build the module simply by running
