@@ -39,5 +39,11 @@ Then, install the module by running
 sudo python3 setup.py install
 ```
 
+To access ports like `/dev/ttyUSB0` as a non-root user you may need to add this
+user to the `dialout` group:
+```bash
+sudo usermod -a -G dialout $USER
+```
+
 ### Windows
 Please let me know if you need this.
