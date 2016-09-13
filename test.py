@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import mercury
-reader = mercury.Reader("tmr:///dev/ttyUSB0")
+reader = mercury.Reader("tmr:///dev/ttyUSB0", baudrate=115200)
 
 print(reader.get_model())
 print(reader.get_supported_regions())

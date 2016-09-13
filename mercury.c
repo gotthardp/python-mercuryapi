@@ -39,9 +39,12 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     Reader *self;
     char *deviceUri;
+    int baudRate = 115200;
     TMR_Status ret;
 
-    if (!PyArg_ParseTuple(args, "s", &deviceUri))
+    static char *kwlist[] = {"uri", "baudrate", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, &deviceUri, &baudRate))
         return NULL;
 
     self = (Reader *)type->tp_alloc(type, 0);
@@ -49,6 +52,9 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         return NULL;
 
     if ((ret = TMR_create(&self->reader, deviceUri)) != TMR_SUCCESS)
+        goto fail;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_BAUDRATE, &baudRate)) != TMR_SUCCESS)
         goto fail;
 
     if ((ret = TMR_connect(&self->reader)) != TMR_SUCCESS)
