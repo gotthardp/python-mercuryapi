@@ -17,7 +17,9 @@ print(reader.read())
 ## Installation
 
 ### Windows
-Use the Windows installer for the [latest release](https://github.com/gotthardp/lorawan-server/releases).
+Use the Windows installer for the [latest release](https://github.com/gotthardp/python-mercuryapi/releases) and Python 3.5.
+
+Please let me know if you need other Windows installers.
 
 ### Linux
 First, make sure you have the required packages
