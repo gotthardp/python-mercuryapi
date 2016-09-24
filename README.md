@@ -16,6 +16,9 @@ print(reader.read())
 
 ## Installation
 
+### Windows
+Use the Windows installer for the [latest release](https://github.com/gotthardp/lorawan-server/releases).
+
 ### Linux
 First, make sure you have the required packages
 ```bash
@@ -45,5 +48,3 @@ user to the `dialout` group:
 sudo usermod -a -G dialout $USER
 ```
 
-### Windows
-Please let me know if you need this.
