@@ -43,8 +43,8 @@ For example:
 print(reader.get_supported_regions())
 ```
 #### reader.set_region(*region*)
-Controls the Region of Operation for the connected device.
- * *region* represents the different regulatory regions that the device may operate in. Supported values are:
+Controls the Region of Operation for the connected device:
+ * *region* represents the regulatory region that the device will operate in. Supported values are:
     * `"NA"`, North America/FCC
     * `"NA2"`
     * `"NA3"`
@@ -65,9 +65,9 @@ For example:
 reader.set_region("EU3")
 ```
 #### reader.set_read_plan(*antennas*, *protocol*)
-Specifies the antennas and protocol to use for a search.
+Specifies the antennas and protocol to use for a search:
  * *antennas* list define which antennas (or virtual antenna numbers) to use in the search
- * *protocol* defines the protocol to search on. . Supported values are:
+ * *protocol* defines the protocol to search on. Supported values are:
    * `"GEN2"`, UPC GEN2
    * `"ISO180006B"`, ISO 180006B
    * `"UCODE"`, ISO 180006B UCODE
@@ -80,7 +80,7 @@ For example:
 reader.set_read_plan([1], "GEN2")
 ```
 #### reader.read()
-Performs a synchronous read, and then returns an list of tag information resulting from the search.
+Performs a synchronous read, and then returns a list of tag information resulting from the search.
 If no tags were found then the list will be empty.
 
 For example:
