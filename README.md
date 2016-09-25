@@ -15,6 +15,7 @@ print(reader.read())
 ```
 
 ## Usage
+Import the module `mercury` and create an `mercury.Reader` object.
 ```python
 import mercury
 ```
@@ -23,7 +24,7 @@ import mercury
 Represents a connection to the reader.
 
 #### mercury.Reader(*uri*, *baudrate=115200*)
-Connects to the reader:
+Object constructor. Connects to the reader:
  * *uri* identifies the device communication channel
    * `"tmr:///com2"` is a typical format to connect to a serial based module on Windows COM2
    * `"tmr:///dev/ttyUSB0"` is a typical format to connect to a USB device named ttyUSB0 on a Unix system
