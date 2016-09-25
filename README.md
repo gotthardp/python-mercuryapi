@@ -20,24 +20,30 @@ import mercury
 ```
 
 ### Reader Object
-mercury.Reader(*uri*, *baudrate=115200*)
+Represents a connection to the reader.
+
+#### mercury.Reader(*uri*, *baudrate=115200*)
+Connects to the reader:
  * *uri* identifies the device communication channel
- * *baudrate* defines the desired speed
+   * `"tmr:///com2"` is a typical format to connect to a serial based module on Windows COM2
+   * `"tmr:///dev/ttyUSB0"` is a typical format to connect to a USB device named ttyUSB0 on a Unix system
+ * *baudrate* defines the desired speed.
+   Supported values include 110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600 and 115200 (default).
 
 For example:
 ```python
 reader = mercury.Reader("tmr:///dev/ttyUSB0", baudrate=9600)
 ```
 
-#### get_supported_regions
-reader.get_supported_regions()
+#### reader.get_supported_regions()
+Lists supported regions for the connected device.
 
 For example:
 ```python
 print(reader.get_supported_regions())
 ```
-#### set_region
-reader.set_region(*region*)
+#### reader.set_region(*region*)
+Controls the Region of Operation for the connected device.
  * *region* represents the different regulatory regions that the device may operate in. Supported values are:
     * `"NA"`, North America/FCC
     * `"NA2"`
@@ -58,8 +64,8 @@ For example:
 ```python
 reader.set_region("EU3")
 ```
-#### set_read_plan
-reader.set_read_plan(*antennas*, *protocol*)
+#### reader.set_read_plan(*antennas*, *protocol*)
+Specifies the antennas and protocol to use for a search.
  * *antennas* list define which antennas (or virtual antenna numbers) to use in the search
  * *protocol* defines the protocol to search on. . Supported values are:
    * `"GEN2"`, UPC GEN2
@@ -73,15 +79,16 @@ For example:
 ```python
 reader.set_read_plan([1], "GEN2")
 ```
-#### read
-reader.read()
+#### reader.read()
+Performs a synchronous read, and then returns an list of tag information resulting from the search.
+If no tags were found then the list will be empty.
 
 For example:
 ```python
 print(reader.read())
 ```
-#### get_model
-reader.get_model()
+#### reader.get_model()
+Returns a model identifier for the connected reader hardware.
 
 For example:
 ```python
