@@ -42,6 +42,7 @@ Lists supported regions for the connected device.
 For example:
 ```python
 print(reader.get_supported_regions())
+['NA2', 'IN', 'JP', 'PRC', 'EU3', 'KR2', 'AU', 'NZ']
 ```
 #### reader.set_region(*region*)
 Controls the Region of Operation for the connected device:
@@ -81,12 +82,15 @@ For example:
 reader.set_read_plan([1], "GEN2")
 ```
 #### reader.read()
-Performs a synchronous read, and then returns a list of tag information resulting from the search.
+Performs a synchronous read, and then returns a list of tuples (*epc*, *rcount*) resulting from the search.
 If no tags were found then the list will be empty.
+ * *epc* corresponds to the Electronic Product Code
+ * *rcount* indicates how many times was the tag read during interrogation
 
 For example:
 ```python
 print(reader.read())
+[(b'E2002047381502180820C296', 9), (b'0000000000000000C0002403', 8)]
 ```
 #### reader.get_model()
 Returns a model identifier for the connected reader hardware.
@@ -94,6 +98,7 @@ Returns a model identifier for the connected reader hardware.
 For example:
 ```python
 print(reader.get_model())
+M6e Nano
 ```
 
 ## Installation
