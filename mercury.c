@@ -250,7 +250,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 
     static char *kwlist[] = {"antennas", "protocol", "read_power", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s", kwlist, &PyList_Type, &list, &s, &readPower))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|i", kwlist, &PyList_Type, &list, &s, &readPower))
         return NULL;
 
     if ((protocol = str2protocol(s)) == TMR_TAG_PROTOCOL_NONE)
