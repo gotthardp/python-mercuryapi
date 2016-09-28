@@ -44,6 +44,7 @@ For example:
 print(reader.get_supported_regions())
 ['NA2', 'IN', 'JP', 'PRC', 'EU3', 'KR2', 'AU', 'NZ']
 ```
+
 #### reader.set_region(*region*)
 Controls the Region of Operation for the connected device:
  * *region* represents the regulatory region that the device will operate in. Supported values are:
@@ -66,7 +67,8 @@ For example:
 ```python
 reader.set_region("EU3")
 ```
-#### reader.set_read_plan(*antennas*, *protocol*)
+
+#### reader.set_read_plan(*antennas*, *protocol*, *read_power=default*)
 Specifies the antennas and protocol to use for a search:
  * *antennas* list define which antennas (or virtual antenna numbers) to use in the search
  * *protocol* defines the protocol to search on. Supported values are:
@@ -76,11 +78,14 @@ Specifies the antennas and protocol to use for a search:
    * `"IPX64"`, IPX (64kbps link rate)
    * `"IPX256"`, IPX (256kbps link rate)
    * `"ATA"`
+ * *read_power* defines the transmit power, in centidBm, for read operations. If not given,
+   a reader specific default value is used.
 
 For example:
 ```python
 reader.set_read_plan([1], "GEN2")
 ```
+
 #### reader.read()
 Performs a synchronous read, and then returns a list of tuples (*epc*, *rcount*) resulting from the search.
 If no tags were found then the list will be empty.
@@ -92,6 +97,30 @@ For example:
 print(reader.read())
 [(b'E2002047381502180820C296', 9), (b'0000000000000000C0002403', 8)]
 ```
+
+#### reader.start_reading(*callback*, *on_time=250*, *off_time=0*)
+Starts asynchronous reading. It returns immediately and begins a sequence of
+reads or a continuous read. The results are passed to the *callback*.
+The reads are repeated until the `reader.stop_reading()` method is called
+ * *callback(epc, rcount)* will be invoked for every tag detected
+ * *on_time* sets the duration, in milliseconds, for the reader to be actively querying
+ * *off_time* duration, in milliseconds, for the reader to be quiet while querying
+
+For example:
+```python
+reader.start_reading(lambda epc, rcount: print(epc))
+b'E2002047381502180820C296'
+b'0000000000000000C0002403'
+```
+
+#### reader.stop_reading()
+Stops the asynchronous reading started by `reader.start_reading()`.
+
+For example:
+```python
+reader.stop_reading()
+```
+
 #### reader.get_model()
 Returns a model identifier for the connected reader hardware.
 

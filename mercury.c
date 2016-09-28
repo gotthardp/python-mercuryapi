@@ -32,7 +32,12 @@ typedef struct {
     /* Type-specific fields go here. */
     TMR_Reader reader;
     uint8_t antennas[MAX_ANTENNA_COUNT];
+    TMR_ReadListenerBlock readListener;
+    PyObject *readCallback;
 } Reader;
+
+static void
+invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cookie);
 
 static PyObject *
 Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -55,6 +60,12 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         goto fail;
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_BAUDRATE, &baudRate)) != TMR_SUCCESS)
+        goto fail;
+
+    /* install the callback wrapper for asynchronous reading */
+    self->readListener.listener = invoke_read_callback;
+    self->readListener.cookie = self;
+    if ((ret = TMR_addReadListener(&self->reader, &self->readListener)) != TMR_SUCCESS)
         goto fail;
 
     if ((ret = TMR_connect(&self->reader)) != TMR_SUCCESS)
@@ -226,7 +237,7 @@ uint8_t as_uint8(PyObject *item)
 }
 
 static PyObject *
-Reader_set_read_plan(Reader *self, PyObject *args)
+Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 {
     PyObject *list;
     char *s;
@@ -235,8 +246,11 @@ Reader_set_read_plan(Reader *self, PyObject *args)
     TMR_Status ret;
     int i;
     uint8_t ant_count;
+    int readPower = 0;
 
-    if (!PyArg_ParseTuple(args, "O!s", &PyList_Type, &list, &s))
+    static char *kwlist[] = {"antennas", "protocol", "read_power", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s", kwlist, &PyList_Type, &list, &s, &readPower))
         return NULL;
 
     if ((protocol = str2protocol(s)) == TMR_TAG_PROTOCOL_NONE)
@@ -269,10 +283,25 @@ Reader_set_read_plan(Reader *self, PyObject *args)
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_PLAN, &plan)) != TMR_SUCCESS)
         goto fail;
 
+    if (readPower > 0)
+    {
+        if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_RADIO_READPOWER, &readPower)) != TMR_SUCCESS)
+            goto fail;
+    }
+
     Py_RETURN_NONE;
 fail:
     PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
     return NULL;
+}
+
+static PyObject *
+BuildTagReadData(const TMR_TagReadData* data)
+{
+    char epcStr[128];
+
+    TMR_bytesToHex(data->tag.epc, data->tag.epcByteCount, epcStr);
+    return Py_BuildValue("(Oi)", PyBytes_FromString(epcStr), data->readCount);
 }
 
 static PyObject *
@@ -295,7 +324,6 @@ Reader_read(Reader *self, PyObject *args)
     while (TMR_hasMoreTags(&self->reader) == TMR_SUCCESS)
     {
         TMR_TagReadData data;
-        char epcStr[128];
 
         if ((ret = TMR_getNextTag(&self->reader, &data)) != TMR_SUCCESS)
         {
@@ -303,11 +331,84 @@ Reader_read(Reader *self, PyObject *args)
             return NULL;
         }
 
-        TMR_bytesToHex(data.tag.epc, data.tag.epcByteCount, epcStr);
-        PyList_Append(list, Py_BuildValue("(Oi)", PyBytes_FromString(epcStr), data.readCount));
+        PyList_Append(list, BuildTagReadData(&data));
     }
 
     return list;
+}
+
+static PyObject *
+Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *temp;
+    int onTime = 250;
+    int offTime = 0;
+    TMR_Status ret;
+
+    static char *kwlist[] = {"callback", "on_time", "off_time", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ii", kwlist, &temp, &onTime, &offTime))
+        return NULL;
+
+    if (!PyCallable_Check(temp))
+    {
+        PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
+        return NULL;
+    }
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_ASYNCONTIME, &onTime)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_ASYNCOFFTIME, &offTime)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_XDECREF(self->readCallback);
+    Py_XINCREF(temp);
+    self->readCallback = temp;
+
+    if ((ret = TMR_startReading(&self->reader)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
+static void
+invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cookie)
+{
+    Reader *self = (Reader *)cookie;
+    PyObject *arglist;
+    PyObject *result;
+
+    arglist = BuildTagReadData(tag);
+    result = PyObject_CallObject(self->readCallback, arglist);
+    Py_DECREF(arglist);
+    Py_DECREF(result);
+}
+
+static PyObject *
+Reader_stop_reading(Reader* self)
+{
+    TMR_Status ret;
+
+    if ((ret = TMR_stopReading(&self->reader)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_XDECREF(self->readCallback);
+    self->readCallback = NULL;
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -336,11 +437,17 @@ static PyMethodDef Reader_methods[] = {
     {"set_region", (PyCFunction)Reader_set_region, METH_VARARGS,
      "Set the reader region"
     },
-    {"set_read_plan", (PyCFunction)Reader_set_read_plan, METH_VARARGS,
+    {"set_read_plan", (PyCFunction)Reader_set_read_plan, METH_VARARGS | METH_KEYWORDS,
      "Set the read plan"
     },
     {"read", (PyCFunction)Reader_read, METH_VARARGS,
      "Read the tags"
+    },
+    {"start_reading", (PyCFunction)Reader_start_reading, METH_VARARGS | METH_KEYWORDS,
+     "Start reading tags asynchronously"
+    },
+    {"stop_reading", (PyCFunction)Reader_stop_reading, METH_NOARGS,
+     "Stop asynchronous reading"
     },
     {"get_model", (PyCFunction)Reader_get_model, METH_NOARGS,
      "Returns the model name"
