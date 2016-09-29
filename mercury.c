@@ -388,26 +388,38 @@ invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cooki
     PyObject *arglist;
     PyObject *result;
 
-    arglist = BuildTagReadData(tag);
-    result = PyObject_CallObject(self->readCallback, arglist);
-    Py_DECREF(arglist);
-    Py_DECREF(result);
+    if(self && self->readCallback)
+    {
+        PyGILState_STATE gstate;
+        gstate = PyGILState_Ensure();
+
+        arglist = BuildTagReadData(tag);
+        result = PyObject_CallObject(self->readCallback, arglist);
+        Py_DECREF(arglist);
+        Py_DECREF(result);
+
+        PyGILState_Release(gstate);
+    }
 }
 
 static PyObject *
 Reader_stop_reading(Reader* self)
 {
+    PyObject *temp = self->readCallback;
     TMR_Status ret;
+
+    /* avoid deadlock as calling stopReading will invoke the callback */
+    self->readCallback = NULL;
 
     if ((ret = TMR_stopReading(&self->reader)) != TMR_SUCCESS)
     {
+        self->readCallback = temp; /* revert back as the function will fail */
+
         PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
-    Py_XDECREF(self->readCallback);
-    self->readCallback = NULL;
-
+    Py_XDECREF(temp);
     Py_RETURN_NONE;
 }
 
@@ -509,6 +521,7 @@ PyMODINIT_FUNC
 PyInit_mercury(void)
 {
     PyObject* m;
+    PyEval_InitThreads();
 
     if (PyType_Ready(&ReaderType) < 0)
         return NULL;
