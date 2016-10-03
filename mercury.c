@@ -36,6 +36,20 @@ typedef struct {
     PyObject *readCallback;
 } Reader;
 
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    TMR_TagData tag;
+} TagData;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    TMR_TagReadData data;
+} TagReadData;
+
+static PyTypeObject TagReadDataType;
+
 static void
 invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cookie);
 
@@ -84,10 +98,6 @@ Reader_dealloc(Reader* self)
     TMR_destroy(&self->reader);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
-
-static PyMemberDef Reader_members[] = {
-    {NULL}  /* Sentinel */
-};
 
 typedef struct {
     const char* name;
@@ -298,10 +308,12 @@ fail:
 static PyObject *
 BuildTagReadData(const TMR_TagReadData* data)
 {
-    char epcStr[128];
+    TagReadData *res;
 
-    TMR_bytesToHex(data->tag.epc, data->tag.epcByteCount, epcStr);
-    return Py_BuildValue("(Oi)", PyBytes_FromString(epcStr), data->readCount);
+    res = PyObject_New(TagReadData, &TagReadDataType);
+    /* make a hard-copy */
+    memcpy(&res->data, data, sizeof(TMR_TagReadData));
+    return (PyObject *)res;
 }
 
 static PyObject *
@@ -393,7 +405,7 @@ invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cooki
         PyGILState_STATE gstate;
         gstate = PyGILState_Ensure();
 
-        arglist = BuildTagReadData(tag);
+        arglist = Py_BuildValue("(O)", BuildTagReadData(tag));
         result = PyObject_CallObject(self->readCallback, arglist);
         Py_DECREF(arglist);
         Py_DECREF(result);
@@ -467,6 +479,10 @@ static PyMethodDef Reader_methods[] = {
     {NULL}  /* Sentinel */
 };
 
+static PyMemberDef Reader_members[] = {
+    {NULL}  /* Sentinel */
+};
+
 static PyTypeObject ReaderType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "mercury.Reader",          /* tp_name */
@@ -509,6 +525,153 @@ static PyTypeObject ReaderType = {
     Reader_new,                /* tp_new */
 };
 
+static void
+TagData_dealloc(Reader* self)
+{
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static PyObject *
+TagData_getepc(TagData *self, void *closure)
+{
+    char epcStr[128];
+
+    TMR_bytesToHex(self->tag.epc, self->tag.epcByteCount, epcStr);
+    return PyBytes_FromString(epcStr);
+}
+
+static int
+TagData_setepc(TagData *self, PyObject *value, void *closure)
+{
+    char *buffer;
+    Py_ssize_t length;
+
+    PyBytes_AsStringAndSize(value, &buffer, &length);
+    if (TMR_hexToBytes(buffer, self->tag.epc, length, NULL) != TMR_SUCCESS)
+        return -1;
+    self->tag.protocol = TMR_TAG_PROTOCOL_NONE;
+    self->tag.epcByteCount = length;
+    return 0;
+}
+
+static PyMethodDef TagData_methods[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyMemberDef TagData_members[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyGetSetDef TagData_getseters[] = {
+    {"epc",
+     (getter)TagData_getepc, (setter)TagData_setepc,
+     "Tag EPC", NULL},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject TagDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "mercury.TagData",         /* tp_name */
+    sizeof(TagData),           /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor)TagData_dealloc, /* tp_dealloc */
+    0,                         /* tp_print */
+    0,                         /* tp_getattr */
+    0,                         /* tp_setattr */
+    0,                         /* tp_reserved */
+    0,                         /* tp_repr */
+    0,                         /* tp_as_number */
+    0,                         /* tp_as_sequence */
+    0,                         /* tp_as_mapping */
+    0,                         /* tp_hash  */
+    0,                         /* tp_call */
+    0,                         /* tp_str */
+    0,                         /* tp_getattro */
+    0,                         /* tp_setattro */
+    0,                         /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT |
+        Py_TPFLAGS_BASETYPE,   /* tp_flags */
+    "TagData object",          /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    TagData_methods,           /* tp_methods */
+    TagData_members,           /* tp_members */
+    TagData_getseters,         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    0,                         /* tp_new */
+};
+
+static PyMethodDef TagReadData_methods[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyMemberDef TagReadData_members[] = {
+    {"antenna", T_UBYTE, offsetof(TagReadData, data.antenna), READONLY,
+     "Antenna where the tag was read."},
+    {"read_count", T_UINT, offsetof(TagReadData, data.readCount), READONLY,
+     "Number of times the tag was read."},
+    {"rssi", T_INT, offsetof(TagReadData, data.rssi), READONLY,
+     "Strength of the signal recieved from the tag."},
+    {NULL}  /* Sentinel */
+};
+
+static PyGetSetDef TagReadData_getseters[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject TagReadDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "mercury.TagReadData",     /* tp_name */
+    sizeof(TagReadData),       /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor)TagData_dealloc, /* tp_dealloc */
+    0,                         /* tp_print */
+    0,                         /* tp_getattr */
+    0,                         /* tp_setattr */
+    0,                         /* tp_reserved */
+    0,                         /* tp_repr */
+    0,                         /* tp_as_number */
+    0,                         /* tp_as_sequence */
+    0,                         /* tp_as_mapping */
+    0,                         /* tp_hash  */
+    0,                         /* tp_call */
+    0,                         /* tp_str */
+    0,                         /* tp_getattro */
+    0,                         /* tp_setattro */
+    0,                         /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT |
+        Py_TPFLAGS_BASETYPE,   /* tp_flags */
+    "TagReadData object",      /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    TagReadData_methods,       /* tp_methods */
+    TagReadData_members,       /* tp_members */
+    TagReadData_getseters,     /* tp_getset */
+    &TagDataType,              /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    0,                         /* tp_new */
+};
+
+#if PY_MAJOR_VERSION >= 3
 static PyModuleDef mercurymodule = {
     PyModuleDef_HEAD_INIT,
     "mercury",
@@ -520,19 +683,39 @@ static PyModuleDef mercurymodule = {
 PyMODINIT_FUNC
 PyInit_mercury(void)
 {
+#else
+void
+initmercury(void)
+{
+#endif
     PyObject* m;
     PyEval_InitThreads();
 
-    if (PyType_Ready(&ReaderType) < 0)
+    if (PyType_Ready(&ReaderType) < 0
+        || PyType_Ready(&TagDataType) < 0
+        || PyType_Ready(&TagReadDataType) < 0)
+#if PY_MAJOR_VERSION >= 3
         return NULL;
 
     m = PyModule_Create(&mercurymodule);
     if (m == NULL)
         return NULL;
+#else
+        return;
 
+    m = Py_InitModule("mercury", NULL);
+    if (m == NULL)
+        return;
+#endif
     Py_INCREF(&ReaderType);
     PyModule_AddObject(m, "Reader", (PyObject *)&ReaderType);
+    Py_INCREF(&TagDataType);
+    PyModule_AddObject(m, "TagData", (PyObject *)&TagDataType);
+    Py_INCREF(&TagReadDataType);
+    PyModule_AddObject(m, "TagReadData", (PyObject *)&TagReadDataType);
+#if PY_MAJOR_VERSION >= 3
     return m;
+#endif
 }
 
 /* end of file */

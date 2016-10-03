@@ -87,10 +87,8 @@ reader.set_read_plan([1], "GEN2")
 ```
 
 #### reader.read()
-Performs a synchronous read, and then returns a list of tuples (*epc*, *rcount*) resulting from the search.
+Performs a synchronous read, and then returns a list of *TagReadData* objects resulting from the search.
 If no tags were found then the list will be empty.
- * *epc* corresponds to the Electronic Product Code
- * *rcount* indicates how many times was the tag read during interrogation
 
 For example:
 ```python
@@ -102,7 +100,7 @@ print(reader.read())
 Starts asynchronous reading. It returns immediately and begins a sequence of
 reads or a continuous read. The results are passed to the *callback*.
 The reads are repeated until the `reader.stop_reading()` method is called
- * *callback(epc, rcount)* will be invoked for every tag detected
+ * *callback(TagReadData)* will be invoked for every tag detected
  * *on_time* sets the duration, in milliseconds, for the reader to be actively querying
  * *off_time* duration, in milliseconds, for the reader to be quiet while querying
 
@@ -129,6 +127,14 @@ For example:
 print(reader.get_model())
 M6e Nano
 ```
+
+### TagReadData Object
+Represents a read of an RFID tag:
+ * *epc* corresponds to the Electronic Product Code
+ * *antenna* indicates where the tag was read
+ * *read_count* indicates how many times was the tag read during interrogation
+ * *rssi* is the strength of the signal recieved from the tag
+
 
 ## Installation
 
