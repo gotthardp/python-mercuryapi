@@ -10,6 +10,6 @@ reader.set_region("EU3")
 reader.set_read_plan([1], "GEN2", read_power=1900)
 print(reader.read())
 
-reader.start_reading(lambda epc, rcount: print(epc))
+reader.start_reading(lambda tag: print(tag.epc, tag.antenna, tag.read_count, tag.rssi))
 time.sleep(1)
 reader.stop_reading()

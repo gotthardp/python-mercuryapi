@@ -172,7 +172,11 @@ Reader_get_supported_regions(Reader* self)
     {
         const char* name = region2str(regions.list[i]);
         if (name != NULL)
-            PyList_Append(list, PyUnicode_FromString(name));
+        {
+            PyObject *sname = PyUnicode_FromString(name);
+            PyList_Append(list, sname);
+            Py_DECREF(sname);
+        }
     }
 
     return list;
@@ -306,17 +310,6 @@ fail:
 }
 
 static PyObject *
-BuildTagReadData(const TMR_TagReadData* data)
-{
-    TagReadData *res;
-
-    res = PyObject_New(TagReadData, &TagReadDataType);
-    /* make a hard-copy */
-    memcpy(&res->data, data, sizeof(TMR_TagReadData));
-    return (PyObject *)res;
-}
-
-static PyObject *
 Reader_read(Reader *self, PyObject *args)
 {
     PyObject *list;
@@ -335,15 +328,19 @@ Reader_read(Reader *self, PyObject *args)
 
     while (TMR_hasMoreTags(&self->reader) == TMR_SUCCESS)
     {
-        TMR_TagReadData data;
+        TagReadData *tag;
 
-        if ((ret = TMR_getNextTag(&self->reader, &data)) != TMR_SUCCESS)
+        tag = PyObject_New(TagReadData, &TagReadDataType);
+        TMR_TRD_init(&tag->data);
+
+        if ((ret = TMR_getNextTag(&self->reader, &tag->data)) != TMR_SUCCESS)
         {
             PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
             return NULL;
         }
 
-        PyList_Append(list, BuildTagReadData(&data));
+        PyList_Append(list, (PyObject *)tag);
+        Py_XDECREF(tag);
     }
 
     return list;
@@ -394,21 +391,30 @@ Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
 }
 
 static void
-invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cookie)
+invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *pdata, void *cookie)
 {
     Reader *self = (Reader *)cookie;
-    PyObject *arglist;
-    PyObject *result;
 
     if(self && self->readCallback)
     {
+        TagReadData *tag;
+        PyObject *arglist;
+        PyObject *result;
         PyGILState_STATE gstate;
         gstate = PyGILState_Ensure();
 
-        arglist = Py_BuildValue("(O)", BuildTagReadData(tag));
+        tag = PyObject_New(TagReadData, &TagReadDataType);
+        /* make a hard-copy */
+        memcpy(&tag->data, pdata, sizeof(TMR_TagReadData));
+
+        arglist = Py_BuildValue("(O)", tag);
         result = PyObject_CallObject(self->readCallback, arglist);
+        if(result != NULL)
+            Py_DECREF(result);
+        else
+            PyErr_Print();
         Py_DECREF(arglist);
-        Py_DECREF(result);
+        Py_DECREF(tag);
 
         PyGILState_Release(gstate);
     }
@@ -554,6 +560,19 @@ TagData_setepc(TagData *self, PyObject *value, void *closure)
     return 0;
 }
 
+static PyObject *
+TagData_repr(TagData *self)
+{
+    PyObject *epc;
+    PyObject *repr;
+
+    epc = TagData_getepc(self, NULL);
+    repr = PyObject_Repr(epc);
+    Py_XDECREF(epc);
+
+    return repr;
+}
+
 static PyMethodDef TagData_methods[] = {
     {NULL}  /* Sentinel */
 };
@@ -579,7 +598,7 @@ static PyTypeObject TagDataType = {
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
     0,                         /* tp_reserved */
-    0,                         /* tp_repr */
+    (reprfunc)TagData_repr,    /* tp_repr */
     0,                         /* tp_as_number */
     0,                         /* tp_as_sequence */
     0,                         /* tp_as_mapping */

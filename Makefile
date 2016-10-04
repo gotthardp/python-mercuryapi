@@ -1,9 +1,12 @@
 APIVER = 1.27.3.16
 
-.PHONY: all mercuryapi
+.PHONY: all mercuryapi install
 
 all: mercuryapi
 	python3 setup.py build
+
+install: mercuryapi
+	python3 setup.py install
 
 mercuryapi: mercuryapi-$(APIVER)/.done
 	make -C mercuryapi-$(APIVER)/c/src/api

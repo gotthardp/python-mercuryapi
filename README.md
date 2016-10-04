@@ -93,7 +93,7 @@ If no tags were found then the list will be empty.
 For example:
 ```python
 print(reader.read())
-[(b'E2002047381502180820C296', 9), (b'0000000000000000C0002403', 8)]
+[b'E2002047381502180820C296', b'0000000000000000C0002403']
 ```
 
 #### reader.start_reading(*callback*, *on_time=250*, *off_time=0*)
@@ -106,7 +106,7 @@ The reads are repeated until the `reader.stop_reading()` method is called
 
 For example:
 ```python
-reader.start_reading(lambda epc, rcount: print(epc))
+reader.start_reading(lambda tag: print(tag.epc))
 b'E2002047381502180820C296'
 b'0000000000000000C0002403'
 ```
@@ -134,6 +134,8 @@ Represents a read of an RFID tag:
  * *antenna* indicates where the tag was read
  * *read_count* indicates how many times was the tag read during interrogation
  * *rssi* is the strength of the signal recieved from the tag
+
+The string representation (`repr`) of the tag data is its EPC.
 
 
 ## Installation
