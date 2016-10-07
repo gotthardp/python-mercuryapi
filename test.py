@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import print_function
 import time
 import mercury
 reader = mercury.Reader("tmr:///dev/ttyUSB0", baudrate=115200)

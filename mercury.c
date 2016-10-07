@@ -240,10 +240,15 @@ uint8_t as_uint8(PyObject *item)
 {
     long num;
 
-    if (!PyLong_Check(item))
+    if (PyLong_Check(item))
+        num = PyLong_AsLong(item);
+#if PY_MAJOR_VERSION < 3
+    else if (PyInt_Check(item))
+        num = PyInt_AsLong(item);
+#endif
+    else
         return 255;
 
-    num = PyLong_AsLong(item);
     if (num < 0 || num > 255)
         return 255;
 
