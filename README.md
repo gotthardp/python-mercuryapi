@@ -165,7 +165,7 @@ and then it will build the Python module itself.
 
 Then, install the module by running
 ```bash
-sudo python3 setup.py install
+sudo make install
 ```
 
 To access ports like `/dev/ttyUSB0` as a non-root user you may need to add this

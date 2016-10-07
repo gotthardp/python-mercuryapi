@@ -1,12 +1,13 @@
 APIVER = 1.27.3.16
+PYTHON = $(shell { command -v python3 || command -v python; } 2>/dev/null)
 
 .PHONY: all mercuryapi install
 
 all: mercuryapi
-	python3 setup.py build
+	$(PYTHON) setup.py build
 
 install: mercuryapi
-	python3 setup.py install
+	$(PYTHON) setup.py install
 
 mercuryapi: mercuryapi-$(APIVER)/.done
 	make -C mercuryapi-$(APIVER)/c/src/api
