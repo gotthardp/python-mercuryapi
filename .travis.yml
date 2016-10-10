@@ -6,3 +6,5 @@ install:
   - sudo apt-get install xsltproc
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then make PYTHON=python install; fi
   - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then make PYTHON=python3 install; fi
+script:
+  - echo "OK"
