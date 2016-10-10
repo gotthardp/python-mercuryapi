@@ -148,12 +148,15 @@ Please let me know if you need other Windows installers.
 ### Linux
 First, make sure you have the required packages
 ```bash
-yum install patch libxslt gcc readline-devel
+yum install patch libxslt gcc readline-devel python-devel
 ```
 or
 ```bash
-apt-get install patch xsltproc gcc libreadline-dev
+apt-get install patch xsltproc gcc libreadline-dev python-dev
 ```
+
+Both Python 2.x and Python 3.x are supported. To use the Python 3.x you may need to
+install the `python3-dev[evel]` instead of the `python-dev[evel]` packages.
 
 Build the module simply by running
 ```bash
@@ -163,9 +166,20 @@ make
 This will download and build the [Mercury API SDK](http://www.thingmagic.com/index.php/manuals-firmware)
 and then it will build the Python module itself.
 
+The `make` command will automatically determine which Python version is installed. If both
+2.x and 3.x are installed, the 3.x takes precedence. To build and install 2.x you need to
+explicitly specify the Python interpreter to use:
+```bash
+sudo make PYTHON=python
+```
+
 Then, install the module by running
 ```bash
 sudo make install
+```
+which is a shortcut to running
+```bash
+sudo python setup.py install
 ```
 
 To access ports like `/dev/ttyUSB0` as a non-root user you may need to add this
