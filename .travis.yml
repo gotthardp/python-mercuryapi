@@ -4,7 +4,5 @@ python:
   - "3.4"
 install:
   - sudo apt-get install xsltproc
-  - make
-  - make install
-script:
-  - python test.py
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then make PYTHON=python install; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then make PYTHON=python3 install; fi
