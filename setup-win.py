@@ -1,7 +1,7 @@
 # python setup-win.py bdist --format=wininst
 
 from distutils.core import setup, Extension
-setup(name="mercuryapi", version="0.1",
+setup(name="mercuryapi", version="0.2",
       ext_modules=[Extension("mercury",
                              sources=["mercury.c"],
                              libraries=["mercuryapi"],
