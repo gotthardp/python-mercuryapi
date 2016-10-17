@@ -58,7 +58,7 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     Reader *self;
     char *deviceUri;
-    int baudRate = 115200;
+    int baudRate = 0;
     TMR_Status ret;
 
     static char *kwlist[] = {"uri", "baudrate", NULL};
@@ -73,8 +73,11 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if ((ret = TMR_create(&self->reader, deviceUri)) != TMR_SUCCESS)
         goto fail;
 
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_BAUDRATE, &baudRate)) != TMR_SUCCESS)
-        goto fail;
+    if (baudRate > 0)
+    {
+        if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_BAUDRATE, &baudRate)) != TMR_SUCCESS)
+            goto fail;
+    }
 
     /* install the callback wrapper for asynchronous reading */
     self->readListener.listener = invoke_read_callback;
