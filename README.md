@@ -28,6 +28,7 @@ Object constructor. Connects to the reader:
  * *uri* identifies the device communication channel:
    * `"tmr:///com2"` is a typical format to connect to a serial based module on Windows COM2
    * `"tmr:///dev/ttyUSB0"` is a typical format to connect to a USB device named ttyUSB0 on a Unix system
+   * `"llrp://192.198.1.100"` is a typical format to connect to an Ethernet device (works on Linux only)
  * *baudrate* defines the desired communication speed.
    Supported values include 110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600 and 115200 (default).
 
@@ -54,10 +55,11 @@ Controls the Region of Operation for the connected device:
     * `"EU"`, European Union/ETSI EN 302 208
     * `"EU2"`, European Union/ETSI EN 300 220
     * `"EU3"`, European Union/ETSI Revised EN 302 208
-    * `"KR"`, Korea MIC
-    * `"KR2"`, Korea KCC
+    * `"IS"`, Israel
     * `"IN"`, India
     * `"JP"`, Japan
+    * `"KR"`, Korea MIC
+    * `"KR2"`, Korea KCC
     * `"PRC"`, China
     * `"PRC2"`
     * `"AU"`, Australia/AIDA LIPD Variation 2011
