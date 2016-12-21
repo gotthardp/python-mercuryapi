@@ -122,6 +122,8 @@ static Regions Reader_regions[] = {
     {"NZ",   TMR_REGION_NZ},
     {"NA2",  TMR_REGION_NA2},
     {"NA3",  TMR_REGION_NA3},
+    {"IS",   TMR_REGION_IS},
+    {"open", TMR_REGION_OPEN},
     {NULL,   TMR_REGION_NONE}
 };
 

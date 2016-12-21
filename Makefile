@@ -1,4 +1,4 @@
-APIVER ?= 1.27.3.16
+APIVER ?= 1.29.2.10
 PYTHON ?= $(shell { command -v python3 || command -v python; } 2>/dev/null)
 
 .PHONY: all mercuryapi install
