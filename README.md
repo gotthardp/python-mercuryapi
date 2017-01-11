@@ -88,9 +88,10 @@ For example:
 reader.set_read_plan([1], "GEN2")
 ```
 
-#### reader.read()
+#### reader.read(*timeout=500*)
 Performs a synchronous read, and then returns a list of *TagReadData* objects resulting from the search.
 If no tags were found then the list will be empty.
+ * *timeout* sets the reading time
 
 For example:
 ```python

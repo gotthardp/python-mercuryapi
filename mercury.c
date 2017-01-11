@@ -320,12 +320,18 @@ fail:
 }
 
 static PyObject *
-Reader_read(Reader *self, PyObject *args)
+Reader_read(Reader *self, PyObject *args, PyObject *kwds)
 {
+    int timeout = 500;
     PyObject *list;
     TMR_Status ret;
 
-    ret = TMR_read(&self->reader, 500, NULL);
+    static char *kwlist[] = {"timeout", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &timeout))
+        return NULL;
+
+    ret = TMR_read(&self->reader, timeout, NULL);
     /* In case of TAG ID Buffer Full, extract the tags present in buffer. */
     if (ret != TMR_SUCCESS && ret != TMR_ERROR_TAG_ID_BUFFER_FULL)
     {
@@ -480,7 +486,7 @@ static PyMethodDef Reader_methods[] = {
     {"set_read_plan", (PyCFunction)Reader_set_read_plan, METH_VARARGS | METH_KEYWORDS,
      "Set the read plan"
     },
-    {"read", (PyCFunction)Reader_read, METH_VARARGS,
+    {"read", (PyCFunction)Reader_read, METH_VARARGS | METH_KEYWORDS,
      "Read the tags"
     },
     {"start_reading", (PyCFunction)Reader_start_reading, METH_VARARGS | METH_KEYWORDS,
