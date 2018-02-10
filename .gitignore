@@ -1,2 +1,5 @@
+.vs
 build
+dist
+*.egg-info
 mercuryapi-*

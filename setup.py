@@ -1,6 +1,6 @@
 # python3 setup.py build
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 setup(name="mercuryapi", version="0.2",
       ext_modules=[Extension("mercury",
                              sources=["mercury.c"],

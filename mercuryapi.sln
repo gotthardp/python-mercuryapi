@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python-mercuryapi", "python-mercuryapi.pyproj", "{87A35692-66BF-448D-A61E-9591147D56FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87A35692-66BF-448D-A61E-9591147D56FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87A35692-66BF-448D-A61E-9591147D56FC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{87A35692-66BF-448D-A61E-9591147D56FC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{87A35692-66BF-448D-A61E-9591147D56FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87A35692-66BF-448D-A61E-9591147D56FC}.Release|x64.ActiveCfg = Release|Any CPU
+		{87A35692-66BF-448D-A61E-9591147D56FC}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F032F6E-180D-4CCC-9AE3-68A1A55827FC}
+	EndGlobalSection
+EndGlobal
