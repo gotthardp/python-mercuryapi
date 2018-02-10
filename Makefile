@@ -13,7 +13,7 @@ mercuryapi: mercuryapi-$(APIVER)/.done
 	make -C mercuryapi-$(APIVER)/c/src/api
 
 	mkdir -p build/mercuryapi/include
-	find mercuryapi-*/c/src/api -type f -name '*.h' ! -name '*_imp.h' | xargs cp -t build/mercuryapi/include
+	find mercuryapi-*/c/src/api -type f -name '*.h' ! -name '*_imp.h' | grep -v 'LTKC' | xargs cp -t build/mercuryapi/include
 
 	mkdir -p build/mercuryapi/lib
 	find mercuryapi-*/c/src/api -type f -name '*.a' -or -name '*.so.1' | xargs cp -t build/mercuryapi/lib
