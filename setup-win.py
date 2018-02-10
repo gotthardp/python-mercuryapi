@@ -1,4 +1,5 @@
 # python setup-win.py bdist_wininst -p win32
+# python setup-win.py bdist_wininst -p amd64
 
 from glob import glob;
 from setuptools import setup, find_packages

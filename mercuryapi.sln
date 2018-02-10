@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python-mercuryapi", "python-mercuryapi.pyproj", "{87A35692-66BF-448D-A61E-9591147D56FC}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "mercuryapi", "mercuryapi.pyproj", "{87A35692-66BF-448D-A61E-9591147D56FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

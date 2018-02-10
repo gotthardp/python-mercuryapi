@@ -144,9 +144,23 @@ The string representation (`repr`) of the tag data is its EPC.
 ## Installation
 
 ### Windows
-Use the Windows installer for the [latest release](https://github.com/gotthardp/python-mercuryapi/releases) and Python 3.5.
+Use the Windows installer for the
+[latest release](https://github.com/gotthardp/python-mercuryapi/releases) and Python 3.6.
 
-Please let me know if you need other Windows installers.
+To build an installer for other Python releases you need to:
+ * Download the latest [Mercury API](http://www.thingmagic.com/mercuryapi), e.g.
+   [mercuryapi-1.29.4.34.zip](http://www.thingmagic.com/images/Downloads/software/mercuryapi-1.29.4.34.zip).
+ * Open mercuryapi-1.29.4.34/c/src/api/ltkc_win32/inc/stdint_win32.h and comment (or delete)
+   the block of `typedef` for `int_fast8_t` through `uint_fast64_t` (8 lines)
+ * Download [latest pthreads-win32](ftp://sourceware.org/pub/pthreads-win32/dll-latest)
+   binaries (.dll and .lib) for your architecture
+ * Obtain Microsoft Visual Studio 2017, including the Python extensions
+ * Open the Solution and review the
+   [setup-win.py](https://github.com/gotthardp/python-mercuryapi/blob/master/setup-win.py)
+   * Verify the `mercuryapi` directory
+   * Set `library_dirs` and `data_files` to the pthreads-win32 you downloaded
+   * Set Script Arguments to `bdist_wininst -p win32` (default) or `bdist_wininst -p amd64`
+ * Start setup-win.py (without debugging)
 
 ### Linux
 First, make sure you have the required packages
