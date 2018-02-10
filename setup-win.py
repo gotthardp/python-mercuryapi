@@ -7,6 +7,7 @@ from setuptools.extension import Extension
 
 # you need to download http://www.thingmagic.com/mercuryapi
 # http://www.thingmagic.com/images/Downloads/software/mercuryapi-1.29.4.34.zip
+# FIXME: make sure the patch matches the mercuryapi version you have
 mercuryapi = "mercuryapi-1.29.4.34/c/src/"
 
 setup(name="mercuryapi", version="0.3",
@@ -46,6 +47,8 @@ setup(name="mercuryapi", version="0.3",
                                            mercuryapi + 'api/ltkc_win32/inc',
                                            mercuryapi + 'pthreads-win32/pthreads.2'],
                              libraries=["pthreadVC2"],
+                             # FIXME: update to include the path to pthreadVC2.lib
                              library_dirs=[mercuryapi + 'pthreads-win32/x86']
                   )],
+      # FIXME: update to include the path to pthreadVC2.dll
       data_files = [('', [mercuryapi + 'pthreads-win32/x86/pthreadVC2.dll'])])
