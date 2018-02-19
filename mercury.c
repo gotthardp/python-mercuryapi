@@ -342,8 +342,7 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
     // In case of not target tag found.
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
     {
-        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
-        return NULL;
+        Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
 }
