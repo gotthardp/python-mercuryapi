@@ -99,6 +99,24 @@ print(reader.read())
 [b'E2002047381502180820C296', b'0000000000000000C0002403']
 ```
 
+#### reader.write(*epc_target, epc_code*)
+Performs a synchronous write and then returns a boolean indicating the success
+of the operation.
+
+For example:
+```python
+old_epc = 'E2002047381502180820C296'
+new_epc = 'E20020470000000000000012'
+
+reader = Reader('llrp://192.168.0.2')
+reader.set_read_plan([1], "GEN2")
+
+if reader.write(epc_target=old_epc, epc_code=new_epc):
+    print('Rewrited "{}" with "{}"'.format(old_epc, new_epc))
+else:
+    print('Failed writing "{}" with "{}"'.format(old_epc, new_epc))
+```
+
 #### reader.start_reading(*callback*, *on_time=250*, *off_time=0*)
 Starts asynchronous reading. It returns immediately and begins a sequence of
 reads or a continuous read. The results are passed to the *callback*.

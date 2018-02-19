@@ -320,6 +320,32 @@ fail:
 }
 
 static PyObject *
+Reader_write(Reader *self, PyObject *args, PyObject *kwds)
+{
+    char* epc_data;
+    char* epc_target;
+    TMR_Status ret;
+    TMR_TagData data;
+    TMR_TagData target;
+    TMR_TagFilter filter;
+    // Read call arguments.
+    static char *kwlist[] = {"epc_target", "epc_code", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, &epc_target, &epc_data))
+        return NULL;
+    // Build data tag to be writen.
+    data.epcByteCount = strlen(epc_data) * sizeof(char) / 2;
+    TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
+    // Build filter target tag to be replaced.
+    TMR_TF_init_tag(&filter, &target);
+    // Write data tag on target tag.
+    ret = TMR_writeTag(&self->reader, &filter, &data);
+    // In case of not target tag found.
+    if (ret == TMR_ERROR_NO_TAGS_FOUND)
+        Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
 Reader_read(Reader *self, PyObject *args, PyObject *kwds)
 {
     int timeout = 500;
@@ -485,6 +511,9 @@ static PyMethodDef Reader_methods[] = {
     },
     {"set_read_plan", (PyCFunction)Reader_set_read_plan, METH_VARARGS | METH_KEYWORDS,
      "Set the read plan"
+    },
+    {"write", (PyCFunction)Reader_write, METH_VARARGS | METH_KEYWORDS,
+     "Write the epc_target tag with the given epc_code"
     },
     {"read", (PyCFunction)Reader_read, METH_VARARGS | METH_KEYWORDS,
      "Read the tags"
