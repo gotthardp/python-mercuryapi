@@ -341,9 +341,7 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
     ret = TMR_writeTag(&self->reader, &filter, &data);
     // In case of not target tag found.
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
-    {
         Py_RETURN_FALSE;
-    }
     Py_RETURN_TRUE;
 }
 
