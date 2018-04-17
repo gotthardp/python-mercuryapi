@@ -332,7 +332,10 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
     static char *kwlist[] = {"epc_target", "epc_code", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, &epc_target, &epc_data))
         return NULL;
-    // Build data tag to be writen.
+    /* build target tag to search */
+    target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
+    TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+    /* build data tag to be writen */
     data.epcByteCount = strlen(epc_data) * sizeof(char) / 2;
     TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
     // Build filter target tag to be replaced.
