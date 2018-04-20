@@ -319,54 +319,6 @@ fail:
     return NULL;
 }
 
-/* Parse strings of the form [[1,100],[2,200]] into a
- * TMR_PortValueList structure.
- */
-int
-parsePortValueList(const char *arg, TMR_PortValueList *list, int *nchars)
-{
-  int port, value;
-  int chars;
-  const char *origarg = arg;
-
-  if ('[' != arg[0]
-      || ']' != arg[strlen(arg)-1])
-  {
-    return -1;
-  }
-
-  arg++;
-
-  list->len = 0;
-  list->max = 4;
-  list->list = malloc(sizeof(list->list[0]) * list->max);
-
-  while (2 == sscanf(arg, "[%i,%i]%*[],]%n", &port, &value, &chars))
-  {
-    if (list->len+1 > list->max)
-    {
-      list->list = realloc(list->list, 2 * list->max * sizeof(list->list[0]));
-      list->max = 2 * list->max;
-    }
-    if (port > UINT8_MAX || value > UINT16_MAX)
-    {
-      return -1;
-    }
-    list->list[list->len].port = port;
-    list->list[list->len].value = value;
-    list->len++;
-    arg += chars;
-  }
-
-  if (nchars)
-  {
-    *nchars = (int)(arg - origarg);
-  }
-
-  return 0;
-}
-
-
 static PyObject *
 Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
 {
