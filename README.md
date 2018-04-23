@@ -47,7 +47,7 @@ print(reader.get_supported_regions())
 ```
 
 #### reader.get_power_range()
-Lists supported radio power range.
+Lists supported radio power range, in centidBm.
 
 For example:
 ```python
@@ -126,7 +126,8 @@ Setted values may differ from those passed due to reader rounding.
 
 For example:
 ```python
-reader.set_read_powers([1, 2], [1533, 1912])
+setted_powers = reader.set_read_powers([1, 2], [1533, 1912])
+print(setted_powers)
 [(1, 1525), (2, 1900)]
 ```
 
