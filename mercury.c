@@ -346,6 +346,30 @@ Reader_get_antennas(Reader *self)
     return antennas;
 }
 
+static PyObject *
+Reader_get_power_range(Reader *self)
+{
+    int lim_power;
+    TMR_Status ret;
+    PyObject *powers;
+    powers = PyTuple_New(2);
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_POWERMIN, &lim_power)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+    PyTuple_SetItem(powers, 0, PyLong_FromLong((long) lim_power));
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_POWERMAX, &lim_power)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+    PyTuple_SetItem(powers, 1, PyLong_FromLong((long) lim_power));
+    return powers;
+}
+
 Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
 {
     int length;
@@ -645,6 +669,9 @@ Reader_get_model(Reader* self)
 static PyMethodDef Reader_methods[] = {
     {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
      "Returns the list of available antennas"
+    },
+    {"get_power_range", (PyCFunction)Reader_get_power_range, METH_NOARGS,
+     "Returns a tuple for power range"
     },
     {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
      "Returns a list of regions supported by the reader"
