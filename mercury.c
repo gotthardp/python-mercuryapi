@@ -370,6 +370,50 @@ Reader_get_power_range(Reader *self)
     return powers;
 }
 
+static PyObject *
+Reader_get_read_powers(Reader *self)
+{
+    int row;
+    TMR_Status ret;
+    PyObject *antenna_power;
+    PyObject *antenna_powers;
+    antenna_powers = PyList_New(0);
+    TMR_PortValueList ant_pow_list;
+    TMR_PortValue pow_value_list[MAX_ANTENNA_COUNT];
+
+    ant_pow_list.list = pow_value_list;
+    ant_pow_list.max = numberof(pow_value_list);
+
+    TMR_uint8List port_list;
+    uint8_t port_value_list[MAX_ANTENNA_COUNT];
+
+    port_list.list = port_value_list;
+    port_list.max = numberof(port_value_list);
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, "Error getting antennas");
+        return NULL;
+    }
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_PORTREADPOWERLIST, &ant_pow_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    for (row = 0; row < port_list.len; row++)
+    {
+        antenna_power = PyTuple_New(2);
+        PyTuple_SetItem(antenna_power, 0, PyLong_FromLong((long) ant_pow_list.list[row].port));
+        PyTuple_SetItem(antenna_power, 1, PyLong_FromLong((long) ant_pow_list.list[row].value));
+        PyList_Append(antenna_powers, antenna_power);
+    }
+
+    return antenna_powers;
+}
+
+static PyObject *
 Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
 {
     int length;
@@ -672,6 +716,9 @@ static PyMethodDef Reader_methods[] = {
     },
     {"get_power_range", (PyCFunction)Reader_get_power_range, METH_NOARGS,
      "Returns a tuple for power range"
+    },
+    {"get_read_powers", (PyCFunction)Reader_get_read_powers, METH_NOARGS,
+     "Return current setted read powers"
     },
     {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
      "Returns a list of regions supported by the reader"
