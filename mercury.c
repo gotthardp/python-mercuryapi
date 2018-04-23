@@ -26,6 +26,7 @@
 #include <structmember.h>
 
 #define MAX_ANTENNA_COUNT 4
+#define numberof(x) (sizeof((x))/sizeof((x)[0]))
 
 typedef struct {
     PyObject_HEAD
@@ -320,6 +321,32 @@ fail:
 }
 
 static PyObject *
+Reader_get_antennas(Reader *self)
+{
+    int i;
+    TMR_Status ret;
+    PyObject *antennas;
+    TMR_uint8List port_list;
+    uint8_t value_list[MAX_ANTENNA_COUNT];
+
+    port_list.list = value_list;
+    port_list.max = numberof(value_list);
+
+    ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list);
+    if (TMR_SUCCESS != ret)
+    {
+        PyErr_SetString(PyExc_TypeError, "Error getting antennas");
+        return NULL;
+    }
+
+    antennas = PyList_New(0);
+    for (i = 0; i < port_list.len && i < port_list.max; i++)
+    {
+        PyList_Append(antennas, PyLong_FromLong((long) port_list.list[i]));
+    }
+    return antennas;
+}
+
 Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
 {
     int length;
@@ -618,6 +645,9 @@ Reader_get_model(Reader* self)
 }
 
 static PyMethodDef Reader_methods[] = {
+    {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
+     "Returns the list of available antennas"
+    },
     {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
      "Returns a list of regions supported by the reader"
     },
