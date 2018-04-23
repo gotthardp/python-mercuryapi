@@ -352,19 +352,18 @@ Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
     int length;
     TMR_Status ret;
     uint8_t ant_count, pow_count;
-    PyObject *powerList;
-    PyObject *antennaList;
+    PyObject *power_list, *antenna_list;
     static char *kwlist[] = {"antennas", "powers", NULL};
 
     /* Eval parameters. *******************************************************/
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O!", kwlist, &PyList_Type, &antennaList, &PyList_Type, &powerList))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O!", kwlist, &PyList_Type, &antenna_list, &PyList_Type, &power_list))
         return NULL;
-    if ((ant_count = PyList_Size(antennaList)) > MAX_ANTENNA_COUNT)
+    if ((ant_count = PyList_Size(antenna_list)) > MAX_ANTENNA_COUNT)
     {
         PyErr_SetString(PyExc_TypeError, "Too many antennas");
         return NULL;
     }
-    if ((pow_count = PyList_Size(powerList)) > MAX_ANTENNA_COUNT)
+    if ((pow_count = PyList_Size(power_list)) > MAX_ANTENNA_COUNT)
     {
         PyErr_SetString(PyExc_TypeError, "Too many powers");
         return NULL;
@@ -410,15 +409,15 @@ Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
     int antenna;
     int power;
     TMR_PortValueList ant_pow_list;
-    TMR_PortValue valueList[length];
+    TMR_PortValue value_list[length];
 
     ant_pow_list.len = length;
-    ant_pow_list.max = numberof(valueList);
-    ant_pow_list.list = valueList;
+    ant_pow_list.max = numberof(value_list);
+    ant_pow_list.list = value_list;
     for (row = 0; row < length; row++)
     {
-        power = (int) PyLong_AsLong(PyList_GetItem(powerList, row));
-        antenna = (int) PyLong_AsLong(PyList_GetItem(antennaList, row));
+        power = (int) PyLong_AsLong(PyList_GetItem(power_list, row));
+        antenna = (int) PyLong_AsLong(PyList_GetItem(antenna_list, row));
         /* Print values. ******************************************************/
         printf("  Row %d: %d, %d\n", row, antenna, power);
         /**********************************************************************/
