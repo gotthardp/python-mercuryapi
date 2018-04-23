@@ -46,6 +46,33 @@ print(reader.get_supported_regions())
 ['NA2', 'IN', 'JP', 'PRC', 'EU3', 'KR2', 'AU', 'NZ']
 ```
 
+#### reader.get_power_range()
+Lists supported radio power range.
+
+For example:
+```python
+print(reader.get_power_range())
+(0, 3000)
+```
+
+#### reader.get_antennas()
+Lists available antennas.
+
+For example:
+```python
+print(reader.get_antennas())
+[1, 2]
+```
+
+#### reader.get_read_powers()
+Lists configured read powers for each antenna. [(antenna, power)]
+
+For example:
+```python
+print(reader.get_read_powers())
+[(1, 1800), (2, 3000)]
+```
+
 #### reader.set_region(*region*)
 Controls the Region of Operation for the connected device:
  * *region* represents the regulatory region that the device will operate in. Supported values are:
@@ -86,6 +113,21 @@ Specifies the antennas and protocol to use for a search:
 For example:
 ```python
 reader.set_read_plan([1], "GEN2")
+```
+
+#### reader.set_read_powers(*antennas*, *powers*)
+Set the read power for each listed antenna and return the real setted values.
+Setted values may differ from those passed due to reader rounding.
+ * *antennas* list define which antennas (or virtual antenna numbers) are going to be setted.
+ * *powers* list define the power, in centidBm, for each antenna. Overrides the value from
+    set_read_plan or reader specific default.
+      * Power values must be within the allowed power range.
+
+
+For example:
+```python
+reader.set_read_powers([1, 2], [1533, 1912])
+[(1, 1525), (2, 1900)]
 ```
 
 #### reader.read(*timeout=500*)
