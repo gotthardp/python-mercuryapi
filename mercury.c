@@ -667,13 +667,13 @@ Reader_get_model(Reader* self)
 
 static PyMethodDef Reader_methods[] = {
     {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
-     "Returns the list of available antennas"
+     "Lists available antennas."
     },
     {"get_power_range", (PyCFunction)Reader_get_power_range, METH_NOARGS,
-     "Returns a tuple for power range"
+     "Lists supported radio power range."
     },
     {"get_read_powers", (PyCFunction)Reader_get_read_powers, METH_NOARGS,
-     "Return current setted read powers"
+     "Lists configured read powers for each antenna."
     },
     {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
      "Returns a list of regions supported by the reader"
@@ -685,7 +685,7 @@ static PyMethodDef Reader_methods[] = {
      "Set the read plan"
     },
     {"set_read_powers", (PyCFunction)Reader_set_read_powers, METH_VARARGS | METH_KEYWORDS,
-     "Set the read powers poer antenna"
+     "Set the read power for each listed antenna and return the real setted values."
     },
     {"write", (PyCFunction)Reader_write, METH_VARARGS | METH_KEYWORDS,
      "Write the epc_target tag with the given epc_code"
