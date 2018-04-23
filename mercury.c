@@ -332,8 +332,7 @@ Reader_get_antennas(Reader *self)
     port_list.list = value_list;
     port_list.max = numberof(value_list);
 
-    ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list);
-    if (TMR_SUCCESS != ret)
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list)) != TMR_SUCCESS)
     {
         PyErr_SetString(PyExc_TypeError, "Error getting antennas");
         return NULL;
