@@ -208,6 +208,10 @@ The string representation (`repr`) of the tag data is its EPC.
 Use the Windows installer for the
 [latest release](https://github.com/gotthardp/python-mercuryapi/releases) and Python 3.6.
 
+If you get the "ImportError: DLL load failed", make sure you have the
+[Microsoft Visual C++ 2010 Redistributable Package](https://www.microsoft.com/en-us/download/details.aspx?id=5555)
+installed.
+
 To build an installer for other Python releases you need to:
  * Download the latest [Mercury API](http://www.thingmagic.com/mercuryapi), e.g.
    [mercuryapi-1.29.4.34.zip](http://www.thingmagic.com/images/Downloads/software/mercuryapi-1.29.4.34.zip).
