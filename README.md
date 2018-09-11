@@ -37,6 +37,9 @@ For example:
 reader = mercury.Reader("tmr:///dev/ttyUSB0", baudrate=9600)
 ```
 
+#### reader.get_temperature()
+Returns the chip temperature in degrees of Celsius.
+
 #### reader.get_supported_regions()
 Lists supported regions for the connected device.
 

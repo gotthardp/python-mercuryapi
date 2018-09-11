@@ -386,6 +386,21 @@ fail:
 }
 
 static PyObject *
+Reader_get_temperature(Reader *self)
+{
+    TMR_Status ret;
+    uint8_t temp;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_TEMPERATURE, &temp)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, "Error getting temperature");
+        return NULL;
+    }
+
+    return PyLong_FromLong(temp);
+}
+
+static PyObject *
 Reader_get_antennas(Reader *self)
 {
     int i;
@@ -754,6 +769,9 @@ Reader_get_model(Reader* self)
 }
 
 static PyMethodDef Reader_methods[] = {
+    {"get_temperature", (PyCFunction)Reader_get_temperature, METH_NOARGS,
+     "Returns the chip temperature"
+    },
     {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
      "Lists available antennas."
     },
