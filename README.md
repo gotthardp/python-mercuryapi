@@ -97,7 +97,7 @@ For example:
 reader.set_region("EU3")
 ```
 
-#### reader.set_read_plan(*antennas*, *protocol*, *read_power=default*)
+#### reader.set_read_plan(*antennas*, *protocol*, *bank=[]*, *read_power=default*)
 Specifies the antennas and protocol to use for a search:
  * *antennas* list define which antennas (or virtual antenna numbers) to use in the search
  * *protocol* defines the protocol to search on. Supported values are:
@@ -107,6 +107,11 @@ Specifies the antennas and protocol to use for a search:
    * `"IPX64"`, IPX (64kbps link rate)
    * `"IPX256"`, IPX (256kbps link rate)
    * `"ATA"`
+ * *bank* defines the memory banks to read. Supported values are:
+   * `"reserved"`
+   * `"epc"`
+   * `"tid"`
+   * `"user"`
  * *read_power* defines the transmit power, in centidBm, for read operations. If not given,
    a reader specific default value is used.
 
@@ -198,8 +203,15 @@ Represents a read of an RFID tag:
  * *antenna* indicates where the tag was read
  * *read_count* indicates how many times was the tag read during interrogation
  * *rssi* is the strength of the signal recieved from the tag
+ * *epc_mem_data* contains the EPC bank data bytes
+ * *tid_mem_data* contains the TID bank data bytes
+ * *user_mem_data* contains the User bank data bytes
+ * *reserved_mem_data* contains the Reserved bank data bytes
 
 The string representation (`repr`) of the tag data is its EPC.
+
+Please note that the bank data bytes need to be requested via the *bank* parameter
+of the reader.*set_read_plan* function. Data not requested will not be read.
 
 
 ## Installation

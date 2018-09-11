@@ -26,6 +26,7 @@
 #include <structmember.h>
 
 #define MAX_ANTENNA_COUNT 4
+#define MAX_DATA_AREA 258
 #define numberof(x) (sizeof((x))/sizeof((x)[0]))
 
 typedef struct {
@@ -47,6 +48,10 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     TMR_TagReadData data;
+    PyObject *epcMemData;
+    PyObject *tidMemData;
+    PyObject *userMemData;
+    PyObject *reservedMemData;
 } TagReadData;
 
 static PyTypeObject TagReadDataType;
@@ -261,6 +266,35 @@ uint8_t as_uint8(PyObject *item)
     return (uint8_t)num;
 }
 
+static int str2bank(PyObject *name)
+{
+    const char *text;
+
+    if (PyUnicode_Check(name))
+        text = PyUnicode_AsUTF8(name);
+    else if (PyBytes_Check(name))
+        text = PyBytes_AsString(name);
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "expecting string");
+        return 0;
+    }
+
+    if(strcmp(text, "reserved") == 0)
+        return TMR_GEN2_BANK_RESERVED_ENABLED;
+    else if(strcmp(text, "epc") == 0)
+        return TMR_GEN2_BANK_EPC | TMR_GEN2_BANK_EPC_ENABLED;
+    else if(strcmp(text, "tid") == 0)
+        return TMR_GEN2_BANK_TID | TMR_GEN2_BANK_TID_ENABLED;
+    else if(strcmp(text, "user") == 0)
+        return TMR_GEN2_BANK_USER | TMR_GEN2_BANK_USER_ENABLED;
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "invalid bank name");
+        return 0;
+    }
+}
+
 static PyObject *
 Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 {
@@ -271,11 +305,12 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
     TMR_Status ret;
     int i;
     uint8_t ant_count;
+    PyObject *bank = NULL;
     int readPower = 0;
 
-    static char *kwlist[] = {"antennas", "protocol", "read_power", NULL};
+    static char *kwlist[] = {"antennas", "protocol", "bank", "read_power", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|i", kwlist, &PyList_Type, &list, &s, &readPower))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|Oi", kwlist, &PyList_Type, &list, &s, &bank, &readPower))
         return NULL;
 
     if ((protocol = str2protocol(s)) == TMR_TAG_PROTOCOL_NONE)
@@ -304,6 +339,36 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 
     if ((ret = TMR_RP_init_simple(&plan, ant_count, self->antennas, protocol, 1000)) != TMR_SUCCESS)
         goto fail;
+
+    if (bank != NULL)
+    {
+        int op = 0;
+        TMR_TagOp tagop;
+
+        if(PyList_Check(bank))
+        {
+            for (i = 0; i < PyList_Size(bank); i++)
+            {
+                int op2;
+
+                if ((op2 = str2bank(PyList_GetItem(bank, i))) == 0)
+                    return NULL;
+
+                op |= op2;
+            }
+        }
+        else
+        {
+            if ((op = str2bank(bank)) == 0)
+                return NULL;
+        }
+
+        if ((ret = TMR_TagOp_init_GEN2_ReadData(&tagop, op, 0, 0)) != TMR_SUCCESS)
+            goto fail;
+
+        if ((ret = TMR_RP_set_tagop(&plan, &tagop)) != TMR_SUCCESS)
+            goto fail;
+    }
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_PLAN, &plan)) != TMR_SUCCESS)
         goto fail;
@@ -509,6 +574,15 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+PyByteArray_FromUInt8List(const TMR_uint8List *array)
+{
+    if(array->len > 0)
+        return PyByteArray_FromStringAndSize((const char *)array->list, array->len < array->max ? array->len : array->max);
+    else
+        return NULL;
+}
+
+static PyObject *
 Reader_read(Reader *self, PyObject *args, PyObject *kwds)
 {
     int timeout = 500;
@@ -534,15 +608,29 @@ Reader_read(Reader *self, PyObject *args, PyObject *kwds)
     while (TMR_hasMoreTags(&self->reader) == TMR_SUCCESS)
     {
         TagReadData *tag;
+        uint8_t dataBuf1[MAX_DATA_AREA];
+        uint8_t dataBuf2[MAX_DATA_AREA];
+        uint8_t dataBuf3[MAX_DATA_AREA];
+        uint8_t dataBuf4[MAX_DATA_AREA];
 
         tag = PyObject_New(TagReadData, &TagReadDataType);
         TMR_TRD_init(&tag->data);
+
+        TMR_TRD_MEMBANK_init_data(&tag->data.epcMemData, MAX_DATA_AREA, dataBuf1);
+        TMR_TRD_MEMBANK_init_data(&tag->data.tidMemData, MAX_DATA_AREA, dataBuf2);
+        TMR_TRD_MEMBANK_init_data(&tag->data.userMemData, MAX_DATA_AREA, dataBuf3);
+        TMR_TRD_MEMBANK_init_data(&tag->data.reservedMemData, MAX_DATA_AREA, dataBuf4);
 
         if ((ret = TMR_getNextTag(&self->reader, &tag->data)) != TMR_SUCCESS)
         {
             PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
             return NULL;
         }
+
+        tag->epcMemData = PyByteArray_FromUInt8List(&tag->data.epcMemData);
+        tag->tidMemData = PyByteArray_FromUInt8List(&tag->data.tidMemData);
+        tag->userMemData = PyByteArray_FromUInt8List(&tag->data.userMemData);
+        tag->reservedMemData = PyByteArray_FromUInt8List(&tag->data.reservedMemData);
 
         PyList_Append(list, (PyObject *)tag);
         Py_XDECREF(tag);
@@ -752,7 +840,7 @@ static PyTypeObject ReaderType = {
 };
 
 static void
-TagData_dealloc(Reader* self)
+TagData_dealloc(TagData* self)
 {
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -850,6 +938,17 @@ static PyTypeObject TagDataType = {
     0,                         /* tp_new */
 };
 
+
+static void
+TagReadData_dealloc(TagReadData* self)
+{
+    Py_XDECREF(self->epcMemData);
+    Py_XDECREF(self->tidMemData);
+    Py_XDECREF(self->userMemData);
+    Py_XDECREF(self->reservedMemData);
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
 static PyMethodDef TagReadData_methods[] = {
     {NULL}  /* Sentinel */
 };
@@ -861,6 +960,14 @@ static PyMemberDef TagReadData_members[] = {
      "Number of times the tag was read."},
     {"rssi", T_INT, offsetof(TagReadData, data.rssi), READONLY,
      "Strength of the signal recieved from the tag."},
+    {"epc_mem_data", T_OBJECT, offsetof(TagReadData, epcMemData), READONLY,
+     "EPC bank data bytes"},
+    {"tid_mem_data", T_OBJECT, offsetof(TagReadData, tidMemData), READONLY,
+     "TID bank data bytes"},
+    {"user_mem_data", T_OBJECT, offsetof(TagReadData, userMemData), READONLY,
+     "User bank data bytes"},
+    {"reserved_mem_data", T_OBJECT, offsetof(TagReadData, reservedMemData), READONLY,
+     "Reserved bank data bytes"},
     {NULL}  /* Sentinel */
 };
 
@@ -873,7 +980,7 @@ static PyTypeObject TagReadDataType = {
     "mercury.TagReadData",     /* tp_name */
     sizeof(TagReadData),       /* tp_basicsize */
     0,                         /* tp_itemsize */
-    (destructor)TagData_dealloc, /* tp_dealloc */
+    (destructor)TagReadData_dealloc, /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
