@@ -525,7 +525,7 @@ Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
     int power;
     int antenna;
     TMR_PortValueList ant_pow_list;
-    TMR_PortValue value_list[length];
+    TMR_PortValue value_list[MAX_ANTENNA_COUNT];
 
     ant_pow_list.len = length;
     ant_pow_list.max = numberof(value_list);
