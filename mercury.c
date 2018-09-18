@@ -270,10 +270,12 @@ static int str2bank(PyObject *name)
 {
     const char *text;
 
-    if (PyUnicode_Check(name))
-        text = PyUnicode_AsUTF8(name);
-    else if (PyBytes_Check(name))
+    if (PyBytes_Check(name))
         text = PyBytes_AsString(name);
+#if PY_MAJOR_VERSION >= 3
+    else if (PyUnicode_Check(name))
+        text = PyUnicode_AsUTF8(name);
+#endif
     else
     {
         PyErr_SetString(PyExc_TypeError, "expecting string");
