@@ -200,6 +200,17 @@ print(reader.get_model())
 M6e Nano
 ```
 
+#### reader.read_SL900A_Sensor_Data("")()
+Read SL900A Sensor Data.
+Supported values support "TEMP", "EXT1","EXT2","BATTV"
+
+For example:
+```python
+print(reader.read_SL900A_Sensor_Data("TEMP"))
+26
+```
+
+
 ### TagReadData Object
 Represents a read of an RFID tag:
  * *epc* corresponds to the Electronic Product Code
