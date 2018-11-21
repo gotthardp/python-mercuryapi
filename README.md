@@ -122,6 +122,10 @@ For example:
 ```python
 reader.set_read_plan([1], "GEN2")
 ```
+or
+```python
+reader.set_read_plan([1], "GEN2", bank=["user"], read_power=1900)
+```
 
 #### reader.set_read_powers(*antennas*, *powers*)
 Set the read power for each listed antenna and return the real setted values.
