@@ -10,7 +10,7 @@ from setuptools.extension import Extension
 # FIXME: make sure the patch matches the mercuryapi version you have
 mercuryapi = "mercuryapi-1.31.0.33/c/src/"
 
-setup(name="mercuryapi", version="0.5",
+setup(name="mercuryapi", version="0.4.1",
       ext_modules=[Extension("mercury",
                              [mercuryapi + "api/hex_bytes.c",
                               mercuryapi + "api/llrp_reader.c",

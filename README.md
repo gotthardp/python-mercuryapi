@@ -29,12 +29,17 @@ Object constructor. Connects to the reader:
    * `"tmr:///com2"` is a typical format to connect to a serial based module on Windows COM2
    * `"tmr:///dev/ttyUSB0"` is a typical format to connect to a USB device named ttyUSB0 on a Unix system
    * `"llrp://192.198.1.100"` is a typical format to connect to an Ethernet device (works on Linux only)
- * *baudrate* defines the desired communication speed.
+ * *baudrate* defines the desired communication speed of the serial port.
    Supported values include 110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600 and 115200 (default).
+   This parameter is not allowed for network-connected readers.
 
 For example:
 ```python
 reader = mercury.Reader("tmr:///dev/ttyUSB0", baudrate=9600)
+```
+or
+```python
+reader = mercury.Reader("tmr://192.168.1.101")
 ```
 
 #### reader.get_temperature()
@@ -215,7 +220,25 @@ Represents a read of an RFID tag:
  * *user_mem_data* contains the User bank data bytes
  * *reserved_mem_data* contains the Reserved bank data bytes
 
+```python
+print(tag.epc)
+b'E2000087071401930700D206'
+print(tag.antenna)
+2
+print(tag.read_count)
+2
+print(tag.rssi)
+-65
+print(tag.user_mem_data)
+bytearray(b'\x00\x00\x00...')
+```
+
 The string representation (`repr`) of the tag data is its EPC.
+
+```python
+print(tag)
+b'E2000087071401930700D206'
+```
 
 Please note that the bank data bytes need to be requested via the *bank* parameter
 of the reader.*set_read_plan* function. Data not requested will not be read.
