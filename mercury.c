@@ -33,6 +33,7 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     TMR_Reader reader;
+    TMR_TagOp tagop;
     uint8_t antennas[MAX_ANTENNA_COUNT];
     TMR_ReadListenerBlock readListener;
     PyObject *readCallback;
@@ -345,7 +346,6 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
     if (bank != NULL)
     {
         int op = 0;
-        TMR_TagOp tagop;
 
         if(PyList_Check(bank))
         {
@@ -365,10 +365,10 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
                 return NULL;
         }
 
-        if ((ret = TMR_TagOp_init_GEN2_ReadData(&tagop, op, 0, 0)) != TMR_SUCCESS)
+        if ((ret = TMR_TagOp_init_GEN2_ReadData(&self->tagop, op, 0, 0)) != TMR_SUCCESS)
             goto fail;
 
-        if ((ret = TMR_RP_set_tagop(&plan, &tagop)) != TMR_SUCCESS)
+        if ((ret = TMR_RP_set_tagop(&plan, &self->tagop)) != TMR_SUCCESS)
             goto fail;
     }
 
