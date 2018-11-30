@@ -561,6 +561,118 @@ fail:
     return NULL;
 }
 
+
+
+
+static PyObject *
+Reader_get_write_powers(Reader *self)
+{
+    int row;
+    TMR_Status ret;
+    PyObject *antenna_power;
+    PyObject *antenna_powers;
+    antenna_powers = PyList_New(0);
+    TMR_PortValueList ant_pow_list;
+    TMR_PortValue pow_value_list[MAX_ANTENNA_COUNT];
+
+    ant_pow_list.list = pow_value_list;
+    ant_pow_list.max = numberof(pow_value_list);
+
+    TMR_uint8List port_list;
+    uint8_t port_value_list[MAX_ANTENNA_COUNT];
+
+    port_list.list = port_value_list;
+    port_list.max = numberof(port_value_list);
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, "Error getting antennas");
+        return NULL;
+    }
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_PORTWRITEPOWERLIST, &ant_pow_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    for (row = 0; row < port_list.len; row++)
+    {
+        antenna_power = PyTuple_New(2);
+        PyTuple_SetItem(antenna_power, 0, PyLong_FromLong((long) ant_pow_list.list[row].port));
+        PyTuple_SetItem(antenna_power, 1, PyLong_FromLong((long) ant_pow_list.list[row].value));
+        PyList_Append(antenna_powers, antenna_power);
+    }
+
+    return antenna_powers;
+}
+
+static PyObject *
+Reader_set_write_powers(Reader *self, PyObject *args, PyObject *kwds)
+{
+    int length;
+    TMR_Status ret;
+    uint8_t ant_count, pow_count;
+    PyObject *power_list, *antenna_list;
+    static char *kwlist[] = {"antennas", "powers", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O!", kwlist, &PyList_Type, &antenna_list, &PyList_Type, &power_list))
+        return NULL;
+    if ((ant_count = PyList_Size(antenna_list)) > MAX_ANTENNA_COUNT)
+    {
+        PyErr_SetString(PyExc_TypeError, "Too many antennas");
+        return NULL;
+    }
+    if ((pow_count = PyList_Size(power_list)) > MAX_ANTENNA_COUNT)
+    {
+        PyErr_SetString(PyExc_TypeError, "Too many powers");
+        return NULL;
+    }
+    if (pow_count != ant_count)
+    {
+        PyErr_SetString(PyExc_TypeError, "Number of antennas and powers not matching");
+        return NULL;
+    }
+    length = (int) ant_count;
+
+    int row;
+    int power;
+    int antenna;
+    TMR_PortValueList ant_pow_list;
+    TMR_PortValue value_list[MAX_ANTENNA_COUNT];
+
+    ant_pow_list.len = length;
+    ant_pow_list.max = numberof(value_list);
+    ant_pow_list.list = value_list;
+    for (row = 0; row < length; row++)
+    {
+        power = (int) PyLong_AsLong(PyList_GetItem(power_list, row));
+        antenna = (int) PyLong_AsLong(PyList_GetItem(antenna_list, row));
+
+        if ((ant_pow_list.list[row].port = antenna) == 255)
+        {
+            PyErr_SetString(PyExc_TypeError, "antennas expecting a list of integers");
+            return NULL;
+        }
+        if ((ant_pow_list.list[row].value = power) == 255)
+        {
+            PyErr_SetString(PyExc_TypeError, "powers expecting a list of integers");
+            return NULL;
+        }
+    }
+
+    if (length > 0)
+    {
+        if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_RADIO_PORTWRITEPOWERLIST, &ant_pow_list)) != TMR_SUCCESS)
+            goto fail;
+    }
+
+    return Reader_get_write_powers(self);
+fail:
+    PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+    return NULL;
+}
+
 static PyObject *
 Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 {
@@ -783,6 +895,9 @@ static PyMethodDef Reader_methods[] = {
     {"get_read_powers", (PyCFunction)Reader_get_read_powers, METH_NOARGS,
      "Lists configured read powers for each antenna."
     },
+    {"get_write_powers", (PyCFunction)Reader_get_write_powers, METH_NOARGS,
+     "Lists configured write powers for each antenna."
+    },
     {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
      "Returns a list of regions supported by the reader"
     },
@@ -794,6 +909,9 @@ static PyMethodDef Reader_methods[] = {
     },
     {"set_read_powers", (PyCFunction)Reader_set_read_powers, METH_VARARGS | METH_KEYWORDS,
      "Set the read power for each listed antenna and return the real setted values."
+    },
+    {"set_write_powers", (PyCFunction)Reader_set_write_powers, METH_VARARGS | METH_KEYWORDS,
+     "Set the write power for each listed antenna and return the real setted values."
     },
     {"write", (PyCFunction)Reader_write, METH_VARARGS | METH_KEYWORDS,
      "Write the epc_target tag with the given epc_code"
