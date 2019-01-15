@@ -209,6 +209,150 @@ print(reader.get_model())
 M6e Nano
 ```
 
+#### reader.get_gen2_blf()
+Returns the current Gen2 BLF setting.
+
+For example:
+```python
+print(reader.get_gen2_blf())
+250
+```
+
+#### reader.set_gen2_blf(*blf*)
+Sets the Gen2 BLF. Supported values include:
+ * 250 (250KHz)
+ * 320 (320KHz)
+ * 640 (640KHz)
+
+Not all values may be supported by a particular reader. If successful the
+input value will be returned. For example:
+```python
+print(reader.set_gen2_blf(640))
+640
+```
+
+#### reader.get_gen2_tari()
+Returns the current Gen2 Tari setting.
+
+For example:
+```python
+print(reader.get_gen2_tari())
+0
+```
+
+#### reader.set_gen2_tari(*tari*)
+Sets the Gen2 Tari. Supported values include:
+ * 0 (25 us)
+ * 1 (12.5 us)
+ * 2 (6.25 us)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_tari(1))
+1
+```
+
+#### reader.get_gen2_tagencoding()
+Returns the current Gen2 TagEncoding setting.
+
+For example:
+```python
+print(reader.get_gen2_tagencoding())
+0
+```
+
+#### reader.set_gen2_tagencoding(*tagencoding*)
+Sets the Gen2 TagEncoding. Supported values include:
+ * 0 (FM0)
+ * 1 (M = 2)
+ * 2 (M = 4)
+ * 3 (M = 8)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_tagencoding(2))
+2
+```
+
+#### reader.get_gen2_session()
+Returns the current Gen2 Session setting.
+
+For example:
+```python
+print(reader.get_gen2_session())
+0
+```
+
+#### reader.set_gen2_session(*session*)
+Sets the Gen2 Session. Supported values include:
+ * 0 (S0)
+ * 1 (S1)
+ * 2 (S2)
+ * 3 (S3)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_session(2))
+2
+```
+
+#### reader.get_gen2_target()
+Returns the current Gen2 Target setting.
+
+For example:
+```python
+print(reader.get_gen2_target())
+0
+```
+
+#### reader.set_gen2_target(*target*)
+Sets the Gen2 Target. Supported values include:
+ * 0 (A)
+ * 1 (B)
+ * 2 (AB)
+ * 3 (BA)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_target(2))
+2
+```
+
+#### reader.get_gen2_q()
+Returns the current Gen2 Q setting as a tuple containing the current Q type,
+and initial Q value.
+
+For example:
+```python
+print(reader.get_gen2_q())
+(0, 16)
+```
+
+#### reader.set_gen2_q(*qtype*, *initialq*)
+Sets the Gen2 Q.
+ * *qtype* defines Dynamic vs Static Q value where:
+   * 0 (Dynamic)
+   * 1 (Static)
+ * *initialq* defines 2^*initialq* time slots to be used initially for tag communication.
+
+If Dynamic Q is used then the input *initialq* value is ignored as the reader
+will choose this on its own. It is then likely for *initialq* on a get to be different than the value used on a set.
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_q(0, 4))
+(0, 4)
+print(reader.get_gen2_q())
+(0, 64)
+```
+or
+```python
+print(reader.set_gen2_q(1, 4))
+(1, 4)
+print(reader.get_gen2_q())
+(1, 4)
+```
+
 ### TagReadData Object
 Represents a read of an RFID tag:
  * *epc* corresponds to the Electronic Product Code
