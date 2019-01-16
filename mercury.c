@@ -882,6 +882,214 @@ Reader_get_model(Reader* self)
     return PyUnicode_FromString(model.value);
 }
 
+static PyObject *
+Reader_get_gen2_blf(Reader* self)
+{
+    TMR_Status ret;
+    TMR_GEN2_LinkFrequency blf_val;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(blf_val);
+}
+
+static PyObject *
+Reader_set_gen2_blf(Reader* self, PyObject *args)
+{
+    TMR_Status ret;
+    TMR_GEN2_LinkFrequency blf_val;
+
+    if (!PyArg_ParseTuple(args, "i", &blf_val))
+        return NULL;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(blf_val);
+}
+
+static PyObject *
+Reader_get_gen2_tari(Reader* self)
+{
+    TMR_Status ret;
+    TMR_GEN2_Tari tari_val;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(tari_val);
+}
+
+static PyObject *
+Reader_set_gen2_tari(Reader* self, PyObject *args)
+{
+    TMR_Status ret;
+    TMR_GEN2_Tari tari_val;
+
+    if (!PyArg_ParseTuple(args, "i", &tari_val))
+        return NULL;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(tari_val);
+}
+
+static PyObject *
+Reader_get_gen2_tagencoding(Reader* self)
+{
+    TMR_Status ret;
+    TMR_GEN2_TagEncoding tagencoding_val;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TAGENCODING, &tagencoding_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(tagencoding_val);
+}
+
+static PyObject *
+Reader_set_gen2_tagencoding(Reader* self, PyObject *args)
+{
+    TMR_Status ret;
+    TMR_GEN2_TagEncoding tagencoding_val;
+
+    if (!PyArg_ParseTuple(args, "i", &tagencoding_val))
+        return NULL;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TAGENCODING, &tagencoding_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(tagencoding_val);
+}
+
+static PyObject *
+Reader_get_gen2_session(Reader* self)
+{
+    TMR_Status ret;
+    TMR_GEN2_Session session_val;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_SESSION, &session_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(session_val);
+}
+
+static PyObject *
+Reader_set_gen2_session(Reader* self, PyObject *args)
+{
+    TMR_Status ret;
+    TMR_GEN2_Session session_val;
+
+    if (!PyArg_ParseTuple(args, "i", &session_val))
+        return NULL;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_SESSION, &session_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(session_val);
+}
+
+static PyObject *
+Reader_get_gen2_target(Reader* self)
+{
+    TMR_Status ret;
+    TMR_GEN2_Target target_val;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TARGET, &target_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(target_val);
+}
+
+static PyObject *
+Reader_set_gen2_target(Reader* self, PyObject *args)
+{
+    TMR_Status ret;
+    TMR_GEN2_Target target_val;
+
+    if (!PyArg_ParseTuple(args, "i", &target_val))
+        return NULL;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TARGET, &target_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(target_val);
+}
+
+static PyObject *
+Reader_get_gen2_q(Reader* self)
+{
+    TMR_Status ret;
+    TMR_SR_GEN2_Q model;
+    PyObject *q_value;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    q_value = PyTuple_New(2);
+    PyTuple_SetItem(q_value, 0, PyLong_FromLong((long) model.type));
+    PyTuple_SetItem(q_value, 1, PyLong_FromLong((long) model.u.staticQ.initialQ));
+
+    return q_value;
+}
+
+static PyObject *
+Reader_set_gen2_q(Reader* self, PyObject *args)
+{
+    TMR_Status ret;
+    TMR_SR_GEN2_Q model;
+    PyObject *q_value;
+
+    if (!PyArg_ParseTuple(args, "ii", &model.type, &model.u.staticQ.initialQ))
+        return NULL;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    q_value = PyTuple_New(2);
+    PyTuple_SetItem(q_value, 0, PyLong_FromLong((long) model.type));
+    PyTuple_SetItem(q_value, 1, PyLong_FromLong((long) model.u.staticQ.initialQ));
+
+    return q_value;
+}
+
 static PyMethodDef Reader_methods[] = {
     {"get_temperature", (PyCFunction)Reader_get_temperature, METH_NOARGS,
      "Returns the chip temperature"
@@ -927,6 +1135,42 @@ static PyMethodDef Reader_methods[] = {
     },
     {"get_model", (PyCFunction)Reader_get_model, METH_NOARGS,
      "Returns the model name"
+    },
+    {"get_gen2_blf", (PyCFunction)Reader_get_gen2_blf, METH_NOARGS,
+     "Returns the current Gen2 BLF setting"
+    },
+    {"set_gen2_blf", (PyCFunction)Reader_set_gen2_blf, METH_VARARGS,
+     "Sets the Gen2 BLF"
+    },
+    {"get_gen2_tari", (PyCFunction)Reader_get_gen2_tari, METH_NOARGS,
+     "Returns the current Gen2 Tari setting"
+    },
+    {"set_gen2_tari", (PyCFunction)Reader_set_gen2_tari, METH_VARARGS,
+     "Sets the Gen2 Tari"
+    },
+    {"get_gen2_tagencoding", (PyCFunction)Reader_get_gen2_tagencoding, METH_NOARGS,
+     "Returns the current Gen2 TagEncoding setting"
+    },
+    {"set_gen2_tagencoding", (PyCFunction)Reader_set_gen2_tagencoding, METH_VARARGS,
+     "Sets the Gen2 TagEncoding"
+    },
+    {"get_gen2_session", (PyCFunction)Reader_get_gen2_session, METH_NOARGS,
+     "Returns the current Gen2 Session setting"
+    },
+    {"set_gen2_session", (PyCFunction)Reader_set_gen2_session, METH_VARARGS,
+     "Sets the Gen2 Session"
+    },
+    {"get_gen2_target", (PyCFunction)Reader_get_gen2_target, METH_NOARGS,
+     "Returns the current Gen2 Target setting"
+    },
+    {"set_gen2_target", (PyCFunction)Reader_set_gen2_target, METH_VARARGS,
+     "Sets the Gen2 Target"
+    },
+    {"get_gen2_q", (PyCFunction)Reader_get_gen2_q, METH_NOARGS,
+     "Returns the current Gen2 Q setting"
+    },
+    {"set_gen2_q", (PyCFunction)Reader_set_gen2_q, METH_VARARGS,
+     "Sets the Gen2 Q"
     },
     {NULL}  /* Sentinel */
 };
