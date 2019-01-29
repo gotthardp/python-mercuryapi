@@ -723,7 +723,10 @@ Reader_read(Reader *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &timeout))
         return NULL;
 
+    Py_BEGIN_ALLOW_THREADS
     ret = TMR_read(&self->reader, timeout, NULL);
+    Py_END_ALLOW_THREADS
+
     /* In case of TAG ID Buffer Full, extract the tags present in buffer. */
     if (ret != TMR_SUCCESS && ret != TMR_ERROR_TAG_ID_BUFFER_FULL)
     {
