@@ -29,12 +29,17 @@ Object constructor. Connects to the reader:
    * `"tmr:///com2"` is a typical format to connect to a serial based module on Windows COM2
    * `"tmr:///dev/ttyUSB0"` is a typical format to connect to a USB device named ttyUSB0 on a Unix system
    * `"llrp://192.198.1.100"` is a typical format to connect to an Ethernet device (works on Linux only)
- * *baudrate* defines the desired communication speed.
+ * *baudrate* defines the desired communication speed of the serial port.
    Supported values include 110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600 and 115200 (default).
+   This parameter is not allowed for network-connected readers.
 
 For example:
 ```python
 reader = mercury.Reader("tmr:///dev/ttyUSB0", baudrate=9600)
+```
+or
+```python
+reader = mercury.Reader("tmr://192.168.1.101")
 ```
 
 #### reader.get_temperature()
@@ -122,6 +127,10 @@ For example:
 ```python
 reader.set_read_plan([1], "GEN2")
 ```
+or
+```python
+reader.set_read_plan([1], "GEN2", bank=["user"], read_power=1900)
+```
 
 #### reader.set_read_powers(*antennas*, *powers*)
 Set the read power for each listed antenna and return the real setted values.
@@ -200,6 +209,150 @@ print(reader.get_model())
 M6e Nano
 ```
 
+#### reader.get_gen2_blf()
+Returns the current Gen2 BLF setting.
+
+For example:
+```python
+print(reader.get_gen2_blf())
+250
+```
+
+#### reader.set_gen2_blf(*blf*)
+Sets the Gen2 BLF. Supported values include:
+ * 250 (250KHz)
+ * 320 (320KHz)
+ * 640 (640KHz)
+
+Not all values may be supported by a particular reader. If successful the
+input value will be returned. For example:
+```python
+print(reader.set_gen2_blf(640))
+640
+```
+
+#### reader.get_gen2_tari()
+Returns the current Gen2 Tari setting.
+
+For example:
+```python
+print(reader.get_gen2_tari())
+0
+```
+
+#### reader.set_gen2_tari(*tari*)
+Sets the Gen2 Tari. Supported values include:
+ * 0 (25 us)
+ * 1 (12.5 us)
+ * 2 (6.25 us)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_tari(1))
+1
+```
+
+#### reader.get_gen2_tagencoding()
+Returns the current Gen2 TagEncoding setting.
+
+For example:
+```python
+print(reader.get_gen2_tagencoding())
+0
+```
+
+#### reader.set_gen2_tagencoding(*tagencoding*)
+Sets the Gen2 TagEncoding. Supported values include:
+ * 0 (FM0)
+ * 1 (M = 2)
+ * 2 (M = 4)
+ * 3 (M = 8)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_tagencoding(2))
+2
+```
+
+#### reader.get_gen2_session()
+Returns the current Gen2 Session setting.
+
+For example:
+```python
+print(reader.get_gen2_session())
+0
+```
+
+#### reader.set_gen2_session(*session*)
+Sets the Gen2 Session. Supported values include:
+ * 0 (S0)
+ * 1 (S1)
+ * 2 (S2)
+ * 3 (S3)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_session(2))
+2
+```
+
+#### reader.get_gen2_target()
+Returns the current Gen2 Target setting.
+
+For example:
+```python
+print(reader.get_gen2_target())
+0
+```
+
+#### reader.set_gen2_target(*target*)
+Sets the Gen2 Target. Supported values include:
+ * 0 (A)
+ * 1 (B)
+ * 2 (AB)
+ * 3 (BA)
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_target(2))
+2
+```
+
+#### reader.get_gen2_q()
+Returns the current Gen2 Q setting as a tuple containing the current Q type,
+and initial Q value.
+
+For example:
+```python
+print(reader.get_gen2_q())
+(0, 16)
+```
+
+#### reader.set_gen2_q(*qtype*, *initialq*)
+Sets the Gen2 Q.
+ * *qtype* defines Dynamic vs Static Q value where:
+   * 0 (Dynamic)
+   * 1 (Static)
+ * *initialq* defines 2^*initialq* time slots to be used initially for tag communication.
+
+If Dynamic Q is used then the input *initialq* value is ignored as the reader
+will choose this on its own. It is then likely for *initialq* on a get to be different than the value used on a set.
+
+If successful the input value will be returned. For example:
+```python
+print(reader.set_gen2_q(0, 4))
+(0, 4)
+print(reader.get_gen2_q())
+(0, 64)
+```
+or
+```python
+print(reader.set_gen2_q(1, 4))
+(1, 4)
+print(reader.get_gen2_q())
+(1, 4)
+```
+
 ### TagReadData Object
 Represents a read of an RFID tag:
  * *epc* corresponds to the Electronic Product Code
@@ -211,7 +364,25 @@ Represents a read of an RFID tag:
  * *user_mem_data* contains the User bank data bytes
  * *reserved_mem_data* contains the Reserved bank data bytes
 
+```python
+print(tag.epc)
+b'E2000087071401930700D206'
+print(tag.antenna)
+2
+print(tag.read_count)
+2
+print(tag.rssi)
+-65
+print(tag.user_mem_data)
+bytearray(b'\x00\x00\x00...')
+```
+
 The string representation (`repr`) of the tag data is its EPC.
+
+```python
+print(tag)
+b'E2000087071401930700D206'
+```
 
 Please note that the bank data bytes need to be requested via the *bank* parameter
 of the reader.*set_read_plan* function. Data not requested will not be read.
@@ -228,12 +399,14 @@ If you get the "ImportError: DLL load failed", make sure you have the
 installed.
 
 To build an installer for other Python releases you need to:
- * Download the latest [Mercury API](http://www.thingmagic.com/mercuryapi), e.g.
-   [mercuryapi-1.29.4.34.zip](http://www.thingmagic.com/images/Downloads/software/mercuryapi-1.29.4.34.zip).
- * Open mercuryapi-1.29.4.34/c/src/api/ltkc_win32/inc/stdint_win32.h and comment (or delete)
+ * Download the latest [Mercury API](https://www.jadaktech.com/documentation/rfid/mercuryapi), e.g.
+   [mercuryapi-1.31.0.33.zip](https://www.jadaktech.com/wp-content/uploads/2018/06/mercuryapi-1.31.0.33.zip).
+ * Go to mercuryapi-1.31.0.33\c\src\api\ltkc_win32 and run `gencode.bat`
+ * Open mercuryapi-1.31.0.33\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
    the block of `typedef` for `int_fast8_t` through `uint_fast64_t` (8 lines)
- * Download [latest pthreads-win32](ftp://sourceware.org/pub/pthreads-win32/dll-latest)
-   binaries (.dll and .lib) for your architecture
+ * Download the [latest pthreads-win32](ftp://sourceware.org/pub/pthreads-win32/dll-latest)
+   binaries (both .dll and .lib) for your architecture and put them into
+   mercuryapi-1.31.0.33\c\src\pthreads-win32\x86 or \x64
  * Obtain Microsoft Visual Studio 2017, including the Python extensions
  * Open the Solution and review the
    [setup-win.py](https://github.com/gotthardp/python-mercuryapi/blob/master/setup-win.py)
@@ -245,11 +418,11 @@ To build an installer for other Python releases you need to:
 ### Linux
 First, make sure you have the required packages
 ```bash
-yum install patch libxslt gcc readline-devel python-devel
+yum install patch libxslt gcc readline-devel python-devel python-setuptools
 ```
 or
 ```bash
-apt-get install patch xsltproc gcc libreadline-dev python-dev
+apt-get install patch xsltproc gcc libreadline-dev python-dev python-setuptools
 ```
 
 Both Python 2.x and Python 3.x are supported. To use the Python 3.x you may need to
