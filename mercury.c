@@ -25,7 +25,8 @@
 #include <Python.h>
 #include <structmember.h>
 
-#define MAX_ANTENNA_COUNT 4
+#define MAX_ANTENNA_COUNT 16
+#define MAX_GPIO_COUNT 4
 #define MAX_DATA_AREA 258
 #define numberof(x) (sizeof((x))/sizeof((x)[0]))
 
@@ -322,7 +323,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    if ((ant_count = PyList_Size(list)) > 4)
+    if ((ant_count = PyList_Size(list)) > MAX_ANTENNA_COUNT)
     {
         PyErr_SetString(PyExc_TypeError, "Too many antennas");
         return NULL;
@@ -561,9 +562,6 @@ fail:
     return NULL;
 }
 
-
-
-
 static PyObject *
 Reader_get_write_powers(Reader *self)
 {
@@ -671,6 +669,69 @@ Reader_set_write_powers(Reader *self, PyObject *args, PyObject *kwds)
 fail:
     PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
     return NULL;
+}
+
+static PyObject *
+Reader_get_antenna_portswitchgpos(Reader *self)
+{
+    TMR_Status ret;
+    PyObject *gpos;
+    TMR_uint8List gpo_list;
+    uint8_t value_list[MAX_GPIO_COUNT];
+    uint8_t i;
+
+    gpo_list.list = value_list;
+    gpo_list.max = numberof(value_list);
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, "Error getting gpos");
+        return NULL;
+    }
+
+    gpos = PyList_New(0);
+    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
+    {
+        PyList_Append(gpos, PyLong_FromLong((long) gpo_list.list[i]));
+    }
+
+    return gpos;
+}
+
+static PyObject *
+Reader_set_antenna_portswitchgpos(Reader *self, PyObject *args)
+{
+    TMR_Status ret;
+    PyObject *gpos;
+    TMR_uint8List gpo_list;
+    uint8_t value_list[MAX_GPIO_COUNT];
+    uint8_t gpo_count;
+    uint8_t i;
+
+    if (!PyArg_ParseTuple(args, "O", &gpos))
+        return NULL;
+    if ((gpo_count = PyList_Size(gpos)) > MAX_GPIO_COUNT)
+    {
+        PyErr_SetString(PyExc_TypeError, "Too many gpos");
+        return NULL;
+    }
+
+    gpo_list.len = gpo_count;
+    gpo_list.list = value_list;
+    gpo_list.max = numberof(value_list);
+
+    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
+    {
+        value_list[i] = (uint8_t) PyLong_AsLong(PyList_GetItem(gpos, i));
+    }
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_RETURN_NONE; 
 }
 
 static PyObject *
@@ -1123,6 +1184,12 @@ static PyMethodDef Reader_methods[] = {
     },
     {"set_write_powers", (PyCFunction)Reader_set_write_powers, METH_VARARGS | METH_KEYWORDS,
      "Set the write power for each listed antenna and return the real setted values."
+    },
+    {"get_antenna_portswitchgpos", (PyCFunction)Reader_get_antenna_portswitchgpos, METH_NOARGS,
+     "Lists the GPO pins used for antenna port switching."
+    },
+    {"set_antenna_portswitchgpos", (PyCFunction)Reader_set_antenna_portswitchgpos, METH_VARARGS,
+     "Set the GPO pins used for antenna port switching."
     },
     {"write", (PyCFunction)Reader_write, METH_VARARGS | METH_KEYWORDS,
      "Write the epc_target tag with the given epc_code"
