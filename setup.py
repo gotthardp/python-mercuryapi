@@ -1,7 +1,15 @@
 # python3 setup.py build
 # python3 setup.py sdist upload
 from setuptools import setup, Extension
-setup(name="python-mercuryapi", version="0.4.1",
+from distutils.command.build import build
+import os
+
+class my_build(build):
+    def run(self):
+        os.system("make mercuryapi")
+        build.run(self)
+
+setup(name="python-mercuryapi", version="0.4.2",
       author="Petr Gotthard",
       author_email="petr.gotthard@centrum.cz",
       description="Python wrapper for the ThingMagic Mercury API",
@@ -14,6 +22,7 @@ setup(name="python-mercuryapi", version="0.4.1",
         "License :: OSI Approved :: MIT License",
         "Development Status :: 4 - Beta"
       ],
+      cmdclass={'build': my_build},
       ext_modules=[Extension("mercury",
                              sources=["mercury.c"],
                              libraries=["mercuryapi", "ltkc", "ltkctm"],

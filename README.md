@@ -400,13 +400,13 @@ installed.
 
 To build an installer for other Python releases you need to:
  * Download the latest [Mercury API](https://www.jadaktech.com/documentation/rfid/mercuryapi), e.g.
-   [mercuryapi-1.31.0.33.zip](https://www.jadaktech.com/wp-content/uploads/2018/06/mercuryapi-1.31.0.33.zip).
- * Go to mercuryapi-1.31.0.33\c\src\api\ltkc_win32 and run `gencode.bat`
- * Open mercuryapi-1.31.0.33\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
+   [mercuryapi-1.31.2.zip](https://www.jadaktech.com/wp-content/uploads/2018/11/mercuryapi-1.31.2.zip).
+ * Go to mercuryapi-1.31.2.40\c\src\api\ltkc_win32 and run `gencode.bat`
+ * Open mercuryapi-1.31.2.40\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
    the block of `typedef` for `int_fast8_t` through `uint_fast64_t` (8 lines)
  * Download the [latest pthreads-win32](ftp://sourceware.org/pub/pthreads-win32/dll-latest)
    binaries (both .dll and .lib) for your architecture and put them into
-   mercuryapi-1.31.0.33\c\src\pthreads-win32\x86 or \x64
+   mercuryapi-1.31.2.40\c\src\pthreads-win32\x86 or \x64
  * Obtain Microsoft Visual Studio 2017, including the Python extensions
  * Open the Solution and review the
    [setup-win.py](https://github.com/gotthardp/python-mercuryapi/blob/master/setup-win.py)
