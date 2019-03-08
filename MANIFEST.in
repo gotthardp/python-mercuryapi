@@ -1,2 +1,4 @@
+include Makefile
+include mercuryapi.patch
 include README.md
 include LICENSE
