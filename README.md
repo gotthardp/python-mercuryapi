@@ -14,6 +14,16 @@ reader.set_read_plan([1], "GEN2")
 print(reader.read())
 ```
 
+## Installation
+On Windows, use the pre-compiled binary installer.
+
+On Linux, build and install using `pip install python-mercuryapi`.
+
+Note: The build process will (temporarily) require upto 500MB of free space in `/tmp`.
+If your `/tmp` is smaller, use e.g. `pip install python-mercuryapi -b $HOME/tmp` to redirect.
+
+Alternatively, you can follow the **Build Instructions** below and install the software manually.
+
 ## Usage
 Import the module `mercury` and create an `mercury.Reader` object.
 ```python
@@ -388,7 +398,7 @@ Please note that the bank data bytes need to be requested via the *bank* paramet
 of the reader.*set_read_plan* function. Data not requested will not be read.
 
 
-## Installation
+## Build Instructions
 
 ### Windows
 Use the Windows installer for the
