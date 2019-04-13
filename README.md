@@ -428,11 +428,11 @@ To build an installer for other Python releases you need to:
 ### Linux
 First, make sure you have the required packages
 ```bash
-yum install patch libxslt gcc readline-devel python-devel python-setuptools
+yum install unzip patch libxslt gcc readline-devel python-devel python-setuptools
 ```
 or
 ```bash
-apt-get install patch xsltproc gcc libreadline-dev python-dev python-setuptools
+apt-get install unzip patch xsltproc gcc libreadline-dev python-dev python-setuptools
 ```
 
 Both Python 2.x and Python 3.x are supported. To use the Python 3.x you may need to
