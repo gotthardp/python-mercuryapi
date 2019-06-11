@@ -366,9 +366,11 @@ print(reader.get_gen2_q())
 ### TagReadData Object
 Represents a read of an RFID tag:
  * *epc* corresponds to the Electronic Product Code
+ * *phase* of the tag response
  * *antenna* indicates where the tag was read
  * *read_count* indicates how many times was the tag read during interrogation
  * *rssi* is the strength of the signal recieved from the tag
+ * *frequency* the tag was read with
  * *epc_mem_data* contains the EPC bank data bytes
  * *tid_mem_data* contains the TID bank data bytes
  * *user_mem_data* contains the User bank data bytes

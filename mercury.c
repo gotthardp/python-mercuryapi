@@ -1406,12 +1406,16 @@ static PyMethodDef TagReadData_methods[] = {
 };
 
 static PyMemberDef TagReadData_members[] = {
+    {"phase", T_USHORT, offsetof(TagReadData, data.phase), READONLY,
+     "Tag response phase."},
     {"antenna", T_UBYTE, offsetof(TagReadData, data.antenna), READONLY,
      "Antenna where the tag was read."},
     {"read_count", T_UINT, offsetof(TagReadData, data.readCount), READONLY,
      "Number of times the tag was read."},
     {"rssi", T_INT, offsetof(TagReadData, data.rssi), READONLY,
      "Strength of the signal recieved from the tag."},
+    {"frequency", T_UINT, offsetof(TagReadData, data.frequency), READONLY,
+     "RF carrier frequency the tag was read with."},
     {"epc_mem_data", T_OBJECT, offsetof(TagReadData, epcMemData), READONLY,
      "EPC bank data bytes"},
     {"tid_mem_data", T_OBJECT, offsetof(TagReadData, tidMemData), READONLY,
