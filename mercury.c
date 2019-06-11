@@ -400,7 +400,7 @@ Reader_get_temperature(Reader *self)
         return NULL;
     }
 
-    return PyLong_FromLong(temp);
+    return PyLong_FromUnsignedLong(temp);
 }
 
 static PyObject *
@@ -424,7 +424,7 @@ Reader_get_antennas(Reader *self)
     antennas = PyList_New(0);
     for (i = 0; i < port_list.len && i < port_list.max; i++)
     {
-        PyList_Append(antennas, PyLong_FromLong(port_list.list[i]));
+        PyList_Append(antennas, PyLong_FromUnsignedLong(port_list.list[i]));
     }
     return antennas;
 }
@@ -488,7 +488,7 @@ Reader_get_read_powers(Reader *self)
     for (row = 0; row < port_list.len; row++)
     {
         antenna_power = PyTuple_New(2);
-        PyTuple_SetItem(antenna_power, 0, PyLong_FromLong(ant_pow_list.list[row].port));
+        PyTuple_SetItem(antenna_power, 0, PyLong_FromUnsignedLong(ant_pow_list.list[row].port));
         PyTuple_SetItem(antenna_power, 1, PyLong_FromLong(ant_pow_list.list[row].value));
         PyList_Append(antenna_powers, antenna_power);
     }
@@ -597,7 +597,7 @@ Reader_get_write_powers(Reader *self)
     for (row = 0; row < port_list.len; row++)
     {
         antenna_power = PyTuple_New(2);
-        PyTuple_SetItem(antenna_power, 0, PyLong_FromLong(ant_pow_list.list[row].port));
+        PyTuple_SetItem(antenna_power, 0, PyLong_FromUnsignedLong(ant_pow_list.list[row].port));
         PyTuple_SetItem(antenna_power, 1, PyLong_FromLong(ant_pow_list.list[row].value));
         PyList_Append(antenna_powers, antenna_power);
     }
@@ -692,7 +692,7 @@ Reader_get_antenna_portswitchgpos(Reader *self)
     gpos = PyList_New(0);
     for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
     {
-        PyList_Append(gpos, PyLong_FromLong(gpo_list.list[i]));
+        PyList_Append(gpos, PyLong_FromUnsignedLong(gpo_list.list[i]));
     }
 
     return gpos;
