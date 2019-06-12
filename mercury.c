@@ -112,117 +112,6 @@ Reader_dealloc(Reader* self)
 
 typedef struct {
     const char* name;
-    TMR_Region region;
-} Regions;
-
-static Regions Reader_regions[] = {
-    {"NA",   TMR_REGION_NA},
-    {"EU",   TMR_REGION_EU},
-    {"KR",   TMR_REGION_KR},
-    {"IN",   TMR_REGION_IN},
-    {"JP",   TMR_REGION_JP},
-    {"PRC",  TMR_REGION_PRC},
-    {"EU2",  TMR_REGION_EU2},
-    {"EU3",  TMR_REGION_EU3},
-    {"KR2",  TMR_REGION_KR2},
-    {"PRC2", TMR_REGION_PRC2},
-    {"AU",   TMR_REGION_AU},
-    {"NZ",   TMR_REGION_NZ},
-    {"NA2",  TMR_REGION_NA2},
-    {"NA3",  TMR_REGION_NA3},
-    {"IS",   TMR_REGION_IS},
-    {"open", TMR_REGION_OPEN},
-    {NULL,   TMR_REGION_NONE}
-};
-
-static TMR_Region str2region(const char *name)
-{
-    Regions *reg;
-    for(reg = Reader_regions; reg->name != NULL; reg++)
-    {
-        if(strcmp(reg->name, name) == 0)
-            return reg->region;
-    }
-
-    return TMR_REGION_NONE;
-}
-
-static const char* region2str(TMR_Region region)
-{
-    Regions *reg;
-    for(reg = Reader_regions; reg->name != NULL; reg++)
-    {
-        if(reg->region == region)
-            return reg->name;
-    }
-
-    return NULL;
-}
-
-static PyObject *
-Reader_get_supported_regions(Reader* self)
-{
-    int i;
-    TMR_RegionList regions;
-    TMR_Region regionStore[32];
-    TMR_Status ret;
-    PyObject *list;
-
-    regions.list = regionStore;
-    regions.max = sizeof(regionStore)/sizeof(regionStore[0]);
-    regions.len = 0;
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_REGION_SUPPORTEDREGIONS, &regions)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    /* create empty list */
-    list = PyList_New(0);
-
-    for (i = 0; i < regions.len; i++)
-    {
-        const char* name = region2str(regions.list[i]);
-        if (name != NULL)
-        {
-            PyObject *sname = PyUnicode_FromString(name);
-            PyList_Append(list, sname);
-            Py_DECREF(sname);
-        }
-    }
-
-    return list;
-}
-
-static PyObject *
-Reader_set_region(Reader *self, PyObject *args)
-{
-    char *s;
-    TMR_Region region;
-    TMR_Status ret;
-
-    if (!PyArg_ParseTuple(args, "s", &s))
-        return NULL;
-
-    if ((region = str2region(s)) == TMR_REGION_NONE)
-    {
-        PyErr_SetString(PyExc_TypeError, "Unknown region");
-        return NULL;
-    }
-
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_REGION_ID, &region)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    /* Do something interesting here. */
-    Py_RETURN_NONE;
-}
-
-typedef struct {
-    const char* name;
     TMR_TagProtocol protocol;
 } Protocols;
 
@@ -389,18 +278,328 @@ fail:
 }
 
 static PyObject *
-Reader_get_temperature(Reader *self)
+Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 {
+    char* epc_data;
+    char* epc_target;
     TMR_Status ret;
-    uint8_t temp;
+    TMR_TagData data;
+    TMR_TagData target;
+    TMR_TagFilter filter;
+    // Read call arguments.
+    static char *kwlist[] = {"epc_target", "epc_code", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, &epc_target, &epc_data))
+        return NULL;
+    /* build target tag to search */
+    target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
+    TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+    /* build data tag to be writen */
+    data.epcByteCount = strlen(epc_data) * sizeof(char) / 2;
+    TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
+    // Build filter target tag to be replaced.
+    TMR_TF_init_tag(&filter, &target);
+    // Write data tag on target tag.
+    ret = TMR_writeTag(&self->reader, &filter, &data);
+    // In case of not target tag found.
+    if (ret == TMR_ERROR_NO_TAGS_FOUND)
+        Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
+}
 
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_TEMPERATURE, &temp)) != TMR_SUCCESS)
+static PyObject *
+PyByteArray_FromUInt8List(const TMR_uint8List *array)
+{
+    if(array->len > 0)
+        return PyByteArray_FromStringAndSize((const char *)array->list, array->len < array->max ? array->len : array->max);
+    else
+        return NULL;
+}
+
+static PyObject *
+Reader_read(Reader *self, PyObject *args, PyObject *kwds)
+{
+    int timeout = 500;
+    PyObject *list;
+    TMR_Status ret;
+
+    static char *kwlist[] = {"timeout", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &timeout))
+        return NULL;
+
+    Py_BEGIN_ALLOW_THREADS
+    ret = TMR_read(&self->reader, timeout, NULL);
+    Py_END_ALLOW_THREADS
+
+    /* In case of TAG ID Buffer Full, extract the tags present in buffer. */
+    if (ret != TMR_SUCCESS && ret != TMR_ERROR_TAG_ID_BUFFER_FULL)
     {
-        PyErr_SetString(PyExc_TypeError, "Error getting temperature");
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
-    return PyLong_FromUnsignedLong(temp);
+    /* create empty list */
+    list = PyList_New(0);
+
+    while (TMR_hasMoreTags(&self->reader) == TMR_SUCCESS)
+    {
+        TagReadData *tag;
+        uint8_t dataBuf1[MAX_DATA_AREA];
+        uint8_t dataBuf2[MAX_DATA_AREA];
+        uint8_t dataBuf3[MAX_DATA_AREA];
+        uint8_t dataBuf4[MAX_DATA_AREA];
+
+        tag = PyObject_New(TagReadData, &TagReadDataType);
+        TMR_TRD_init(&tag->data);
+
+        TMR_TRD_MEMBANK_init_data(&tag->data.epcMemData, MAX_DATA_AREA, dataBuf1);
+        TMR_TRD_MEMBANK_init_data(&tag->data.tidMemData, MAX_DATA_AREA, dataBuf2);
+        TMR_TRD_MEMBANK_init_data(&tag->data.userMemData, MAX_DATA_AREA, dataBuf3);
+        TMR_TRD_MEMBANK_init_data(&tag->data.reservedMemData, MAX_DATA_AREA, dataBuf4);
+
+        if ((ret = TMR_getNextTag(&self->reader, &tag->data)) != TMR_SUCCESS)
+        {
+            PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+            return NULL;
+        }
+
+        tag->epcMemData = PyByteArray_FromUInt8List(&tag->data.epcMemData);
+        tag->tidMemData = PyByteArray_FromUInt8List(&tag->data.tidMemData);
+        tag->userMemData = PyByteArray_FromUInt8List(&tag->data.userMemData);
+        tag->reservedMemData = PyByteArray_FromUInt8List(&tag->data.reservedMemData);
+
+        PyList_Append(list, (PyObject *)tag);
+        Py_XDECREF(tag);
+    }
+
+    return list;
+}
+
+static PyObject *
+Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *temp;
+    int onTime = 250;
+    int offTime = 0;
+    TMR_Status ret;
+
+    static char *kwlist[] = {"callback", "on_time", "off_time", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ii", kwlist, &temp, &onTime, &offTime))
+        return NULL;
+
+    if (!PyCallable_Check(temp))
+    {
+        PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
+        return NULL;
+    }
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_ASYNCONTIME, &onTime)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_ASYNCOFFTIME, &offTime)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_XDECREF(self->readCallback);
+    Py_XINCREF(temp);
+    self->readCallback = temp;
+
+    if ((ret = TMR_startReading(&self->reader)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
+static void
+invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *pdata, void *cookie)
+{
+    Reader *self = (Reader *)cookie;
+
+    if(self && self->readCallback)
+    {
+        TagReadData *tag;
+        PyObject *arglist;
+        PyObject *result;
+        PyGILState_STATE gstate;
+        gstate = PyGILState_Ensure();
+
+        tag = PyObject_New(TagReadData, &TagReadDataType);
+        /* make a hard-copy */
+        memcpy(&tag->data, pdata, sizeof(TMR_TagReadData));
+
+        arglist = Py_BuildValue("(O)", tag);
+        result = PyObject_CallObject(self->readCallback, arglist);
+        if(result != NULL)
+            Py_DECREF(result);
+        else
+            PyErr_Print();
+        Py_DECREF(arglist);
+        Py_DECREF(tag);
+
+        PyGILState_Release(gstate);
+    }
+}
+
+static PyObject *
+Reader_stop_reading(Reader* self)
+{
+    PyObject *temp = self->readCallback;
+    TMR_Status ret;
+
+    /* avoid deadlock as calling stopReading will invoke the callback */
+    self->readCallback = NULL;
+
+    if ((ret = TMR_stopReading(&self->reader)) != TMR_SUCCESS)
+    {
+        self->readCallback = temp; /* revert back as the function will fail */
+
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_XDECREF(temp);
+    Py_RETURN_NONE;
+}
+
+/* Functions to get/set the reader parameters */
+
+static PyObject *
+Reader_get_model(Reader* self)
+{
+    TMR_String model;
+    char str[64];
+    TMR_Status ret;
+
+    model.value = str;
+    model.max = sizeof(str);
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_VERSION_MODEL, &model)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyUnicode_FromString(model.value);
+}
+
+typedef struct {
+    const char* name;
+    TMR_Region region;
+} Regions;
+
+static Regions Reader_regions[] = {
+    {"NA",   TMR_REGION_NA},
+    {"EU",   TMR_REGION_EU},
+    {"KR",   TMR_REGION_KR},
+    {"IN",   TMR_REGION_IN},
+    {"JP",   TMR_REGION_JP},
+    {"PRC",  TMR_REGION_PRC},
+    {"EU2",  TMR_REGION_EU2},
+    {"EU3",  TMR_REGION_EU3},
+    {"KR2",  TMR_REGION_KR2},
+    {"PRC2", TMR_REGION_PRC2},
+    {"AU",   TMR_REGION_AU},
+    {"NZ",   TMR_REGION_NZ},
+    {"NA2",  TMR_REGION_NA2},
+    {"NA3",  TMR_REGION_NA3},
+    {"IS",   TMR_REGION_IS},
+    {"open", TMR_REGION_OPEN},
+    {NULL,   TMR_REGION_NONE}
+};
+
+static TMR_Region str2region(const char *name)
+{
+    Regions *reg;
+    for(reg = Reader_regions; reg->name != NULL; reg++)
+    {
+        if(strcmp(reg->name, name) == 0)
+            return reg->region;
+    }
+
+    return TMR_REGION_NONE;
+}
+
+static const char* region2str(TMR_Region region)
+{
+    Regions *reg;
+    for(reg = Reader_regions; reg->name != NULL; reg++)
+    {
+        if(reg->region == region)
+            return reg->name;
+    }
+
+    return NULL;
+}
+
+static PyObject *
+Reader_set_region(Reader *self, PyObject *args)
+{
+    char *s;
+    TMR_Region region;
+    TMR_Status ret;
+
+    if (!PyArg_ParseTuple(args, "s", &s))
+        return NULL;
+
+    if ((region = str2region(s)) == TMR_REGION_NONE)
+    {
+        PyErr_SetString(PyExc_TypeError, "Unknown region");
+        return NULL;
+    }
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_REGION_ID, &region)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    /* Do something interesting here. */
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+Reader_get_supported_regions(Reader* self)
+{
+    int i;
+    TMR_RegionList regions;
+    TMR_Region regionStore[32];
+    TMR_Status ret;
+    PyObject *list;
+
+    regions.list = regionStore;
+    regions.max = sizeof(regionStore)/sizeof(regionStore[0]);
+    regions.len = 0;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_REGION_SUPPORTEDREGIONS, &regions)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    /* create empty list */
+    list = PyList_New(0);
+
+    for (i = 0; i < regions.len; i++)
+    {
+        const char* name = region2str(regions.list[i]);
+        if (name != NULL)
+        {
+            PyObject *sname = PyUnicode_FromString(name);
+            PyList_Append(list, sname);
+            Py_DECREF(sname);
+        }
+    }
+
+    return list;
 }
 
 static PyObject *
@@ -427,6 +626,69 @@ Reader_get_antennas(Reader *self)
         PyList_Append(antennas, PyLong_FromUnsignedLong(port_list.list[i]));
     }
     return antennas;
+}
+
+static PyObject *
+Reader_get_antenna_portswitchgpos(Reader *self)
+{
+    TMR_Status ret;
+    PyObject *gpos;
+    TMR_uint8List gpo_list;
+    uint8_t value_list[MAX_GPIO_COUNT];
+    uint8_t i;
+
+    gpo_list.list = value_list;
+    gpo_list.max = numberof(value_list);
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, "Error getting gpos");
+        return NULL;
+    }
+
+    gpos = PyList_New(0);
+    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
+    {
+        PyList_Append(gpos, PyLong_FromUnsignedLong(gpo_list.list[i]));
+    }
+
+    return gpos;
+}
+
+static PyObject *
+Reader_set_antenna_portswitchgpos(Reader *self, PyObject *args)
+{
+    TMR_Status ret;
+    PyObject *gpos;
+    TMR_uint8List gpo_list;
+    uint8_t value_list[MAX_GPIO_COUNT];
+    uint8_t gpo_count;
+    uint8_t i;
+
+    if (!PyArg_ParseTuple(args, "O", &gpos))
+        return NULL;
+    if ((gpo_count = PyList_Size(gpos)) > MAX_GPIO_COUNT)
+    {
+        PyErr_SetString(PyExc_TypeError, "Too many gpos");
+        return NULL;
+    }
+
+    gpo_list.len = gpo_count;
+    gpo_list.list = value_list;
+    gpo_list.max = numberof(value_list);
+
+    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
+    {
+        value_list[i] = (uint8_t) PyLong_AsLong(PyList_GetItem(gpos, i));
+    }
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_RETURN_NONE; 
 }
 
 static PyObject *
@@ -672,344 +934,46 @@ fail:
 }
 
 static PyObject *
-Reader_get_antenna_portswitchgpos(Reader *self)
+Reader_get_gen2_q(Reader* self)
 {
     TMR_Status ret;
-    PyObject *gpos;
-    TMR_uint8List gpo_list;
-    uint8_t value_list[MAX_GPIO_COUNT];
-    uint8_t i;
+    TMR_SR_GEN2_Q model;
+    PyObject *q_value;
 
-    gpo_list.list = value_list;
-    gpo_list.max = numberof(value_list);
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, "Error getting gpos");
-        return NULL;
-    }
-
-    gpos = PyList_New(0);
-    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
-    {
-        PyList_Append(gpos, PyLong_FromUnsignedLong(gpo_list.list[i]));
-    }
-
-    return gpos;
-}
-
-static PyObject *
-Reader_set_antenna_portswitchgpos(Reader *self, PyObject *args)
-{
-    TMR_Status ret;
-    PyObject *gpos;
-    TMR_uint8List gpo_list;
-    uint8_t value_list[MAX_GPIO_COUNT];
-    uint8_t gpo_count;
-    uint8_t i;
-
-    if (!PyArg_ParseTuple(args, "O", &gpos))
-        return NULL;
-    if ((gpo_count = PyList_Size(gpos)) > MAX_GPIO_COUNT)
-    {
-        PyErr_SetString(PyExc_TypeError, "Too many gpos");
-        return NULL;
-    }
-
-    gpo_list.len = gpo_count;
-    gpo_list.list = value_list;
-    gpo_list.max = numberof(value_list);
-
-    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
-    {
-        value_list[i] = (uint8_t) PyLong_AsLong(PyList_GetItem(gpos, i));
-    }
-
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
     {
         PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
-    Py_RETURN_NONE; 
+    q_value = PyTuple_New(2);
+    PyTuple_SetItem(q_value, 0, PyLong_FromLong(model.type));
+    PyTuple_SetItem(q_value, 1, PyLong_FromLong(model.u.staticQ.initialQ));
+
+    return q_value;
 }
 
 static PyObject *
-Reader_write(Reader *self, PyObject *args, PyObject *kwds)
+Reader_set_gen2_q(Reader* self, PyObject *args)
 {
-    char* epc_data;
-    char* epc_target;
     TMR_Status ret;
-    TMR_TagData data;
-    TMR_TagData target;
-    TMR_TagFilter filter;
-    // Read call arguments.
-    static char *kwlist[] = {"epc_target", "epc_code", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, &epc_target, &epc_data))
-        return NULL;
-    /* build target tag to search */
-    target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
-    TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
-    /* build data tag to be writen */
-    data.epcByteCount = strlen(epc_data) * sizeof(char) / 2;
-    TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
-    // Build filter target tag to be replaced.
-    TMR_TF_init_tag(&filter, &target);
-    // Write data tag on target tag.
-    ret = TMR_writeTag(&self->reader, &filter, &data);
-    // In case of not target tag found.
-    if (ret == TMR_ERROR_NO_TAGS_FOUND)
-        Py_RETURN_FALSE;
-    Py_RETURN_TRUE;
-}
+    TMR_SR_GEN2_Q model;
+    PyObject *q_value;
 
-static PyObject *
-PyByteArray_FromUInt8List(const TMR_uint8List *array)
-{
-    if(array->len > 0)
-        return PyByteArray_FromStringAndSize((const char *)array->list, array->len < array->max ? array->len : array->max);
-    else
-        return NULL;
-}
-
-static PyObject *
-Reader_read(Reader *self, PyObject *args, PyObject *kwds)
-{
-    int timeout = 500;
-    PyObject *list;
-    TMR_Status ret;
-
-    static char *kwlist[] = {"timeout", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &timeout))
+    if (!PyArg_ParseTuple(args, "ii", &model.type, &model.u.staticQ.initialQ))
         return NULL;
 
-    Py_BEGIN_ALLOW_THREADS
-    ret = TMR_read(&self->reader, timeout, NULL);
-    Py_END_ALLOW_THREADS
-
-    /* In case of TAG ID Buffer Full, extract the tags present in buffer. */
-    if (ret != TMR_SUCCESS && ret != TMR_ERROR_TAG_ID_BUFFER_FULL)
-    {
-        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    /* create empty list */
-    list = PyList_New(0);
-
-    while (TMR_hasMoreTags(&self->reader) == TMR_SUCCESS)
-    {
-        TagReadData *tag;
-        uint8_t dataBuf1[MAX_DATA_AREA];
-        uint8_t dataBuf2[MAX_DATA_AREA];
-        uint8_t dataBuf3[MAX_DATA_AREA];
-        uint8_t dataBuf4[MAX_DATA_AREA];
-
-        tag = PyObject_New(TagReadData, &TagReadDataType);
-        TMR_TRD_init(&tag->data);
-
-        TMR_TRD_MEMBANK_init_data(&tag->data.epcMemData, MAX_DATA_AREA, dataBuf1);
-        TMR_TRD_MEMBANK_init_data(&tag->data.tidMemData, MAX_DATA_AREA, dataBuf2);
-        TMR_TRD_MEMBANK_init_data(&tag->data.userMemData, MAX_DATA_AREA, dataBuf3);
-        TMR_TRD_MEMBANK_init_data(&tag->data.reservedMemData, MAX_DATA_AREA, dataBuf4);
-
-        if ((ret = TMR_getNextTag(&self->reader, &tag->data)) != TMR_SUCCESS)
-        {
-            PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
-            return NULL;
-        }
-
-        tag->epcMemData = PyByteArray_FromUInt8List(&tag->data.epcMemData);
-        tag->tidMemData = PyByteArray_FromUInt8List(&tag->data.tidMemData);
-        tag->userMemData = PyByteArray_FromUInt8List(&tag->data.userMemData);
-        tag->reservedMemData = PyByteArray_FromUInt8List(&tag->data.reservedMemData);
-
-        PyList_Append(list, (PyObject *)tag);
-        Py_XDECREF(tag);
-    }
-
-    return list;
-}
-
-static PyObject *
-Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
-{
-    PyObject *temp;
-    int onTime = 250;
-    int offTime = 0;
-    TMR_Status ret;
-
-    static char *kwlist[] = {"callback", "on_time", "off_time", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ii", kwlist, &temp, &onTime, &offTime))
-        return NULL;
-
-    if (!PyCallable_Check(temp))
-    {
-        PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
-        return NULL;
-    }
-
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_ASYNCONTIME, &onTime)) != TMR_SUCCESS)
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
     {
         PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_ASYNCOFFTIME, &offTime)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
+    q_value = PyTuple_New(2);
+    PyTuple_SetItem(q_value, 0, PyLong_FromLong(model.type));
+    PyTuple_SetItem(q_value, 1, PyLong_FromLong(model.u.staticQ.initialQ));
 
-    Py_XDECREF(self->readCallback);
-    Py_XINCREF(temp);
-    self->readCallback = temp;
-
-    if ((ret = TMR_startReading(&self->reader)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
-}
-
-static void
-invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *pdata, void *cookie)
-{
-    Reader *self = (Reader *)cookie;
-
-    if(self && self->readCallback)
-    {
-        TagReadData *tag;
-        PyObject *arglist;
-        PyObject *result;
-        PyGILState_STATE gstate;
-        gstate = PyGILState_Ensure();
-
-        tag = PyObject_New(TagReadData, &TagReadDataType);
-        /* make a hard-copy */
-        memcpy(&tag->data, pdata, sizeof(TMR_TagReadData));
-
-        arglist = Py_BuildValue("(O)", tag);
-        result = PyObject_CallObject(self->readCallback, arglist);
-        if(result != NULL)
-            Py_DECREF(result);
-        else
-            PyErr_Print();
-        Py_DECREF(arglist);
-        Py_DECREF(tag);
-
-        PyGILState_Release(gstate);
-    }
-}
-
-static PyObject *
-Reader_stop_reading(Reader* self)
-{
-    PyObject *temp = self->readCallback;
-    TMR_Status ret;
-
-    /* avoid deadlock as calling stopReading will invoke the callback */
-    self->readCallback = NULL;
-
-    if ((ret = TMR_stopReading(&self->reader)) != TMR_SUCCESS)
-    {
-        self->readCallback = temp; /* revert back as the function will fail */
-
-        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    Py_XDECREF(temp);
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-Reader_get_model(Reader* self)
-{
-    TMR_String model;
-    char str[64];
-    TMR_Status ret;
-
-    model.value = str;
-    model.max = sizeof(str);
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_VERSION_MODEL, &model)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    return PyUnicode_FromString(model.value);
-}
-
-static PyObject *
-Reader_get_gen2_blf(Reader* self)
-{
-    TMR_Status ret;
-    TMR_GEN2_LinkFrequency blf_val;
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    return PyLong_FromLong(blf_val);
-}
-
-static PyObject *
-Reader_set_gen2_blf(Reader* self, PyObject *args)
-{
-    TMR_Status ret;
-    TMR_GEN2_LinkFrequency blf_val;
-
-    if (!PyArg_ParseTuple(args, "i", &blf_val))
-        return NULL;
-
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    return PyLong_FromLong(blf_val);
-}
-
-static PyObject *
-Reader_get_gen2_tari(Reader* self)
-{
-    TMR_Status ret;
-    TMR_GEN2_Tari tari_val;
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    return PyLong_FromLong(tari_val);
-}
-
-static PyObject *
-Reader_set_gen2_tari(Reader* self, PyObject *args)
-{
-    TMR_Status ret;
-    TMR_GEN2_Tari tari_val;
-
-    if (!PyArg_ParseTuple(args, "i", &tari_val))
-        return NULL;
-
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    return PyLong_FromLong(tari_val);
+    return q_value;
 }
 
 static PyObject *
@@ -1112,84 +1076,89 @@ Reader_set_gen2_target(Reader* self, PyObject *args)
 }
 
 static PyObject *
-Reader_get_gen2_q(Reader* self)
+Reader_get_gen2_blf(Reader* self)
 {
     TMR_Status ret;
-    TMR_SR_GEN2_Q model;
-    PyObject *q_value;
+    TMR_GEN2_LinkFrequency blf_val;
 
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
     {
         PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
-    q_value = PyTuple_New(2);
-    PyTuple_SetItem(q_value, 0, PyLong_FromLong(model.type));
-    PyTuple_SetItem(q_value, 1, PyLong_FromLong(model.u.staticQ.initialQ));
-
-    return q_value;
+    return PyLong_FromLong(blf_val);
 }
 
 static PyObject *
-Reader_set_gen2_q(Reader* self, PyObject *args)
+Reader_set_gen2_blf(Reader* self, PyObject *args)
 {
     TMR_Status ret;
-    TMR_SR_GEN2_Q model;
-    PyObject *q_value;
+    TMR_GEN2_LinkFrequency blf_val;
 
-    if (!PyArg_ParseTuple(args, "ii", &model.type, &model.u.staticQ.initialQ))
+    if (!PyArg_ParseTuple(args, "i", &blf_val))
         return NULL;
 
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
     {
         PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
-    q_value = PyTuple_New(2);
-    PyTuple_SetItem(q_value, 0, PyLong_FromLong(model.type));
-    PyTuple_SetItem(q_value, 1, PyLong_FromLong(model.u.staticQ.initialQ));
+    return PyLong_FromLong(blf_val);
+}
 
-    return q_value;
+static PyObject *
+Reader_get_gen2_tari(Reader* self)
+{
+    TMR_Status ret;
+    TMR_GEN2_Tari tari_val;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(tari_val);
+}
+
+static PyObject *
+Reader_set_gen2_tari(Reader* self, PyObject *args)
+{
+    TMR_Status ret;
+    TMR_GEN2_Tari tari_val;
+
+    if (!PyArg_ParseTuple(args, "i", &tari_val))
+        return NULL;
+
+    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    return PyLong_FromLong(tari_val);
+}
+
+static PyObject *
+Reader_get_temperature(Reader *self)
+{
+    TMR_Status ret;
+    uint8_t temp;
+
+    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_TEMPERATURE, &temp)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, "Error getting temperature");
+        return NULL;
+    }
+
+    return PyLong_FromUnsignedLong(temp);
 }
 
 static PyMethodDef Reader_methods[] = {
-    {"get_temperature", (PyCFunction)Reader_get_temperature, METH_NOARGS,
-     "Returns the chip temperature"
-    },
-    {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
-     "Lists available antennas."
-    },
-    {"get_power_range", (PyCFunction)Reader_get_power_range, METH_NOARGS,
-     "Lists supported radio power range."
-    },
-    {"get_read_powers", (PyCFunction)Reader_get_read_powers, METH_NOARGS,
-     "Lists configured read powers for each antenna."
-    },
-    {"get_write_powers", (PyCFunction)Reader_get_write_powers, METH_NOARGS,
-     "Lists configured write powers for each antenna."
-    },
-    {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
-     "Returns a list of regions supported by the reader"
-    },
-    {"set_region", (PyCFunction)Reader_set_region, METH_VARARGS,
-     "Set the reader region"
-    },
     {"set_read_plan", (PyCFunction)Reader_set_read_plan, METH_VARARGS | METH_KEYWORDS,
      "Set the read plan"
-    },
-    {"set_read_powers", (PyCFunction)Reader_set_read_powers, METH_VARARGS | METH_KEYWORDS,
-     "Set the read power for each listed antenna and return the real setted values."
-    },
-    {"set_write_powers", (PyCFunction)Reader_set_write_powers, METH_VARARGS | METH_KEYWORDS,
-     "Set the write power for each listed antenna and return the real setted values."
-    },
-    {"get_antenna_portswitchgpos", (PyCFunction)Reader_get_antenna_portswitchgpos, METH_NOARGS,
-     "Lists the GPO pins used for antenna port switching."
-    },
-    {"set_antenna_portswitchgpos", (PyCFunction)Reader_set_antenna_portswitchgpos, METH_VARARGS,
-     "Set the GPO pins used for antenna port switching."
     },
     {"write", (PyCFunction)Reader_write, METH_VARARGS | METH_KEYWORDS,
      "Write the epc_target tag with the given epc_code"
@@ -1203,20 +1172,45 @@ static PyMethodDef Reader_methods[] = {
     {"stop_reading", (PyCFunction)Reader_stop_reading, METH_NOARGS,
      "Stop asynchronous reading"
     },
+    /* Reader parameters */
     {"get_model", (PyCFunction)Reader_get_model, METH_NOARGS,
      "Returns the model name"
     },
-    {"get_gen2_blf", (PyCFunction)Reader_get_gen2_blf, METH_NOARGS,
-     "Returns the current Gen2 BLF setting"
+    {"set_region", (PyCFunction)Reader_set_region, METH_VARARGS,
+     "Set the reader region"
     },
-    {"set_gen2_blf", (PyCFunction)Reader_set_gen2_blf, METH_VARARGS,
-     "Sets the Gen2 BLF"
+    {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
+     "Returns a list of regions supported by the reader"
     },
-    {"get_gen2_tari", (PyCFunction)Reader_get_gen2_tari, METH_NOARGS,
-     "Returns the current Gen2 Tari setting"
+    {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
+     "Lists available antennas."
     },
-    {"set_gen2_tari", (PyCFunction)Reader_set_gen2_tari, METH_VARARGS,
-     "Sets the Gen2 Tari"
+    {"get_antenna_portswitchgpos", (PyCFunction)Reader_get_antenna_portswitchgpos, METH_NOARGS,
+     "Lists the GPO pins used for antenna port switching."
+    },
+    {"set_antenna_portswitchgpos", (PyCFunction)Reader_set_antenna_portswitchgpos, METH_VARARGS,
+     "Set the GPO pins used for antenna port switching."
+    },
+    {"get_power_range", (PyCFunction)Reader_get_power_range, METH_NOARGS,
+     "Lists supported radio power range."
+    },
+    {"get_read_powers", (PyCFunction)Reader_get_read_powers, METH_NOARGS,
+     "Lists configured read powers for each antenna."
+    },
+    {"get_write_powers", (PyCFunction)Reader_get_write_powers, METH_NOARGS,
+     "Lists configured write powers for each antenna."
+    },
+    {"set_read_powers", (PyCFunction)Reader_set_read_powers, METH_VARARGS | METH_KEYWORDS,
+     "Set the read power for each listed antenna and return the real setted values."
+    },
+    {"set_write_powers", (PyCFunction)Reader_set_write_powers, METH_VARARGS | METH_KEYWORDS,
+     "Set the write power for each listed antenna and return the real setted values."
+    },
+    {"get_gen2_q", (PyCFunction)Reader_get_gen2_q, METH_NOARGS,
+     "Returns the current Gen2 Q setting"
+    },
+    {"set_gen2_q", (PyCFunction)Reader_set_gen2_q, METH_VARARGS,
+     "Sets the Gen2 Q"
     },
     {"get_gen2_tagencoding", (PyCFunction)Reader_get_gen2_tagencoding, METH_NOARGS,
      "Returns the current Gen2 TagEncoding setting"
@@ -1236,11 +1230,20 @@ static PyMethodDef Reader_methods[] = {
     {"set_gen2_target", (PyCFunction)Reader_set_gen2_target, METH_VARARGS,
      "Sets the Gen2 Target"
     },
-    {"get_gen2_q", (PyCFunction)Reader_get_gen2_q, METH_NOARGS,
-     "Returns the current Gen2 Q setting"
+    {"get_gen2_blf", (PyCFunction)Reader_get_gen2_blf, METH_NOARGS,
+     "Returns the current Gen2 BLF setting"
     },
-    {"set_gen2_q", (PyCFunction)Reader_set_gen2_q, METH_VARARGS,
-     "Sets the Gen2 Q"
+    {"set_gen2_blf", (PyCFunction)Reader_set_gen2_blf, METH_VARARGS,
+     "Sets the Gen2 BLF"
+    },
+    {"get_gen2_tari", (PyCFunction)Reader_get_gen2_tari, METH_NOARGS,
+     "Returns the current Gen2 Tari setting"
+    },
+    {"set_gen2_tari", (PyCFunction)Reader_set_gen2_tari, METH_VARARGS,
+     "Sets the Gen2 Tari"
+    },
+    {"get_temperature", (PyCFunction)Reader_get_temperature, METH_NOARGS,
+     "Returns the chip temperature"
     },
     {NULL}  /* Sentinel */
 };
