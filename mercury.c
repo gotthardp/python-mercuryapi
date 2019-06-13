@@ -470,6 +470,64 @@ Reader_stop_reading(Reader* self)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+Reader_gpi_get(Reader *self, PyObject *args)
+{
+    TMR_GpioPin *gpio;
+    uint8_t i, pin, count;
+    TMR_Status ret;
+
+    if (!PyArg_ParseTuple(args, "B", &pin))
+        return NULL;
+
+    count = pin+1;
+    gpio = (TMR_GpioPin*)malloc(count*sizeof(TMR_GpioPin));
+
+    if ((ret = TMR_gpiGet(&self->reader, &count, gpio)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        free(gpio);
+        return NULL;
+    }
+
+    for(i = 0; i < count; i++)
+    {
+        if(gpio[i].id == pin)
+        {
+            PyObject *res = PyBool_FromLong(gpio[i].high);
+            free(gpio);
+            return res;
+        }
+    }
+
+    free(gpio);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+Reader_gpo_set(Reader *self, PyObject *args)
+{
+    uint8_t pin;
+    bool value;
+    TMR_GpioPin gpio;
+    TMR_Status ret;
+
+    if (!PyArg_ParseTuple(args, "Bp", &pin, &value))
+        return NULL;
+
+    gpio.id = pin;
+    gpio.high = value;
+    gpio.output = true;
+
+    if ((ret = TMR_gpoSet(&self->reader, 1, &gpio)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
 /* Functions to get/set the reader parameters */
 
 static PyObject *
@@ -941,6 +999,30 @@ Reader_set_write_powers(Reader *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+Reader_get_gpio_inputs(Reader *self)
+{
+    return get_uint8List(&self->reader, TMR_PARAM_GPIO_INPUTLIST, 16);
+}
+
+static PyObject *
+Reader_set_gpio_inputs(Reader *self, PyObject *args)
+{
+    return set_uint8List(&self->reader, args, TMR_PARAM_GPIO_INPUTLIST);
+}
+
+static PyObject *
+Reader_get_gpio_outputs(Reader *self)
+{
+    return get_uint8List(&self->reader, TMR_PARAM_GPIO_OUTPUTLIST, 16);
+}
+
+static PyObject *
+Reader_set_gpio_outputs(Reader *self, PyObject *args)
+{
+    return set_uint8List(&self->reader, args, TMR_PARAM_GPIO_OUTPUTLIST);
+}
+
+static PyObject *
 Reader_get_gen2_q(Reader* self)
 {
     TMR_Status ret;
@@ -1179,6 +1261,14 @@ static PyMethodDef Reader_methods[] = {
     {"stop_reading", (PyCFunction)Reader_stop_reading, METH_NOARGS,
      "Stop asynchronous reading"
     },
+    {"gpi_get", (PyCFunction)Reader_gpi_get, METH_VARARGS,
+     "Gets GPIO pin value"
+    },
+#if PY_MAJOR_VERSION >= 3
+    {"gpo_set", (PyCFunction)Reader_gpo_set, METH_VARARGS,
+     "Sets GPIO pin value"
+    },
+#endif
     /* Reader parameters */
     {"get_model", (PyCFunction)Reader_get_model, METH_NOARGS,
      "Returns the model name"
@@ -1224,6 +1314,18 @@ static PyMethodDef Reader_methods[] = {
     },
     {"set_write_powers", (PyCFunction)Reader_set_write_powers, METH_VARARGS,
      "Set the write power for each listed antenna and return the real setted values."
+    },
+    {"get_gpio_inputs", (PyCFunction)Reader_get_gpio_inputs, METH_NOARGS,
+     "Get numbers of the GPIO pins available as input pins on the device."
+    },
+    {"set_gpio_inputs", (PyCFunction)Reader_set_gpio_inputs, METH_VARARGS,
+     "Set numbers of the GPIO pins available as input pins on the device."
+    },
+    {"get_gpio_outputs", (PyCFunction)Reader_get_gpio_outputs, METH_NOARGS,
+     "Get numbers of the GPIO pins available as output pins on the device."
+    },
+    {"set_gpio_outputs", (PyCFunction)Reader_set_gpio_outputs, METH_VARARGS,
+     "Set numbers of the GPIO pins available as output pins on the device."
     },
     {"get_gen2_q", (PyCFunction)Reader_get_gen2_q, METH_NOARGS,
      "Returns the current Gen2 Q setting"

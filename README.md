@@ -131,6 +131,23 @@ For example:
 reader.stop_reading()
 ```
 
+#### reader.gpi_get(*pin*)
+Returns value of a GPIO *pin*, or *None* is the pin is not configured as input (see `get_gpio_inputs`).
+
+For example:
+```python
+print(reader.gpi_get(1))
+True
+```
+
+#### reader.gpo_set(*pin*, *value*)
+Sets value of a GPIO *pin* configured as output (see `get_gpio_inputs`).
+
+For example:
+```python
+reader.gpo_set(1, False)
+```
+
 #### reader.get_model()
 Returns a model identifier for the connected reader hardware.
 
@@ -234,6 +251,29 @@ print(setted_powers)
 
 #### reader.set_write_powers(*powers*)
 Set the write power for each listed antenna and return the real setted values.
+
+#### reader.get_gpio_inputs()
+Get numbers of the GPIO pins available as input pins on the device.
+
+For example:
+```python
+print(reader.get_gpio_inputs())
+[1, 2]
+```
+
+#### reader.set_gpio_inputs(*list*)
+Set numbers of the GPIO pins available as input pins on the device.
+
+For example:
+```python
+reader.set_gpio_inputs([1, 2])
+```
+
+#### reader.get_gpio_outputs()
+Get numbers of the GPIO pins available as output pins on the device.
+
+#### reader.set_gpio_outputs(*list*)
+Set numbers of the GPIO pins available as output pins on the device.
 
 #### reader.get_gen2_blf()
 Returns the current Gen2 BLF setting.
