@@ -603,78 +603,200 @@ Reader_get_supported_regions(Reader* self)
 }
 
 static PyObject *
-get_uint8List(TMR_Reader *reader, int param, uint8_t *values, size_t max)
+get_uint32(TMR_Reader *reader, int param)
 {
-    int i;
+    uint32_t value;
     TMR_Status ret;
-    PyObject *result;
-    TMR_uint8List value_list;
 
-    value_list.list = values;
-    value_list.max = max;
-
-    if ((ret = TMR_paramGet(reader, param, &value_list)) != TMR_SUCCESS)
+    if ((ret = TMR_paramGet(reader, param, &value)) != TMR_SUCCESS)
     {
         PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
         return NULL;
     }
 
-    result = PyList_New(0);
-    for (i = 0; i < value_list.len && i < value_list.max; i++)
+    return PyLong_FromLong(value);
+}
+
+static PyObject *
+set_uint32(TMR_Reader *reader, PyObject *args, int param)
+{
+    uint32_t value;
+    TMR_Status ret;
+
+    if (!PyArg_ParseTuple(args, "I", &value))
+        return NULL;
+
+    if ((ret = TMR_paramSet(reader, param, &value)) != TMR_SUCCESS)
     {
-        PyList_Append(result, PyLong_FromUnsignedLong(value_list.list[i]));
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        return NULL;
     }
+
+    return PyLong_FromLong(value);
+}
+
+static PyObject *
+get_uint8List(TMR_Reader *reader, int param, size_t max)
+{
+    int i;
+    TMR_Status ret;
+    PyObject *result;
+    TMR_uint8List values;
+
+    values.list = (uint8_t*)malloc(max);
+    values.len = 0;
+    values.max = max;
+
+    if ((ret = TMR_paramGet(reader, param, &values)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        free(values.list);
+        return NULL;
+    }
+
+    result = PyList_New(values.len);
+    for (i = 0; i < values.len; i++)
+        PyList_SetItem(result, i, PyLong_FromUnsignedLong(values.list[i]));
+
+    free(values.list);
     return result;
+}
+
+static PyObject *
+get_uint32List(TMR_Reader *reader, int param, size_t max)
+{
+    int i;
+    TMR_Status ret;
+    PyObject *result;
+    TMR_uint32List values;
+
+    values.list = (uint32_t*)malloc(max*sizeof(uint32_t));
+    values.len = 0;
+    values.max = max;
+
+    if ((ret = TMR_paramGet(reader, param, &values)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        free(values.list);
+        return NULL;
+    }
+
+    result = PyList_New(values.len);
+    for (i = 0; i < values.len; i++)
+        PyList_SetItem(result, i, PyLong_FromUnsignedLong(values.list[i]));
+
+    free(values.list);
+    return result;
+}
+
+static PyObject *
+set_uint8List(TMR_Reader *reader, PyObject *args, int param)
+{
+    int i;
+    PyObject *input;
+    TMR_Status ret;
+
+    size_t count;
+    TMR_uint8List values;
+
+    if (!PyArg_ParseTuple(args, "O!", &PyList_Type, &input))
+        return NULL;
+
+    count = PyList_Size(input);
+    values.list = (uint8_t*)malloc(count);
+    values.len = count;
+    values.max = count;
+
+    for (i = 0; i < values.len; i++)
+    {
+        values.list[i] = PyLong_AsLong(PyList_GetItem(input, i));
+    }
+
+    if ((ret = TMR_paramSet(reader, param, &values)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        free(values.list);
+        return NULL;
+    }
+
+    free(values.list);
+    Py_RETURN_NONE; 
+}
+
+static PyObject *
+set_uint32List(TMR_Reader *reader, PyObject *args, int param)
+{
+    int i;
+    PyObject *input;
+    TMR_Status ret;
+
+    size_t count;
+    TMR_uint32List values;
+
+    if (!PyArg_ParseTuple(args, "O!", &PyList_Type, &input))
+        return NULL;
+
+    count = PyList_Size(input);
+    values.list = (uint32_t*)malloc(count*sizeof(uint32_t));
+    values.len = count;
+    values.max = count;
+
+    for (i = 0; i < values.len; i++)
+    {
+        values.list[i] = PyLong_AsLong(PyList_GetItem(input, i));
+    }
+
+    if ((ret = TMR_paramSet(reader, param, &values)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        free(values.list);
+        return NULL;
+    }
+
+    free(values.list);
+    Py_RETURN_NONE; 
+}
+
+static PyObject *
+Reader_get_hop_table(Reader *self)
+{
+    return get_uint32List(&self->reader, TMR_PARAM_REGION_HOPTABLE, 64);
+}
+
+static PyObject *
+Reader_set_hop_table(Reader *self, PyObject *args)
+{
+    return set_uint32List(&self->reader, args, TMR_PARAM_REGION_HOPTABLE);
+}
+
+static PyObject *
+Reader_get_hop_time(Reader *self)
+{
+    return get_uint32(&self->reader, TMR_PARAM_REGION_HOPTIME);
+}
+
+static PyObject *
+Reader_set_hop_time(Reader *self, PyObject *args)
+{
+    return set_uint32(&self->reader, args, TMR_PARAM_REGION_HOPTIME);
 }
 
 static PyObject *
 Reader_get_antennas(Reader *self)
 {
-    uint8_t values[MAX_ANTENNA_COUNT];
-    return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, values, MAX_ANTENNA_COUNT);
+    return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, MAX_ANTENNA_COUNT);
 }
 
 static PyObject *
 Reader_get_antenna_portswitchgpos(Reader *self)
 {
-    uint8_t values[MAX_GPIO_COUNT];
-    return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, values, MAX_GPIO_COUNT);
+    return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, MAX_GPIO_COUNT);
 }
 
 static PyObject *
 Reader_set_antenna_portswitchgpos(Reader *self, PyObject *args)
 {
-    TMR_Status ret;
-    PyObject *gpos;
-    TMR_uint8List gpo_list;
-    uint8_t value_list[MAX_GPIO_COUNT];
-    uint8_t gpo_count;
-    uint8_t i;
-
-    if (!PyArg_ParseTuple(args, "O", &gpos))
-        return NULL;
-    if ((gpo_count = PyList_Size(gpos)) > MAX_GPIO_COUNT)
-    {
-        PyErr_SetString(PyExc_TypeError, "Too many gpos");
-        return NULL;
-    }
-
-    gpo_list.len = gpo_count;
-    gpo_list.list = value_list;
-    gpo_list.max = numberof(value_list);
-
-    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
-    {
-        value_list[i] = (uint8_t) PyLong_AsLong(PyList_GetItem(gpos, i));
-    }
-
-    if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    Py_RETURN_NONE; 
+    return set_uint8List(&self->reader, args, TMR_PARAM_ANTENNA_PORTSWITCHGPOS);
 }
 
 static PyObject *
@@ -1066,6 +1188,18 @@ static PyMethodDef Reader_methods[] = {
     },
     {"get_supported_regions", (PyCFunction)Reader_get_supported_regions, METH_NOARGS,
      "Returns a list of regions supported by the reader"
+    },
+    {"get_hop_table", (PyCFunction)Reader_get_hop_table, METH_NOARGS,
+     "Gets the frequencies used by the reader, in kHz"
+    },
+    {"set_hop_table", (PyCFunction)Reader_set_hop_table, METH_VARARGS,
+     "Sets the frequencies used by the reader, in kHz"
+    },
+    {"get_hop_time", (PyCFunction)Reader_get_hop_time, METH_NOARGS,
+     "Gets the frequency hop time, in milliseconds"
+    },
+    {"set_hop_time", (PyCFunction)Reader_set_hop_time, METH_VARARGS,
+     "Sets the frequency hop time, in milliseconds"
     },
     {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
      "Lists available antennas."

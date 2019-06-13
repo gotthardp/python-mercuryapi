@@ -52,69 +52,6 @@ or
 reader = mercury.Reader("tmr://192.168.1.101")
 ```
 
-#### reader.get_temperature()
-Returns the chip temperature in degrees of Celsius.
-
-#### reader.get_supported_regions()
-Lists supported regions for the connected device.
-
-For example:
-```python
-print(reader.get_supported_regions())
-['NA2', 'IN', 'JP', 'PRC', 'EU3', 'KR2', 'AU', 'NZ']
-```
-
-#### reader.get_power_range()
-Lists supported radio power range, in centidBm.
-
-For example:
-```python
-print(reader.get_power_range())
-(0, 3000)
-```
-
-#### reader.get_antennas()
-Lists available antennas.
-
-For example:
-```python
-print(reader.get_antennas())
-[1, 2]
-```
-
-#### reader.get_read_powers()
-Lists configured read powers for each antenna. [(antenna, power)]
-
-For example:
-```python
-print(reader.get_read_powers())
-[(1, 1800), (2, 3000)]
-```
-
-#### reader.set_region(*region*)
-Controls the Region of Operation for the connected device:
- * *region* represents the regulatory region that the device will operate in. Supported values are:
-    * `"NA"`, North America/FCC
-    * `"NA2"`
-    * `"NA3"`
-    * `"EU"`, European Union/ETSI EN 302 208
-    * `"EU2"`, European Union/ETSI EN 300 220
-    * `"EU3"`, European Union/ETSI Revised EN 302 208
-    * `"IS"`, Israel
-    * `"IN"`, India
-    * `"JP"`, Japan
-    * `"KR"`, Korea MIC
-    * `"KR2"`, Korea KCC
-    * `"PRC"`, China
-    * `"PRC2"`
-    * `"AU"`, Australia/AIDA LIPD Variation 2011
-    * `"NZ"`, New Zealand
-
-For example:
-```python
-reader.set_region("EU3")
-```
-
 #### reader.set_read_plan(*antennas*, *protocol*, *bank=[]*, *read_power=default*)
 Specifies the antennas and protocol to use for a search:
  * *antennas* list define which antennas (or virtual antenna numbers) to use in the search
@@ -140,22 +77,6 @@ reader.set_read_plan([1], "GEN2")
 or
 ```python
 reader.set_read_plan([1], "GEN2", bank=["user"], read_power=1900)
-```
-
-#### reader.set_read_powers(*powers*)
-Set the read power for each listed antenna and return the real setted values.
-Setted values may differ from those passed due to reader rounding.
- * *powers* list of 2-tuples that include:
-    * which antenna (or virtual antenna numbers) is going to be setted
-    * required power, in centidBm, for the antenna, overriding the value from
-      set_read_plan or reader specific default.
-      The value must be within the allowed power range.
-
-For example:
-```python
-setted_powers = reader.set_read_powers([(1, 1533), (2, 1912)])
-print(setted_powers)
-[(1, 1525), (2, 1900)]
 ```
 
 #### reader.read(*timeout=500*)
@@ -218,6 +139,101 @@ For example:
 print(reader.get_model())
 M6e Nano
 ```
+
+#### reader.set_region(*region*)
+Controls the Region of Operation for the connected device:
+ * *region* represents the regulatory region that the device will operate in. Supported values are:
+    * `"NA"`, North America/FCC
+    * `"NA2"`
+    * `"NA3"`
+    * `"EU"`, European Union/ETSI EN 302 208
+    * `"EU2"`, European Union/ETSI EN 300 220
+    * `"EU3"`, European Union/ETSI Revised EN 302 208
+    * `"IS"`, Israel
+    * `"IN"`, India
+    * `"JP"`, Japan
+    * `"KR"`, Korea MIC
+    * `"KR2"`, Korea KCC
+    * `"PRC"`, China
+    * `"PRC2"`
+    * `"AU"`, Australia/AIDA LIPD Variation 2011
+    * `"NZ"`, New Zealand
+
+For example:
+```python
+reader.set_region("EU3")
+```
+
+#### reader.get_supported_regions()
+Lists supported regions for the connected device.
+
+For example:
+```python
+print(reader.get_supported_regions())
+['NA2', 'IN', 'JP', 'PRC', 'EU3', 'KR2', 'AU', 'NZ']
+```
+
+#### reader.get_hop_table()
+Gets the frequencies for the reader to use, in kHz.
+
+#### reader.set_hop_table(*list*)
+Sets the frequencies for the reader to use, in kHz.
+
+#### reader.get_hop_time()
+Gets the frequency hop time, in milliseconds.
+
+#### reader.set_hop_time(*num*)
+Sets the frequency hop time, in milliseconds.
+
+#### reader.get_antennas()
+Lists available antennas.
+
+For example:
+```python
+print(reader.get_antennas())
+[1, 2]
+```
+
+#### reader.get_power_range()
+Lists supported radio power range, in centidBm.
+
+For example:
+```python
+print(reader.get_power_range())
+(0, 3000)
+```
+
+#### reader.get_read_powers()
+Lists configured read powers for each antenna. [(antenna, power)].
+The list does not include antennas with default power setting, so the list may be empty.
+
+For example:
+```python
+print(reader.get_read_powers())
+[(1, 1800), (2, 3000)]
+```
+
+#### reader.get_write_powers()
+Lists configured write powers for each antenna. [(antenna, power)].
+
+#### reader.set_read_powers(*powers*)
+Set the read power for each listed antenna and return the real setted values.
+Setted values may differ from those passed due to reader rounding.
+ * *powers* list of 2-tuples that include:
+    * which antenna (or virtual antenna numbers) is going to be setted
+    * required power, in centidBm, for the antenna, overriding the value from
+      set_read_plan or reader specific default.
+      The value must be within the allowed power range.
+
+For example:
+```python
+setted_powers = reader.set_read_powers([(1, 1533), (2, 1912)])
+print(setted_powers)
+[(1, 1525), (2, 1900)]
+```
+
+#### reader.set_write_powers(*powers*)
+Set the write power for each listed antenna and return the real setted values.
 
 #### reader.get_gen2_blf()
 Returns the current Gen2 BLF setting.
@@ -362,6 +378,9 @@ print(reader.set_gen2_q(1, 4))
 print(reader.get_gen2_q())
 (1, 4)
 ```
+
+#### reader.get_temperature()
+Returns the chip temperature in degrees of Celsius.
 
 ### TagReadData Object
 Represents a read of an RFID tag:
