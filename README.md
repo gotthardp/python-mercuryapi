@@ -541,3 +541,10 @@ user to the `dialout` group:
 ```bash
 sudo usermod -a -G dialout $USER
 ```
+
+## Copyright and Licensing
+
+The python-mercuryapi is distributed under the terms of the MIT License.
+See the [LICENSE](LICENSE).
+
+Copyright (c) 2016-2019 Petr Gotthard
