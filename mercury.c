@@ -603,56 +603,42 @@ Reader_get_supported_regions(Reader* self)
 }
 
 static PyObject *
-Reader_get_antennas(Reader *self)
+get_uint8List(TMR_Reader *reader, int param, uint8_t *values, size_t max)
 {
     int i;
     TMR_Status ret;
-    PyObject *antennas;
-    TMR_uint8List port_list;
-    uint8_t value_list[MAX_ANTENNA_COUNT];
+    PyObject *result;
+    TMR_uint8List value_list;
 
-    port_list.list = value_list;
-    port_list.max = numberof(value_list);
+    value_list.list = values;
+    value_list.max = max;
 
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list)) != TMR_SUCCESS)
+    if ((ret = TMR_paramGet(reader, param, &value_list)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, "Error getting antennas");
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
         return NULL;
     }
 
-    antennas = PyList_New(0);
-    for (i = 0; i < port_list.len && i < port_list.max; i++)
+    result = PyList_New(0);
+    for (i = 0; i < value_list.len && i < value_list.max; i++)
     {
-        PyList_Append(antennas, PyLong_FromUnsignedLong(port_list.list[i]));
+        PyList_Append(result, PyLong_FromUnsignedLong(value_list.list[i]));
     }
-    return antennas;
+    return result;
+}
+
+static PyObject *
+Reader_get_antennas(Reader *self)
+{
+    uint8_t values[MAX_ANTENNA_COUNT];
+    return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, values, MAX_ANTENNA_COUNT);
 }
 
 static PyObject *
 Reader_get_antenna_portswitchgpos(Reader *self)
 {
-    TMR_Status ret;
-    PyObject *gpos;
-    TMR_uint8List gpo_list;
-    uint8_t value_list[MAX_GPIO_COUNT];
-    uint8_t i;
-
-    gpo_list.list = value_list;
-    gpo_list.max = numberof(value_list);
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, &gpo_list)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, "Error getting gpos");
-        return NULL;
-    }
-
-    gpos = PyList_New(0);
-    for (i = 0; i < gpo_list.len && i < gpo_list.max; i++)
-    {
-        PyList_Append(gpos, PyLong_FromUnsignedLong(gpo_list.list[i]));
-    }
-
-    return gpos;
+    uint8_t values[MAX_GPIO_COUNT];
+    return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, values, MAX_GPIO_COUNT);
 }
 
 static PyObject *
@@ -694,7 +680,7 @@ Reader_set_antenna_portswitchgpos(Reader *self, PyObject *args)
 static PyObject *
 Reader_get_power_range(Reader *self)
 {
-    int lim_power;
+    int16_t lim_power;
     TMR_Status ret;
     PyObject *powers;
     powers = PyTuple_New(2);
@@ -716,221 +702,120 @@ Reader_get_power_range(Reader *self)
 }
 
 static PyObject *
-Reader_get_read_powers(Reader *self)
+get_PortValueList(TMR_Reader *reader, int param)
 {
-    int row;
+    int i;
     TMR_Status ret;
-    PyObject *antenna_power;
-    PyObject *antenna_powers;
-    antenna_powers = PyList_New(0);
-    TMR_PortValueList ant_pow_list;
-    TMR_PortValue pow_value_list[MAX_ANTENNA_COUNT];
+    PyObject *result = PyList_New(0);
 
-    ant_pow_list.list = pow_value_list;
-    ant_pow_list.max = numberof(pow_value_list);
+    TMR_PortValueList value_list;
+    TMR_PortValue values[MAX_ANTENNA_COUNT];
 
-    TMR_uint8List port_list;
-    uint8_t port_value_list[MAX_ANTENNA_COUNT];
+    value_list.list = values;
+    value_list.max = MAX_ANTENNA_COUNT;
+    value_list.len = 0;
 
-    port_list.list = port_value_list;
-    port_list.max = numberof(port_value_list);
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list)) != TMR_SUCCESS)
+    if ((ret = TMR_paramGet(reader, param, &value_list)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, "Error getting antennas");
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
         return NULL;
     }
 
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_PORTREADPOWERLIST, &ant_pow_list)) != TMR_SUCCESS)
+    for (i = 0; i < value_list.len; i++)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
+        PyObject *item;
+        item = PyTuple_New(2);
+        PyTuple_SetItem(item, 0, PyLong_FromUnsignedLong(value_list.list[i].port));
+        PyTuple_SetItem(item, 1, PyLong_FromLong(value_list.list[i].value));
+        PyList_Append(result, item);
     }
 
-    for (row = 0; row < port_list.len; row++)
-    {
-        antenna_power = PyTuple_New(2);
-        PyTuple_SetItem(antenna_power, 0, PyLong_FromUnsignedLong(ant_pow_list.list[row].port));
-        PyTuple_SetItem(antenna_power, 1, PyLong_FromLong(ant_pow_list.list[row].value));
-        PyList_Append(antenna_powers, antenna_power);
-    }
-
-    return antenna_powers;
+    return result;
 }
 
 static PyObject *
-Reader_set_read_powers(Reader *self, PyObject *args, PyObject *kwds)
+set_PortValueList(TMR_Reader *reader, PyObject *args, int param)
 {
-    int length;
     TMR_Status ret;
-    uint8_t ant_count, pow_count;
-    PyObject *power_list, *antenna_list;
-    static char *kwlist[] = {"antennas", "powers", NULL};
+    PyObject *input;
+    uint8_t count;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O!", kwlist, &PyList_Type, &antenna_list, &PyList_Type, &power_list))
+    if (!PyArg_ParseTuple(args, "O!", &PyList_Type, &input))
         return NULL;
-    if ((ant_count = PyList_Size(antenna_list)) > MAX_ANTENNA_COUNT)
-    {
-        PyErr_SetString(PyExc_TypeError, "Too many antennas");
-        return NULL;
-    }
-    if ((pow_count = PyList_Size(power_list)) > MAX_ANTENNA_COUNT)
+    if ((count = PyList_Size(input)) > MAX_ANTENNA_COUNT)
     {
         PyErr_SetString(PyExc_TypeError, "Too many powers");
         return NULL;
     }
-    if (pow_count != ant_count)
+
+    int i;
+    TMR_PortValueList value_list;
+    TMR_PortValue values[MAX_ANTENNA_COUNT];
+
+    value_list.list = values;
+    value_list.max = MAX_ANTENNA_COUNT;
+    value_list.len = count;
+
+    for (i = 0; i < count; i++)
     {
-        PyErr_SetString(PyExc_TypeError, "Number of antennas and powers not matching");
-        return NULL;
-    }
-    length = (int) ant_count;
+        int antenna;
+        int power;
 
-    int row;
-    int power;
-    int antenna;
-    TMR_PortValueList ant_pow_list;
-    TMR_PortValue value_list[MAX_ANTENNA_COUNT];
-
-    ant_pow_list.len = length;
-    ant_pow_list.max = numberof(value_list);
-    ant_pow_list.list = value_list;
-    for (row = 0; row < length; row++)
-    {
-        power = (int) PyLong_AsLong(PyList_GetItem(power_list, row));
-        antenna = (int) PyLong_AsLong(PyList_GetItem(antenna_list, row));
-
-        if ((ant_pow_list.list[row].port = antenna) == 255)
+        PyObject *item = PyList_GetItem(input, i);
+        if(!PyTuple_Check(item))
         {
-            PyErr_SetString(PyExc_TypeError, "antennas expecting a list of integers");
+            PyErr_SetString(PyExc_TypeError, "expecting list of tuples");
             return NULL;
         }
-        if ((ant_pow_list.list[row].value = power) == 255)
+
+        antenna = PyLong_AsLong(PyTuple_GetItem(item, 0));
+        power = PyLong_AsLong(PyTuple_GetItem(item, 1));
+
+        if(antenna < 0 || antenna > MAX_ANTENNA_COUNT)
         {
-            PyErr_SetString(PyExc_TypeError, "powers expecting a list of integers");
+            PyErr_SetString(PyExc_TypeError, "wrong antenna index");
             return NULL;
         }
+
+        value_list.list[i].port = antenna;
+        value_list.list[i].value = power;
     }
 
-    if (length > 0)
+    if (count > 0)
     {
-        if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_RADIO_PORTREADPOWERLIST, &ant_pow_list)) != TMR_SUCCESS)
+        if ((ret = TMR_paramSet(reader, param, &value_list)) != TMR_SUCCESS)
             goto fail;
     }
 
-    return Reader_get_read_powers(self);
+    Py_DECREF(input);
+    return get_PortValueList(reader, param);
 fail:
-    PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+    PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
     return NULL;
+}
+
+static PyObject *
+Reader_get_read_powers(Reader *self)
+{
+    return get_PortValueList(&self->reader, TMR_PARAM_RADIO_PORTREADPOWERLIST);
+}
+
+static PyObject *
+Reader_set_read_powers(Reader *self, PyObject *args)
+{
+    return set_PortValueList(&self->reader, args, TMR_PARAM_RADIO_PORTREADPOWERLIST);
 }
 
 static PyObject *
 Reader_get_write_powers(Reader *self)
 {
-    int row;
-    TMR_Status ret;
-    PyObject *antenna_power;
-    PyObject *antenna_powers;
-    antenna_powers = PyList_New(0);
-    TMR_PortValueList ant_pow_list;
-    TMR_PortValue pow_value_list[MAX_ANTENNA_COUNT];
-
-    ant_pow_list.list = pow_value_list;
-    ant_pow_list.max = numberof(pow_value_list);
-
-    TMR_uint8List port_list;
-    uint8_t port_value_list[MAX_ANTENNA_COUNT];
-
-    port_list.list = port_value_list;
-    port_list.max = numberof(port_value_list);
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_ANTENNA_PORTLIST, &port_list)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, "Error getting antennas");
-        return NULL;
-    }
-
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_PORTWRITEPOWERLIST, &ant_pow_list)) != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-
-    for (row = 0; row < port_list.len; row++)
-    {
-        antenna_power = PyTuple_New(2);
-        PyTuple_SetItem(antenna_power, 0, PyLong_FromUnsignedLong(ant_pow_list.list[row].port));
-        PyTuple_SetItem(antenna_power, 1, PyLong_FromLong(ant_pow_list.list[row].value));
-        PyList_Append(antenna_powers, antenna_power);
-    }
-
-    return antenna_powers;
+    return get_PortValueList(&self->reader, TMR_PARAM_RADIO_PORTWRITEPOWERLIST);
 }
 
 static PyObject *
 Reader_set_write_powers(Reader *self, PyObject *args, PyObject *kwds)
 {
-    int length;
-    TMR_Status ret;
-    uint8_t ant_count, pow_count;
-    PyObject *power_list, *antenna_list;
-    static char *kwlist[] = {"antennas", "powers", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O!", kwlist, &PyList_Type, &antenna_list, &PyList_Type, &power_list))
-        return NULL;
-    if ((ant_count = PyList_Size(antenna_list)) > MAX_ANTENNA_COUNT)
-    {
-        PyErr_SetString(PyExc_TypeError, "Too many antennas");
-        return NULL;
-    }
-    if ((pow_count = PyList_Size(power_list)) > MAX_ANTENNA_COUNT)
-    {
-        PyErr_SetString(PyExc_TypeError, "Too many powers");
-        return NULL;
-    }
-    if (pow_count != ant_count)
-    {
-        PyErr_SetString(PyExc_TypeError, "Number of antennas and powers not matching");
-        return NULL;
-    }
-    length = (int) ant_count;
-
-    int row;
-    int power;
-    int antenna;
-    TMR_PortValueList ant_pow_list;
-    TMR_PortValue value_list[MAX_ANTENNA_COUNT];
-
-    ant_pow_list.len = length;
-    ant_pow_list.max = numberof(value_list);
-    ant_pow_list.list = value_list;
-    for (row = 0; row < length; row++)
-    {
-        power = (int) PyLong_AsLong(PyList_GetItem(power_list, row));
-        antenna = (int) PyLong_AsLong(PyList_GetItem(antenna_list, row));
-
-        if ((ant_pow_list.list[row].port = antenna) == 255)
-        {
-            PyErr_SetString(PyExc_TypeError, "antennas expecting a list of integers");
-            return NULL;
-        }
-        if ((ant_pow_list.list[row].value = power) == 255)
-        {
-            PyErr_SetString(PyExc_TypeError, "powers expecting a list of integers");
-            return NULL;
-        }
-    }
-
-    if (length > 0)
-    {
-        if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_RADIO_PORTWRITEPOWERLIST, &ant_pow_list)) != TMR_SUCCESS)
-            goto fail;
-    }
-
-    return Reader_get_write_powers(self);
-fail:
-    PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
-    return NULL;
+    return set_PortValueList(&self->reader, args, TMR_PARAM_RADIO_PORTWRITEPOWERLIST);
 }
 
 static PyObject *
@@ -1200,10 +1085,10 @@ static PyMethodDef Reader_methods[] = {
     {"get_write_powers", (PyCFunction)Reader_get_write_powers, METH_NOARGS,
      "Lists configured write powers for each antenna."
     },
-    {"set_read_powers", (PyCFunction)Reader_set_read_powers, METH_VARARGS | METH_KEYWORDS,
+    {"set_read_powers", (PyCFunction)Reader_set_read_powers, METH_VARARGS,
      "Set the read power for each listed antenna and return the real setted values."
     },
-    {"set_write_powers", (PyCFunction)Reader_set_write_powers, METH_VARARGS | METH_KEYWORDS,
+    {"set_write_powers", (PyCFunction)Reader_set_write_powers, METH_VARARGS,
      "Set the write power for each listed antenna and return the real setted values."
     },
     {"get_gen2_q", (PyCFunction)Reader_get_gen2_q, METH_NOARGS,

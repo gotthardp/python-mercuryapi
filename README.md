@@ -142,18 +142,18 @@ or
 reader.set_read_plan([1], "GEN2", bank=["user"], read_power=1900)
 ```
 
-#### reader.set_read_powers(*antennas*, *powers*)
+#### reader.set_read_powers(*powers*)
 Set the read power for each listed antenna and return the real setted values.
 Setted values may differ from those passed due to reader rounding.
- * *antennas* list define which antennas (or virtual antenna numbers) are going to be setted.
- * *powers* list define the power, in centidBm, for each antenna. Overrides the value from
-    set_read_plan or reader specific default.
-      * Power values must be within the allowed power range.
-
+ * *powers* list of 2-tuples that include:
+    * which antenna (or virtual antenna numbers) is going to be setted
+    * required power, in centidBm, for the antenna, overriding the value from
+      set_read_plan or reader specific default.
+      The value must be within the allowed power range.
 
 For example:
 ```python
-setted_powers = reader.set_read_powers([1, 2], [1533, 1912])
+setted_powers = reader.set_read_powers([(1, 1533), (2, 1912)])
 print(setted_powers)
 [(1, 1525), (2, 1900)]
 ```
