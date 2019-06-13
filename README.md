@@ -523,9 +523,12 @@ which is a shortcut to running
 sudo python setup.py install
 ```
 
+If you are getting a "Module not found" error, please double check that you built and
+installed the module using the same Python version (2 or 3) you now use to run your script.
+(Or simply build and install it twice: once with python2 and once with python3.)
+
 To access ports like `/dev/ttyUSB0` as a non-root user you may need to add this
 user to the `dialout` group:
 ```bash
 sudo usermod -a -G dialout $USER
 ```
-
