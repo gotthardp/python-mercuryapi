@@ -211,6 +211,15 @@ print(reader.get_antennas())
 [1, 2]
 ```
 
+#### reader.get_connected_ports()
+Returns numbers of the antenna ports where the reader has detected antennas.
+
+For example:
+```python
+print(reader.get_connected_ports())
+[1]
+```
+
 #### reader.get_power_range()
 Lists supported radio power range, in centidBm.
 

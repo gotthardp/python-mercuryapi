@@ -846,6 +846,12 @@ Reader_get_antennas(Reader *self)
 }
 
 static PyObject *
+Reader_get_connected_ports(Reader *self)
+{
+    return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_CONNECTEDPORTLIST, MAX_ANTENNA_COUNT);
+}
+
+static PyObject *
 Reader_get_antenna_portswitchgpos(Reader *self)
 {
     return get_uint8List(&self->reader, TMR_PARAM_ANTENNA_PORTSWITCHGPOS, MAX_GPIO_COUNT);
@@ -1293,6 +1299,9 @@ static PyMethodDef Reader_methods[] = {
     },
     {"get_antennas", (PyCFunction)Reader_get_antennas, METH_NOARGS,
      "Lists available antennas."
+    },
+    {"get_connected_ports", (PyCFunction)Reader_get_connected_ports, METH_NOARGS,
+     "Lists connected antennas."
     },
     {"get_antenna_portswitchgpos", (PyCFunction)Reader_get_antenna_portswitchgpos, METH_NOARGS,
      "Lists the GPO pins used for antenna port switching."
