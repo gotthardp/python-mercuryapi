@@ -340,6 +340,8 @@ Reader_read(Reader *self, PyObject *args, PyObject *kwds)
 
     /* create empty list */
     list = PyList_New(0);
+    if(list == NULL)
+        return PyErr_NoMemory();
 
     while (TMR_hasMoreTags(&self->reader) == TMR_SUCCESS)
     {
@@ -350,7 +352,16 @@ Reader_read(Reader *self, PyObject *args, PyObject *kwds)
         uint8_t dataBuf4[MAX_DATA_AREA];
 
         tag = PyObject_New(TagReadData, &TagReadDataType);
+        if(tag == NULL)
+        {
+            Py_XDECREF(list);
+            return PyErr_NoMemory();
+        }
         TMR_TRD_init(&tag->data);
+        tag->epcMemData = NULL;
+        tag->tidMemData = NULL;
+        tag->userMemData = NULL;
+        tag->reservedMemData = NULL;
 
         TMR_TRD_MEMBANK_init_data(&tag->data.epcMemData, MAX_DATA_AREA, dataBuf1);
         TMR_TRD_MEMBANK_init_data(&tag->data.tidMemData, MAX_DATA_AREA, dataBuf2);
@@ -360,6 +371,8 @@ Reader_read(Reader *self, PyObject *args, PyObject *kwds)
         if ((ret = TMR_getNextTag(&self->reader, &tag->data)) != TMR_SUCCESS)
         {
             PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+            Py_XDECREF(tag);
+            Py_XDECREF(list);
             return NULL;
         }
 
@@ -435,6 +448,10 @@ invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *pdata, void *coo
         tag = PyObject_New(TagReadData, &TagReadDataType);
         /* make a hard-copy */
         memcpy(&tag->data, pdata, sizeof(TMR_TagReadData));
+        tag->epcMemData = NULL;
+        tag->tidMemData = NULL;
+        tag->userMemData = NULL;
+        tag->reservedMemData = NULL;
 
         arglist = Py_BuildValue("(O)", tag);
         result = PyObject_CallObject(self->readCallback, arglist);
@@ -645,6 +662,8 @@ Reader_get_supported_regions(Reader* self)
 
     /* create empty list */
     list = PyList_New(0);
+    if(list == NULL)
+        return PyErr_NoMemory();
 
     for (i = 0; i < regions.len; i++)
     {
@@ -713,6 +732,9 @@ get_uint8List(TMR_Reader *reader, int param, size_t max)
     }
 
     result = PyList_New(values.len);
+    if(result == NULL)
+        return PyErr_NoMemory();
+
     for (i = 0; i < values.len; i++)
         PyList_SetItem(result, i, PyLong_FromUnsignedLong(values.list[i]));
 
@@ -740,6 +762,9 @@ get_uint32List(TMR_Reader *reader, int param, size_t max)
     }
 
     result = PyList_New(values.len);
+    if(result == NULL)
+        return PyErr_NoMemory();
+
     for (i = 0; i < values.len; i++)
         PyList_SetItem(result, i, PyLong_FromUnsignedLong(values.list[i]));
 

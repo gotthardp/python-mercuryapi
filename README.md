@@ -136,15 +136,19 @@ Returns value of a GPIO *pin*, or *None* is the pin is not configured as input (
 
 For example:
 ```python
+print(get_gpio_inputs())
+[1]
 print(reader.gpi_get(1))
 True
 ```
 
 #### reader.gpo_set(*pin*, *value*)
-Sets value of a GPIO *pin* configured as output (see `get_gpio_inputs`).
+Sets value of a GPIO *pin* configured as output (see `get_gpio_outputs`).
 
 For example:
 ```python
+print(get_gpio_outputs())
+[1]
 reader.gpo_set(1, False)
 ```
 
@@ -283,6 +287,10 @@ Get numbers of the GPIO pins available as output pins on the device.
 
 #### reader.set_gpio_outputs(*list*)
 Set numbers of the GPIO pins available as output pins on the device.
+
+On some devices this parameter is not writeable. Thus, instead of calling
+`set_gpio_outputs` with the a set you may need to call `set_gpio_inputs`
+with the pin omitted.
 
 #### reader.get_gen2_blf()
 Returns the current Gen2 BLF setting.
