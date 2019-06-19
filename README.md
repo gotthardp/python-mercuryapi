@@ -90,7 +90,7 @@ print(reader.read())
 [b'E2002047381502180820C296', b'0000000000000000C0002403']
 ```
 
-#### reader.write(*epc_target, epc_code*)
+#### reader.write(*epc_code*, *epc_target=None*)
 Performs a synchronous write and then returns a boolean indicating the success
 of the operation.
 
@@ -102,7 +102,7 @@ new_epc = 'E20020470000000000000012'
 reader = Reader('llrp://192.168.0.2')
 reader.set_read_plan([1], "GEN2")
 
-if reader.write(epc_target=old_epc, epc_code=new_epc):
+if reader.write(epc_code=new_epc, epc_target=old_epc):
     print('Rewrited "{}" with "{}"'.format(old_epc, new_epc))
 else:
     print('Failed writing "{}" with "{}"'.format(old_epc, new_epc))
@@ -137,7 +137,7 @@ Reads bytes from the memory bank of a tag.
 For example:
 ```python
 print(reader.read_tag_mem(1, 0x08, 8))
-bytearray(b'\x00\x00"\x16\x12\x00\x061')
+bytearray(b'\x00\x00\x00\x16\x12\x00\x00\x61')
 ```
 
 #### reader.write_tag_mem(*bank*, *address*, *data*, *epc_target=None*)
@@ -145,7 +145,7 @@ Writes bytes to the memory bank of a tag.
 
 For example:
 ```python
-reader.write_tag_mem(1, 0x08, bytearray(b'\x00\x00"\x16\x12\x00\x061'))
+reader.write_tag_mem(1, 0x08, bytearray(b'\x00\x00\x00\x16\x12\x00\x00\x61'))
 ```
 
 #### reader.gpi_get(*pin*)

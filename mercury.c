@@ -281,28 +281,39 @@ static PyObject *
 Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 {
     char* epc_data;
-    char* epc_target;
+    char* epc_target = NULL;
     TMR_Status ret;
     TMR_TagData data;
     TMR_TagData target;
-    TMR_TagFilter filter;
+    TMR_TagFilter tag_filter, *filter;
+
     // Read call arguments.
-    static char *kwlist[] = {"epc_target", "epc_code", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, &epc_target, &epc_data))
+    static char *kwlist[] = {"epc_code", "epc_target", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s", kwlist, &epc_data, &epc_target))
         return NULL;
-    /* build target tag to search */
-    target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
-    TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+
     /* build data tag to be writen */
     data.epcByteCount = strlen(epc_data) * sizeof(char) / 2;
     TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
-    // Build filter target tag to be replaced.
-    TMR_TF_init_tag(&filter, &target);
+
+    /* build target tag to search */
+    if(epc_target != NULL)
+    {
+        target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
+        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+
+        filter = &tag_filter;
+        TMR_TF_init_tag(filter, &target);
+    }
+    else
+        filter = NULL;
+
     // Write data tag on target tag.
-    ret = TMR_writeTag(&self->reader, &filter, &data);
+    ret = TMR_writeTag(&self->reader, filter, &data);
     // In case of not target tag found.
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
         Py_RETURN_FALSE;
+
     Py_RETURN_TRUE;
 }
 
