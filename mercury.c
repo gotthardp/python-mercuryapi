@@ -488,6 +488,87 @@ Reader_stop_reading(Reader* self)
 }
 
 static PyObject *
+Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
+{
+    TMR_Status ret;
+    char* epc_target = NULL;
+    uint32_t bank, address, count;
+
+    TMR_TagData target;
+    TMR_TagFilter tag_filter, *filter;
+    uint8_t *buf;
+    PyObject *result;
+
+    static char *kwlist[] = {"bank", "address", "count", "epc_target", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "III|s", kwlist, &bank, &address, &count, &epc_target))
+        return NULL;
+
+    if(epc_target != NULL)
+    {
+        /* build target tag to search */
+        target.epcByteCount = strlen(epc_target) / 2;
+        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+
+        filter = &tag_filter;
+        TMR_TF_init_tag(filter, &target);
+    }
+    else
+        filter = NULL;
+
+    buf = malloc(count);
+    ret = TMR_readTagMemBytes(&self->reader, filter, bank, address, (uint16_t)count, buf);
+    if (ret != TMR_SUCCESS)
+    {
+        free(buf);
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    result = PyByteArray_FromStringAndSize((const char *)buf, count);
+    free(buf);
+
+    return result;
+}
+
+static PyObject *
+Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
+{
+    TMR_Status ret;
+    char* epc_target = NULL;
+    uint32_t bank, address;
+    PyObject *data;
+
+    TMR_TagData target;
+    TMR_TagFilter tag_filter, *filter;
+
+    static char *kwlist[] = {"bank", "address", "data", "epc_target", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIO!|s", kwlist, &bank, &address, &PyByteArray_Type, &data, &epc_target))
+        return NULL;
+
+    if(epc_target != NULL)
+    {
+        /* build target tag to search */
+        target.epcByteCount = strlen(epc_target) / 2;
+        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+
+        filter = &tag_filter;
+        TMR_TF_init_tag(filter, &target);
+    }
+    else
+        filter = NULL;
+
+    ret = TMR_writeTagMemBytes(&self->reader, filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
+    free(filter);
+    if (ret != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+    else
+        Py_RETURN_NONE;
+}
+
+static PyObject *
 Reader_gpi_get(Reader *self, PyObject *args)
 {
     TMR_GpioPin *gpio;
@@ -1291,6 +1372,12 @@ static PyMethodDef Reader_methods[] = {
     },
     {"stop_reading", (PyCFunction)Reader_stop_reading, METH_NOARGS,
      "Stop asynchronous reading"
+    },
+    {"read_tag_mem", (PyCFunction)Reader_read_tag_mem, METH_VARARGS | METH_KEYWORDS,
+     "Read bytes from the memory bank of a tag"
+    },
+    {"write_tag_mem", (PyCFunction)Reader_write_tag_mem, METH_VARARGS | METH_KEYWORDS,
+     "Write bytes to the memory bank of a tag"
     },
     {"gpi_get", (PyCFunction)Reader_gpi_get, METH_VARARGS,
      "Gets GPIO pin value"

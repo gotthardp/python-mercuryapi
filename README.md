@@ -131,6 +131,22 @@ For example:
 reader.stop_reading()
 ```
 
+#### reader.read_tag_mem(*bank*, *address*, *count*, *epc_target=None*)
+Reads bytes from the memory bank of a tag.
+
+For example:
+```python
+print(reader.read_tag_mem(1, 0x08, 8))
+```
+
+#### reader.write_tag_mem(*bank*, *address*, *data*, *epc_target=None*)
+Writes bytes to the memory bank of a tag.
+
+For example:
+```python
+reader.write_tag_mem(1, 0x08, bytearray(b'\x00\x00"\x16\x12\x00\x061'))
+```
+
 #### reader.gpi_get(*pin*)
 Returns value of a GPIO *pin*, or *None* is the pin is not configured as input (see `get_gpio_inputs`).
 
