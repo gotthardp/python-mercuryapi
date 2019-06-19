@@ -313,6 +313,11 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
     // In case of not target tag found.
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
         Py_RETURN_FALSE;
+    else if(ret != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
 
     Py_RETURN_TRUE;
 }
@@ -528,7 +533,9 @@ Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
 
     buf = malloc(count);
     ret = TMR_readTagMemBytes(&self->reader, filter, bank, address, (uint16_t)count, buf);
-    if (ret != TMR_SUCCESS)
+    if (ret == TMR_ERROR_NO_TAGS_FOUND)
+        Py_RETURN_NONE;
+    else if (ret != TMR_SUCCESS)
     {
         free(buf);
         PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
@@ -570,13 +577,15 @@ Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
 
     ret = TMR_writeTagMemBytes(&self->reader, filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
     free(filter);
-    if (ret != TMR_SUCCESS)
+    if (ret == TMR_ERROR_NO_TAGS_FOUND)
+        Py_RETURN_FALSE;
+    else if (ret != TMR_SUCCESS)
     {
         PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
     else
-        Py_RETURN_NONE;
+        Py_RETURN_TRUE;
 }
 
 static PyObject *

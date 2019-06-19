@@ -91,8 +91,8 @@ print(reader.read())
 ```
 
 #### reader.write(*epc_code*, *epc_target=None*)
-Performs a synchronous write and then returns a boolean indicating the success
-of the operation.
+Performs a synchronous write. Returns *True* upon success, or *False* if no tag
+was found. Upon failure an exception is raised.
 
 For example:
 ```python
@@ -105,7 +105,7 @@ reader.set_read_plan([1], "GEN2")
 if reader.write(epc_code=new_epc, epc_target=old_epc):
     print('Rewrited "{}" with "{}"'.format(old_epc, new_epc))
 else:
-    print('Failed writing "{}" with "{}"'.format(old_epc, new_epc))
+    print('No tag found')
 ```
 
 #### reader.start_reading(*callback*, *on_time=250*, *off_time=0*)
@@ -132,7 +132,8 @@ reader.stop_reading()
 ```
 
 #### reader.read_tag_mem(*bank*, *address*, *count*, *epc_target=None*)
-Reads bytes from the memory bank of a tag.
+Reads bytes from the memory bank of a tag. Returns a *bytearray* or None if no
+tag was found. Upon failure an exception is raised.
 
 For example:
 ```python
@@ -141,7 +142,8 @@ bytearray(b'\x00\x00\x00\x16\x12\x00\x00\x61')
 ```
 
 #### reader.write_tag_mem(*bank*, *address*, *data*, *epc_target=None*)
-Writes bytes to the memory bank of a tag.
+Writes bytes to the memory bank of a tag. Returns *True* upon success, or
+*False* if no tag was found. Upon failure an exception is raised.
 
 For example:
 ```python
