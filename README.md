@@ -137,6 +137,7 @@ Reads bytes from the memory bank of a tag.
 For example:
 ```python
 print(reader.read_tag_mem(1, 0x08, 8))
+bytearray(b'\x00\x00"\x16\x12\x00\x061')
 ```
 
 #### reader.write_tag_mem(*bank*, *address*, *data*, *epc_target=None*)
