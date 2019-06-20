@@ -538,7 +538,7 @@ Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
     else if (ret != TMR_SUCCESS)
     {
         free(buf);
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -581,7 +581,7 @@ Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
         Py_RETURN_FALSE;
     else if (ret != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
     else
@@ -603,7 +603,7 @@ Reader_gpi_get(Reader *self, PyObject *args)
 
     if ((ret = TMR_gpiGet(&self->reader, &count, gpio)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         free(gpio);
         return NULL;
     }
@@ -648,7 +648,7 @@ Reader_gpo_set(Reader *self, PyObject *args)
 
     if ((ret = TMR_gpoSet(&self->reader, 1, &gpio)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -669,7 +669,7 @@ Reader_get_model(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_VERSION_MODEL, &model)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -743,7 +743,7 @@ Reader_set_region(Reader *self, PyObject *args)
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_REGION_ID, &region)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -766,7 +766,7 @@ Reader_get_supported_regions(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_REGION_SUPPORTEDREGIONS, &regions)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -797,7 +797,7 @@ get_uint32(TMR_Reader *reader, int param)
 
     if ((ret = TMR_paramGet(reader, param, &value)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         return NULL;
     }
 
@@ -815,7 +815,7 @@ set_uint32(TMR_Reader *reader, PyObject *args, int param)
 
     if ((ret = TMR_paramSet(reader, param, &value)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         return NULL;
     }
 
@@ -836,7 +836,7 @@ get_uint8List(TMR_Reader *reader, int param, size_t max)
 
     if ((ret = TMR_paramGet(reader, param, &values)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         free(values.list);
         return NULL;
     }
@@ -866,7 +866,7 @@ get_uint32List(TMR_Reader *reader, int param, size_t max)
 
     if ((ret = TMR_paramGet(reader, param, &values)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         free(values.list);
         return NULL;
     }
@@ -907,7 +907,7 @@ set_uint8List(TMR_Reader *reader, PyObject *args, int param)
 
     if ((ret = TMR_paramSet(reader, param, &values)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         free(values.list);
         return NULL;
     }
@@ -941,7 +941,7 @@ set_uint32List(TMR_Reader *reader, PyObject *args, int param)
 
     if ((ret = TMR_paramSet(reader, param, &values)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         free(values.list);
         return NULL;
     }
@@ -1008,14 +1008,14 @@ Reader_get_power_range(Reader *self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_POWERMIN, &lim_power)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
     PyTuple_SetItem(powers, 0, PyLong_FromLong(lim_power));
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_POWERMAX, &lim_power)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
     PyTuple_SetItem(powers, 1, PyLong_FromLong(lim_power));
@@ -1038,7 +1038,7 @@ get_PortValueList(TMR_Reader *reader, int param)
 
     if ((ret = TMR_paramGet(reader, param, &value_list)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         return NULL;
     }
 
@@ -1111,7 +1111,7 @@ set_PortValueList(TMR_Reader *reader, PyObject *args, int param)
     Py_DECREF(input);
     return get_PortValueList(reader, param);
 fail:
-    PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+    PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
     return NULL;
 }
 
@@ -1172,7 +1172,7 @@ Reader_get_gen2_q(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1195,7 +1195,7 @@ Reader_set_gen2_q(Reader* self, PyObject *args)
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_Q, &model)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1214,7 +1214,7 @@ Reader_get_gen2_tagencoding(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TAGENCODING, &tagencoding_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1232,7 +1232,7 @@ Reader_set_gen2_tagencoding(Reader* self, PyObject *args)
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TAGENCODING, &tagencoding_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1247,7 +1247,7 @@ Reader_get_gen2_session(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_SESSION, &session_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1265,7 +1265,7 @@ Reader_set_gen2_session(Reader* self, PyObject *args)
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_SESSION, &session_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1280,7 +1280,7 @@ Reader_get_gen2_target(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TARGET, &target_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1298,7 +1298,7 @@ Reader_set_gen2_target(Reader* self, PyObject *args)
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TARGET, &target_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1313,7 +1313,7 @@ Reader_get_gen2_blf(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1331,7 +1331,7 @@ Reader_set_gen2_blf(Reader* self, PyObject *args)
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_BLF, &blf_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1346,7 +1346,7 @@ Reader_get_gen2_tari(Reader* self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1364,7 +1364,7 @@ Reader_set_gen2_tari(Reader* self, PyObject *args)
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_GEN2_TARI, &tari_val)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
@@ -1379,7 +1379,7 @@ Reader_get_temperature(Reader *self)
 
     if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_RADIO_TEMPERATURE, &temp)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_TypeError, "Error getting temperature");
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
