@@ -626,15 +626,24 @@ static PyObject *
 Reader_gpo_set(Reader *self, PyObject *args)
 {
     uint8_t pin;
-    bool value;
+    PyObject *value;
+    int intval;
     TMR_GpioPin gpio;
     TMR_Status ret;
 
-    if (!PyArg_ParseTuple(args, "Bp", &pin, &value))
+    /* to preserve Python 2.x compatibility we cannot use "p"
+       also, using "i" is foolish as per https://bugs.python.org/issue14705 */
+    if (!PyArg_ParseTuple(args, "BO", &pin, &value))
         return NULL;
 
+    if ((intval = PyObject_IsTrue(value)) < 0)
+    {
+        PyErr_SetString(PyExc_TypeError, "Boolean value expected");
+        return NULL;
+    }
+
     gpio.id = pin;
-    gpio.high = value;
+    gpio.high = !!intval; /* convert to bool */
     gpio.output = true;
 
     if ((ret = TMR_gpoSet(&self->reader, 1, &gpio)) != TMR_SUCCESS)
@@ -1402,11 +1411,9 @@ static PyMethodDef Reader_methods[] = {
     {"gpi_get", (PyCFunction)Reader_gpi_get, METH_VARARGS,
      "Gets GPIO pin value"
     },
-#if PY_MAJOR_VERSION >= 3
     {"gpo_set", (PyCFunction)Reader_gpo_set, METH_VARARGS,
      "Sets GPIO pin value"
     },
-#endif
     /* Reader parameters */
     {"get_model", (PyCFunction)Reader_get_model, METH_NOARGS,
      "Returns the model name"
