@@ -658,22 +658,35 @@ Reader_gpo_set(Reader *self, PyObject *args)
 /* Functions to get/set the reader parameters */
 
 static PyObject *
-Reader_get_model(Reader* self)
+get_string(TMR_Reader *reader, int param)
 {
-    TMR_String model;
-    char str[64];
+    TMR_String str;
+    char buffer[64];
     TMR_Status ret;
 
-    model.value = str;
-    model.max = sizeof(str);
+    str.value = buffer;
+    str.max = sizeof(buffer);
 
-    if ((ret = TMR_paramGet(&self->reader, TMR_PARAM_VERSION_MODEL, &model)) != TMR_SUCCESS)
+    if ((ret = TMR_paramGet(reader, param, &str)) != TMR_SUCCESS)
     {
-        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
+        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(reader, ret));
         return NULL;
     }
 
-    return PyUnicode_FromString(model.value);
+    return PyUnicode_FromString(str.value);
+}
+
+
+static PyObject *
+Reader_get_model(Reader* self)
+{
+    return get_string(&self->reader, TMR_PARAM_VERSION_MODEL);
+}
+
+static PyObject *
+Reader_get_serial(Reader* self)
+{
+    return get_string(&self->reader, TMR_PARAM_VERSION_SERIAL);
 }
 
 typedef struct {
@@ -1417,6 +1430,9 @@ static PyMethodDef Reader_methods[] = {
     /* Reader parameters */
     {"get_model", (PyCFunction)Reader_get_model, METH_NOARGS,
      "Returns the model name"
+    },
+    {"get_serial", (PyCFunction)Reader_get_serial, METH_NOARGS,
+     "Returns a serial number of the reader, the same number printed on the barcode label"
     },
     {"set_region", (PyCFunction)Reader_set_region, METH_VARARGS,
      "Set the reader region"

@@ -180,6 +180,9 @@ print(reader.get_model())
 M6e Nano
 ```
 
+#### reader.get_serial()
+Returns a serial number of the reader, the same number printed on the barcode label.
+
 #### reader.set_region(*region*)
 Controls the Region of Operation for the connected device:
  * *region* represents the regulatory region that the device will operate in. Supported values are:
