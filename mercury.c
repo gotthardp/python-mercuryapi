@@ -198,12 +198,15 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
     TMR_Status ret;
     int i;
     uint8_t ant_count;
+    char* epc_target = NULL;
+    TMR_TagData target;
+    TMR_TagFilter tag_filter;
     PyObject *bank = NULL;
     int readPower = 0;
 
-    static char *kwlist[] = {"antennas", "protocol", "bank", "read_power", NULL};
+    static char *kwlist[] = {"antennas", "protocol", "epc_target", "bank", "read_power", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|Oi", kwlist, &PyList_Type, &list, &s, &bank, &readPower))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|sOi", kwlist, &PyList_Type, &list, &s, &epc_target, &bank, &readPower))
         return NULL;
 
     if ((protocol = str2protocol(s)) == TMR_TAG_PROTOCOL_NONE)
@@ -232,6 +235,18 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 
     if ((ret = TMR_RP_init_simple(&plan, ant_count, self->antennas, protocol, 1000)) != TMR_SUCCESS)
         goto fail;
+
+    if(epc_target != NULL)
+    {
+        target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
+        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+
+        if ((ret = TMR_TF_init_tag(&tag_filter, &target)) != TMR_SUCCESS)
+            goto fail;
+
+        if ((ret = TMR_RP_set_filter(&plan, &tag_filter)) != TMR_SUCCESS)
+            goto fail;
+    }
 
     if (bank != NULL)
     {

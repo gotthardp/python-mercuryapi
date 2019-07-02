@@ -52,7 +52,7 @@ or
 reader = mercury.Reader("tmr://192.168.1.101")
 ```
 
-#### reader.set_read_plan(*antennas*, *protocol*, *bank=[]*, *read_power=default*)
+#### reader.set_read_plan(*antennas*, *protocol*, *epc_target=None*, *bank=[]*, *read_power=default*)
 Specifies the antennas and protocol to use for a search:
  * *antennas* list define which antennas (or virtual antenna numbers) to use in the search
  * *protocol* defines the protocol to search on. Supported values are:
@@ -62,6 +62,7 @@ Specifies the antennas and protocol to use for a search:
    * `"IPX64"`, IPX (64kbps link rate)
    * `"IPX256"`, IPX (256kbps link rate)
    * `"ATA"`
+ * *epc_target* defines EPC of the tag to read as a hexa-string, e.g. `"E2002047381502180820C296"`
  * *bank* defines the memory banks to read. Supported values are:
    * `"reserved"`
    * `"epc"`
