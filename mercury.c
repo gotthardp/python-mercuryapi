@@ -199,6 +199,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
     int i;
     uint8_t ant_count;
     char* epc_target = NULL;
+    int target_len;
     TMR_TagData target;
     TMR_TagFilter tag_filter;
     PyObject *bank = NULL;
@@ -206,7 +207,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 
     static char *kwlist[] = {"antennas", "protocol", "epc_target", "bank", "read_power", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|sOi", kwlist, &PyList_Type, &list, &s, &epc_target, &bank, &readPower))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|z#Oi", kwlist, &PyList_Type, &list, &s, &epc_target, &target_len, &bank, &readPower))
         return NULL;
 
     if ((protocol = str2protocol(s)) == TMR_TAG_PROTOCOL_NONE)
@@ -238,7 +239,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 
     if(epc_target != NULL)
     {
-        target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
+        target.epcByteCount = target_len/2;
         TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
 
         if ((ret = TMR_TF_init_tag(&tag_filter, &target)) != TMR_SUCCESS)
@@ -297,6 +298,7 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 {
     char* epc_data;
     char* epc_target = NULL;
+    int data_len, target_len;
     TMR_Status ret;
     TMR_TagData data;
     TMR_TagData target;
@@ -304,17 +306,17 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 
     // Read call arguments.
     static char *kwlist[] = {"epc_code", "epc_target", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s", kwlist, &epc_data, &epc_target))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#|z#", kwlist, &epc_data, &data_len, &epc_target, &target_len))
         return NULL;
 
     /* build data tag to be writen */
-    data.epcByteCount = strlen(epc_data) * sizeof(char) / 2;
+    data.epcByteCount = data_len/2;
     TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
 
     /* build target tag to search */
     if(epc_target != NULL)
     {
-        target.epcByteCount = strlen(epc_target) * sizeof(char) / 2;
+        target.epcByteCount = target_len/2;
         TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
 
         filter = &tag_filter;
@@ -523,6 +525,7 @@ Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
 {
     TMR_Status ret;
     char* epc_target = NULL;
+    int target_len;
     uint32_t bank, address, count;
 
     TMR_TagData target;
@@ -531,13 +534,13 @@ Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
     PyObject *result;
 
     static char *kwlist[] = {"bank", "address", "count", "epc_target", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "III|s", kwlist, &bank, &address, &count, &epc_target))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "III|z#", kwlist, &bank, &address, &count, &epc_target, &target_len))
         return NULL;
 
     if(epc_target != NULL)
     {
         /* build target tag to search */
-        target.epcByteCount = strlen(epc_target) / 2;
+        target.epcByteCount = target_len/2;
         TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
 
         filter = &tag_filter;
@@ -568,6 +571,7 @@ Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
 {
     TMR_Status ret;
     char* epc_target = NULL;
+    int target_len;
     uint32_t bank, address;
     PyObject *data;
 
@@ -575,13 +579,13 @@ Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
     TMR_TagFilter tag_filter, *filter;
 
     static char *kwlist[] = {"bank", "address", "data", "epc_target", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIO!|s", kwlist, &bank, &address, &PyByteArray_Type, &data, &epc_target))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIO!|z#", kwlist, &bank, &address, &PyByteArray_Type, &data, &epc_target, &target_len))
         return NULL;
 
     if(epc_target != NULL)
     {
         /* build target tag to search */
-        target.epcByteCount = strlen(epc_target) / 2;
+        target.epcByteCount = target_len/2;
         TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
 
         filter = &tag_filter;
