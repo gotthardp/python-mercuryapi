@@ -34,6 +34,7 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     TMR_Reader reader;
+    TMR_TagFilter tag_filter;
     TMR_TagOp tagop;
     uint8_t antennas[MAX_ANTENNA_COUNT];
     TMR_ReadListenerBlock readListener;
@@ -201,7 +202,6 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
     char* epc_target = NULL;
     int target_len;
     TMR_TagData target;
-    TMR_TagFilter tag_filter;
     PyObject *bank = NULL;
     int readPower = 0;
 
@@ -242,12 +242,13 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
         target.epcByteCount = target_len/2;
         TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
 
-        if ((ret = TMR_TF_init_tag(&tag_filter, &target)) != TMR_SUCCESS)
+        if ((ret = TMR_TF_init_tag(&self->tag_filter, &target)) != TMR_SUCCESS)
             goto fail;
 
-        if ((ret = TMR_RP_set_filter(&plan, &tag_filter)) != TMR_SUCCESS)
-            goto fail;
+        TMR_RP_set_filter(&plan, &self->tag_filter);
     }
+    else
+        TMR_RP_set_filter(&plan, NULL);
 
     if (bank != NULL)
     {
@@ -274,9 +275,10 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
         if ((ret = TMR_TagOp_init_GEN2_ReadData(&self->tagop, op, 0, 0)) != TMR_SUCCESS)
             goto fail;
 
-        if ((ret = TMR_RP_set_tagop(&plan, &self->tagop)) != TMR_SUCCESS)
-            goto fail;
+        TMR_RP_set_tagop(&plan, &self->tagop);
     }
+    else
+        TMR_RP_set_tagop(&plan, NULL);
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_READ_PLAN, &plan)) != TMR_SUCCESS)
         goto fail;
