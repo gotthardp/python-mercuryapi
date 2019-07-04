@@ -470,7 +470,7 @@ Represents a read of an RFID tag:
  * *read_count* indicates how many times was the tag read during interrogation
  * *rssi* is the strength of the signal recieved from the tag
  * *frequency* the tag was read with
- * *timestamp* of the read (in floating-point seconds
+ * *timestamp* of the read, in floating-point seconds
    for [datetime.fromtimestamp](https://docs.python.org/3/library/datetime.html#datetime.datetime.fromtimestamp)
  * *epc_mem_data* contains the EPC bank data bytes
  * *tid_mem_data* contains the TID bank data bytes
