@@ -1,4 +1,5 @@
 include Makefile
 include mercuryapi.patch
 include README.md
+include long_description.txt
 include LICENSE
