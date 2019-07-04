@@ -1710,6 +1710,14 @@ TagReadData_dealloc(TagReadData* self)
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
+static PyObject *
+TagReadData_get_timestamp(TagReadData *self, void *closure)
+{
+    uint64_t timestamp = ((uint64_t)self->data.timestampHigh<<16) | self->data.timestampLow;
+    /* seconds as float for compatibility with datetime.fromtimestamp() */
+    return PyFloat_FromDouble((double)timestamp/1000.0);
+}
+
 static PyMethodDef TagReadData_methods[] = {
     {NULL}  /* Sentinel */
 };
@@ -1737,6 +1745,9 @@ static PyMemberDef TagReadData_members[] = {
 };
 
 static PyGetSetDef TagReadData_getseters[] = {
+    {"timestamp",
+     (getter)TagReadData_get_timestamp, NULL,
+     "Absolute time of the read", NULL},
     {NULL}  /* Sentinel */
 };
 
