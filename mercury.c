@@ -597,7 +597,6 @@ Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
         filter = NULL;
 
     ret = TMR_writeTagMemBytes(&self->reader, filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
-    free(filter);
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
         Py_RETURN_FALSE;
     else if (ret != TMR_SUCCESS)
