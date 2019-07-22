@@ -1,9 +1,3 @@
--------------------------------------------
-**Plea from the author**: I am looking for someone with a MacOS, who can help me fixing the build process for MacOS.
-Either by trying to build the code and fixing the errors one by one (with my help), or by temporarily granting me a (non-root) access to your machine so I can build the code by myself. Any help would be appreciated.
-
--------------------------------------------
-
 # Python wrapper for the ThingMagic Mercury API
 
 The [ThingMagic Mercury API](http://www.thingmagic.com/mercuryapi) is used to discover,
