@@ -14,10 +14,10 @@ mercuryapi: mercuryapi-$(APIVER)/.done
 	make -C mercuryapi-$(APIVER)/c/src/api
 
 	mkdir -p build/mercuryapi/include
-	find mercuryapi-*/c/src/api -type f -name '*.h' ! -name '*_imp.h' | grep -v 'ltkc_win32' | xargs cp -t build/mercuryapi/include
+	find mercuryapi-*/c/src/api -type f -name '*.h' ! -name '*_imp.h' ! -path '*ltkc_win32*' -exec cp {} build/mercuryapi/include/ \;
 
 	mkdir -p build/mercuryapi/lib
-	find mercuryapi-*/c/src/api -type f -name '*.a' -or -name '*.so.1' | xargs cp -t build/mercuryapi/lib
+	find mercuryapi-*/c/src/api -type f \( -name '*.a' -or -name '*.so.1' \) -exec cp {} build/mercuryapi/lib/ \;
 
 mercuryapi-$(APIVER)/.done: $(APIZIP)
 	unzip $(APIZIP)
@@ -25,4 +25,4 @@ mercuryapi-$(APIVER)/.done: $(APIZIP)
 	touch mercuryapi-$(APIVER)/.done
 
 $(APIZIP):
-	wget https://www.jadaktech.com/wp-content/uploads/2018/11/$(APIZIP)
+	curl https://www.jadaktech.com/wp-content/uploads/2018/11/$(APIZIP) -o $(APIZIP)
