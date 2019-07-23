@@ -2,10 +2,12 @@
 # python3 setup.py sdist upload
 from setuptools import setup, Extension
 from distutils.command.build import build
-import os
+import os, platform
 
 class my_build(build):
     def run(self):
+        if platform.system() == 'Darwin':
+            os.system("cp -f mercuryapi_osx.patch mercuryapi.patch")
         os.system("make mercuryapi")
         build.run(self)
 

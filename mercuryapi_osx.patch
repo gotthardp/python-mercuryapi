@@ -1,0 +1,89 @@
+--- c/src/api/Makefile	2015-10-06 04:39:20.000000000 -0700
++++ c/src/api/Makefile	2016-07-30 02:44:13.854834003 -0700
+@@ -68,7 +68,7 @@
+ HEADERS += tmr_utils.h
+ 
+ DBG ?= -g
+-CWARN = -Werror -Wall
++CWARN = -Wall
+ # Add -Wextra to chase down warnings that might appear on build server, but not dev machines
+ #CWARN += -Wextra
+ ifneq ($(TMR_ENABLE_SERIAL_READER_ONLY), 1)
+diff -auNr mercuryapi-1.31.2.orig/c/src/api/Makefile mercuryapi-1.31.2/c/src/api/Makefile
+--- c/src/api/Makefile	2018-10-02 18:53:16.000000000 +1000
++++ c/src/api/Makefile	2019-07-23 23:24:44.000000000 +1000
+@@ -138,7 +138,7 @@
+ endif
+ 
+ ifneq ($(TMR_ENABLE_SERIAL_READER_ONLY), 1)
+-all: $(LTKC_LIB) $(STATIC_LIB) $(SHARED_LIB) $(PROGS)
++all: $(LTKC_LIB) $(STATIC_LIB) $(PROGS)
+ 
+ $(OBJS): $(LTKC_LIB) $(LTKC_TM_IB)
+ 
+@@ -153,7 +153,7 @@
+ 	find lib/LTK/LTKC/Library -name '*.h' -exec cp -p {} ltkc_win32/inc/ \;
+ 	find lib/LTK/LTKC/Library -name '*.c' -exec cp -p {} ltkc_win32/src/ \;
+ else
+-all: $(STATIC_LIB) $(SHARED_LIB) $(PROGS)
++all: $(STATIC_LIB) $(PROGS)
+ 
+ $(OBJS):
+ endif
+diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/install_LTKC.sh mercuryapi-1.31.2/c/src/api/lib/install_LTKC.sh
+--- c/src/api/lib/install_LTKC.sh	2018-11-21 19:39:14.000000000 +1000
++++ c/src/api/lib/install_LTKC.sh	2019-07-23 23:23:53.000000000 +1000
+@@ -45,6 +45,7 @@
+ patch -p0 -d ${INSTALL_DIR} < ${PATCH_DIR}/llrp_ltk_shared_libs.patch
+ #Apply patch that provides specific error messages related to read function. This doesnt cover any additional functionality.
+ #patch -p0 -d ${INSTALL_DIR} < ${PATCH_DIR}/llrp_ltkc_read_specific_errors.patch
++patch -p0 -d ${INSTALL_DIR} < ${PATCH_DIR}/llrp_ltk_osx.patch
+ 
+ #This is to avoid multiple includes of out_ltkc_ header files.
+ echo '#ifndef __OUT_LTKC_WRAPPER_H' > ${INSTALL_DIR}/LTK/LTKC/Library/out_ltkc_wrapper.h
+diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/llrp_ltk_osx.patch mercuryapi-1.31.2/c/src/api/lib/llrp_ltk_osx.patch
+--- c/src/api/lib/llrp_ltk_osx.patch	1970-01-01 10:00:00.000000000 +1000
++++ c/src/api/lib/llrp_ltk_osx.patch	2019-07-23 23:22:53.000000000 +1000
+@@ -0,0 +1,42 @@
++diff -auNr LTK.orig/LTKC/Library/LLRP.org/Makefile LTK/LTKC/Library/LLRP.org/Makefile
++--- LTK.orig/LTKC/Library/LLRP.org/Makefile	2019-07-23 23:17:20.000000000 +1000
+++++ LTK/LTKC/Library/LLRP.org/Makefile	2019-07-23 23:20:17.000000000 +1000
++@@ -49,7 +49,7 @@
++ TM_LTKC_SONAME = $(TM_LTKC_LIB:.a=.so.1)
++ TM_LTKC_SHARED_LIB = $(TM_LTKC_SONAME)
++ 
++-all:  $(TM_LTKC_LIB) $(TM_LTKC_SHARED_LIB)
+++all:  $(TM_LTKC_LIB)
++ 
++ $(TM_LTKC_LIB) : $(TM_LTKC_OBJS)
++ 	$(AR) crv $(TM_LTKC_LIB) $(TM_LTKC_OBJS)
++diff -auNr LTK.orig/LTKC/Library/Makefile LTK/LTKC/Library/Makefile
++--- LTK.orig/LTKC/Library/Makefile	2019-07-23 23:17:20.000000000 +1000
+++++ LTK/LTKC/Library/Makefile	2019-07-23 23:19:45.000000000 +1000
++@@ -60,7 +60,7 @@
++ LTKC_SONAME = $(LTKC_LIB:.a=.so.1)
++ LTKC_SHARED_LIB = libltkc.so.1
++ 
++-all:    $(LTKC_LIB) $(LTKC_SHARED_LIB)
+++all:    $(LTKC_LIB)
++ 	cd LLRP.org; make all
++ 
++ everything:
++diff -auNr LTK.orig/LTKC/Library/ltkc_platform.h LTK/LTKC/Library/ltkc_platform.h
++--- LTK.orig/LTKC/Library/ltkc_platform.h	2011-03-04 16:56:16.000000000 +1000
+++++ LTK/LTKC/Library/ltkc_platform.h	2019-07-23 23:18:30.000000000 +1000
++@@ -39,8 +39,6 @@
++  * good to go.
++  */
++ 
++-#ifdef _STDINT_H
++-
++ typedef uint8_t                 llrp_u8_t;
++ typedef int8_t                  llrp_s8_t;
++ typedef uint16_t                llrp_u16_t;
++@@ -54,5 +52,3 @@
++ typedef uint8_t                 llrp_utf8_t;
++ typedef int                     llrp_bool_t;
++ typedef uint8_t                 llrp_byte_t;
++-
++-#endif /* _STDINT_H */

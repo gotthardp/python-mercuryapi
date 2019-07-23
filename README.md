@@ -564,7 +564,7 @@ sudo make install
 ```
 which is a shortcut to running
 ```bash
-sudo python setup.py install
+sudo python setup.py build install
 ```
 
 If you are getting a "Module not found" error, please double check that you built and
@@ -576,6 +576,14 @@ user to the `dialout` group:
 ```bash
 sudo usermod -a -G dialout $USER
 ```
+
+### MacOS X (Darwin)
+To build on Mac
+ * Copy `mercuryapi_osx.patch` to `mercuryapi.patch` (and overwrite the target)
+ * Run `make`
+
+Or simply do `python setup.py build install`
+
 
 ## Copyright and Licensing
 
