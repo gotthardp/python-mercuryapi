@@ -545,6 +545,7 @@ install the `python3-dev[evel]` instead of the `python-dev[evel]` packages.
 
 Build the module simply by running
 ```bash
+git clone https://github.com/gotthardp/python-mercuryapi.git
 cd python-mercuryapi
 make
 ```
