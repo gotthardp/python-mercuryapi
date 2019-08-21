@@ -1712,7 +1712,7 @@ TagReadData_dealloc(TagReadData* self)
 static PyObject *
 TagReadData_get_timestamp(TagReadData *self, void *closure)
 {
-    uint64_t timestamp = ((uint64_t)self->data.timestampHigh<<16) | self->data.timestampLow;
+    uint64_t timestamp = (uint64_t)self->data.timestampHigh<<32 | self->data.timestampLow;
     /* seconds as float for compatibility with datetime.fromtimestamp() */
     return PyFloat_FromDouble((double)timestamp/1000.0);
 }
