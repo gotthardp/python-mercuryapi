@@ -88,7 +88,16 @@ If no tags were found then the list will be empty.
 For example:
 ```python
 print(reader.read())
+[EPC(b'E2002047381502180820C296'), EPC(b'0000000000000000C0002403')]
+```
+
+To get a list (or a set) of EPC codes you can use the map function:
+```python
+epcs = map(lambda t: t.epc, reader.read())
+print(list(epcs))
 [b'E2002047381502180820C296', b'0000000000000000C0002403']
+print(set(epcs))
+{b'E2002047381502180820C296', b'0000000000000000C0002403'}
 ```
 
 #### reader.write(*epc_code*, *epc_target=None*)
@@ -492,15 +501,23 @@ print(tag.user_mem_data)
 bytearray(b'\x00\x00\x00...')
 ```
 
-The string representation (`repr`) of the tag data is its EPC.
+Please note that the bank data bytes need to be requested via the *bank* parameter
+of the reader.*set_read_plan* function. Data not requested will not be read.
+
+The friendly string representation (`str`) of the tag data is its EPC.
 
 ```python
 print(tag)
 b'E2000087071401930700D206'
 ```
 
-Please note that the bank data bytes need to be requested via the *bank* parameter
-of the reader.*set_read_plan* function. Data not requested will not be read.
+However, to avoid ambiguity, the string representation (`repr`) includes
+a prefix.
+
+```python
+print(repr(tag))
+EPC(b'E2000087071401930700D206')
+```
 
 
 ## Build Instructions

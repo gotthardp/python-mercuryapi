@@ -1635,10 +1635,23 @@ TagData_repr(TagData *self)
     PyObject *repr;
 
     epc = TagData_getepc(self, NULL);
-    repr = PyObject_Repr(epc);
+    repr = PyUnicode_FromFormat("EPC(%R)", epc);
     Py_XDECREF(epc);
 
     return repr;
+}
+
+static PyObject *
+TagData_str(TagData *self)
+{
+    PyObject *epc;
+    PyObject *str;
+
+    epc = TagData_getepc(self, NULL);
+    str = PyObject_Str(epc);
+    Py_XDECREF(epc);
+
+    return str;
 }
 
 static PyMethodDef TagData_methods[] = {
@@ -1672,7 +1685,7 @@ static PyTypeObject TagDataType = {
     0,                         /* tp_as_mapping */
     0,                         /* tp_hash  */
     0,                         /* tp_call */
-    0,                         /* tp_str */
+    (reprfunc)TagData_str,     /* tp_str */
     0,                         /* tp_getattro */
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
