@@ -212,7 +212,7 @@ parse_filter(TMR_Reader *reader, TMR_TagFilter *tag_filter, PyObject *arg)
     TMR_TagData target;
     TMR_Status ret;
 
-    if(PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE))
+    if(PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE) == 0)
     {
         target.epcByteCount = data.len/2;
         TMR_hexToBytes(data.buf, target.epc, target.epcByteCount, NULL);
@@ -237,7 +237,12 @@ parse_filter(TMR_Reader *reader, TMR_TagFilter *tag_filter, PyObject *arg)
 static int
 parse_multifilter(TMR_Reader *reader, TMR_TagFilter **tag_filter, PyObject *arg)
 {
-    if(PyObject_CheckBuffer(arg))
+    if (arg == NULL || arg == Py_None)
+    {
+        *tag_filter = NULL;
+        return 1;
+    }
+    else if(PyObject_CheckBuffer(arg))
     {
         *tag_filter = (TMR_TagFilter*)malloc(sizeof(TMR_TagFilter));
         return parse_filter(reader, *tag_filter, arg);
@@ -249,26 +254,21 @@ parse_multifilter(TMR_Reader *reader, TMR_TagFilter **tag_filter, PyObject *arg)
         /* we need one for the multifilter and then one for each of its items */
         *tag_filter = (TMR_TagFilter*)malloc((size+1)*sizeof(TMR_TagFilter));
 
-        tag_filter[0]->type = TMR_FILTER_TYPE_MULTI;
-        tag_filter[0]->u.multiFilterList.tagFilterList = (TMR_TagFilter**)malloc(size*sizeof(TMR_TagFilter*));
-        tag_filter[0]->u.multiFilterList.max = size;
-        tag_filter[0]->u.multiFilterList.len = size;
+        (*tag_filter)[0].type = TMR_FILTER_TYPE_MULTI;
+        (*tag_filter)[0].u.multiFilterList.tagFilterList = (TMR_TagFilter**)malloc(size*sizeof(TMR_TagFilter*));
+        (*tag_filter)[0].u.multiFilterList.max = size;
+        (*tag_filter)[0].u.multiFilterList.len = size;
 
         for(i = 0; i < size; i++)
         {
-            if(parse_filter(reader, tag_filter[i+1], PyList_GET_ITEM(arg, i)))
-                tag_filter[0]->u.multiFilterList.tagFilterList[i] = tag_filter[i+1];
+            if(parse_filter(reader, *tag_filter+(i+1), PyList_GET_ITEM(arg, i)))
+                (*tag_filter)[0].u.multiFilterList.tagFilterList[i] = *tag_filter+(i+1);
             else
             {
                 reset_filter(tag_filter);
                 return 0;
             }
         }
-        return 1;
-    }
-    else if (arg == Py_None)
-    {
-        *tag_filter = NULL;
         return 1;
     }
     else
