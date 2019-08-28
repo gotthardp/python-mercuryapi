@@ -107,13 +107,32 @@ fail:
 }
 
 static void
+free_filter(TMR_TagFilter *tag_filter)
+{
+    uint16_t i;
+
+    if(tag_filter != NULL)
+    {
+        if(tag_filter->type == TMR_FILTER_TYPE_GEN2_SELECT)
+        {
+            free(tag_filter->u.gen2Select.mask);
+        }
+        else if(tag_filter->type == TMR_FILTER_TYPE_MULTI)
+        {
+            for(i = 0; i < tag_filter->u.multiFilterList.len; i++)
+                free_filter(tag_filter->u.multiFilterList.tagFilterList[i]);
+
+            free(tag_filter->u.multiFilterList.tagFilterList);
+        }
+    }
+}
+
+static void
 reset_filter(TMR_TagFilter **tag_filter)
 {
     if(*tag_filter != NULL)
     {
-        if(tag_filter[0]->type == TMR_FILTER_TYPE_MULTI)
-            free(tag_filter[0]->u.multiFilterList.tagFilterList);
-
+        free_filter(*tag_filter);
         free(*tag_filter);
         *tag_filter = NULL;
     }
@@ -152,6 +171,18 @@ static TMR_TagProtocol str2protocol(const char *name)
     }
 
     return TMR_TAG_PROTOCOL_NONE;
+}
+
+static const char* protocol2str(TMR_TagProtocol protocol)
+{
+    Protocols *prot;
+    for(prot = Reader_protocols; prot->name != NULL; prot++)
+    {
+        if(prot->protocol == protocol)
+            return prot->name;
+    }
+
+    return NULL;
 }
 
 static
@@ -205,63 +236,125 @@ static int str2bank(PyObject *name)
     }
 }
 
-static int
-parse_filter(TMR_Reader *reader, TMR_TagFilter *tag_filter, PyObject *arg)
+typedef struct {
+    const char* name;
+    TMR_GEN2_Select_action action;
+} Actions;
+
+static Actions Reader_actions[] = {
+    {"on&off", ON_N_OFF},
+    {"on&nop", ON_N_NOP},
+    {"nop&off", NOP_N_OFF},
+    {"neg&nop", NEG_N_NOP},
+    {"off&on", OFF_N_ON},
+    {"off&nop", OFF_N_NOP},
+    {"nop&on", NOP_N_ON},
+    {"nop&neg", NOP_N_NEG},
+    {NULL, -1}
+};
+
+static TMR_GEN2_Select_action str2action(const char *name)
 {
-    Py_buffer data;
-    TMR_TagData target;
-    TMR_Status ret;
+    Actions *act;
 
-    if(PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE) == 0)
+    if(name == NULL)
+        return ON_N_OFF; // default action
+
+    for(act = Reader_actions; act->name != NULL; act++)
     {
-        target.epcByteCount = data.len/2;
-        TMR_hexToBytes(data.buf, target.epc, target.epcByteCount, NULL);
-
-        PyBuffer_Release(&data);
-
-        if ((ret = TMR_TF_init_tag(tag_filter, &target)) != TMR_SUCCESS)
-        {
-            PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
-            return 0;
-        }
-        else
-            return 1;
+        if(strcmp(act->name, name) == 0)
+            return act->action;
     }
-    else
-    {
-        PyErr_SetString(PyExc_TypeError, "byte string expected");
-        return 0;
-    }
+
+    return -1;
 }
 
 static int
-parse_multifilter(TMR_Reader *reader, TMR_TagFilter **tag_filter, PyObject *arg)
+parse_gen2filter(TMR_TagFilter *tag_filter, PyObject *arg)
 {
+    char* target_str;
+    int target_len;
+    char* action = NULL;
+    uint8_t *target;
+
+    if(!PyArg_ParseTuple(arg, "s#|z", &target_str, &target_len, &action))
+        return 0;
+
+    target = (uint8_t*)malloc(target_len/2);
+    TMR_hexToBytes(target_str, target, target_len/2, NULL);
+
+    /* EPC starts at bit 32 */
+    TMR_TF_init_gen2_select(tag_filter, false, TMR_GEN2_BANK_EPC, 32, 8*target_len/2, target);
+    if((tag_filter->u.gen2Select.action = str2action(action)) == -1)
+    {
+        PyErr_SetString(PyExc_TypeError, "invalid action name");
+        /* target will be freed by the caller */
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
+parse_multifilter(TMR_TagFilter **tag_filter, PyObject *arg)
+{
+    /* no filter */
     if (arg == NULL || arg == Py_None)
     {
         *tag_filter = NULL;
         return 1;
     }
+    /* tag data filter - non-protocol-specific */
     else if(PyObject_CheckBuffer(arg))
     {
-        *tag_filter = (TMR_TagFilter*)malloc(sizeof(TMR_TagFilter));
-        return parse_filter(reader, *tag_filter, arg);
+        Py_buffer data;
+        TMR_TagData target;
+
+        if(PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE) == 0)
+        {
+            target.epcByteCount = data.len/2;
+            TMR_hexToBytes(data.buf, target.epc, target.epcByteCount, NULL);
+
+            PyBuffer_Release(&data);
+
+            *tag_filter = (TMR_TagFilter*)calloc(1, sizeof(TMR_TagFilter));
+            TMR_TF_init_tag(*tag_filter, &target);
+            return 1;
+        }
+        else
+        {
+            PyErr_SetString(PyExc_TypeError, "byte string expected");
+            return 0;
+        }
     }
+    /* Gen2 Select filter */
+    else if(PyTuple_Check(arg))
+    {
+        *tag_filter = (TMR_TagFilter*)calloc(1, sizeof(TMR_TagFilter));
+        if(parse_gen2filter(*tag_filter, arg))
+            return 1;
+        else
+        {
+            reset_filter(tag_filter);
+            return 0;
+        }
+    }
+    /* Multi Gen2 select filter */
     else if(PyList_Check(arg))
     {
         Py_ssize_t i;
         Py_ssize_t size = PyList_Size(arg);
         /* we need one for the multifilter and then one for each of its items */
-        *tag_filter = (TMR_TagFilter*)malloc((size+1)*sizeof(TMR_TagFilter));
+        *tag_filter = (TMR_TagFilter*)calloc(size+1, sizeof(TMR_TagFilter));
 
         (*tag_filter)[0].type = TMR_FILTER_TYPE_MULTI;
-        (*tag_filter)[0].u.multiFilterList.tagFilterList = (TMR_TagFilter**)malloc(size*sizeof(TMR_TagFilter*));
+        (*tag_filter)[0].u.multiFilterList.tagFilterList = (TMR_TagFilter**)calloc(size, sizeof(TMR_TagFilter*));
         (*tag_filter)[0].u.multiFilterList.max = size;
         (*tag_filter)[0].u.multiFilterList.len = size;
 
         for(i = 0; i < size; i++)
         {
-            if(parse_filter(reader, *tag_filter+(i+1), PyList_GET_ITEM(arg, i)))
+            if(parse_gen2filter(*tag_filter+(i+1), PyList_GetItem(arg, i)))
                 (*tag_filter)[0].u.multiFilterList.tagFilterList[i] = *tag_filter+(i+1);
             else
             {
@@ -273,7 +366,7 @@ parse_multifilter(TMR_Reader *reader, TMR_TagFilter **tag_filter, PyObject *arg)
     }
     else
     {
-        PyErr_SetString(PyExc_TypeError, "byte strings expected");
+        PyErr_SetString(PyExc_TypeError, "filter expected");
         return 0;
     }
 }
@@ -325,7 +418,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
         goto fail;
 
     reset_filter(&self->tag_filter);
-    if(parse_multifilter(&self->reader, &self->tag_filter, epc_target))
+    if(parse_multifilter(&self->tag_filter, epc_target))
         TMR_RP_set_filter(&plan, self->tag_filter);
     else
         return NULL;
@@ -395,7 +488,7 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
     TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
 
     /* build target tag to search */
-    if(!parse_multifilter(&self->reader, &tag_filter, epc_target))
+    if(!parse_multifilter(&tag_filter, epc_target))
         return NULL;
 
     // Write data tag on target tag.
@@ -608,7 +701,7 @@ Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "III|O", kwlist, &bank, &address, &count, &epc_target))
         return NULL;
 
-    if(!parse_multifilter(&self->reader, &tag_filter, epc_target))
+    if(!parse_multifilter(&tag_filter, epc_target))
         return NULL;
 
     buf = malloc(count);
@@ -642,7 +735,7 @@ Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIO!|O", kwlist, &bank, &address, &PyByteArray_Type, &data, &epc_target))
         return NULL;
 
-    if(!parse_multifilter(&self->reader, &tag_filter, epc_target))
+    if(!parse_multifilter(&tag_filter, epc_target))
         return NULL;
 
     ret = TMR_writeTagMemBytes(&self->reader, tag_filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
@@ -1679,6 +1772,33 @@ TagData_setepc(TagData *self, PyObject *value, void *closure)
 }
 
 static PyObject *
+TagData_get_protocol(TagData *self, void *closure)
+{
+    const char *protocol = protocol2str(self->tag.protocol);
+
+    if(protocol != NULL)
+        return PyUnicode_FromString(protocol);
+    else
+        return Py_None;
+}
+
+static int
+TagData_set_protocol(TagData *self, PyObject *value, void *closure)
+{
+    if(value == Py_None)
+        self->tag.protocol = TMR_TAG_PROTOCOL_NONE;
+    else
+    {
+        TMR_TagProtocol protocol;
+        if((protocol = str2protocol(PyUnicode_AsUTF8(value))) == TMR_TAG_PROTOCOL_NONE)
+            return -1;
+
+        self->tag.protocol = protocol;
+    }
+    return 0;
+}
+
+static PyObject *
 TagData_repr(TagData *self)
 {
     PyObject *epc;
@@ -1716,6 +1836,9 @@ static PyGetSetDef TagData_getseters[] = {
     {"epc",
      (getter)TagData_getepc, (setter)TagData_setepc,
      "Tag EPC", NULL},
+    {"protocol",
+     (getter)TagData_get_protocol, (setter)TagData_set_protocol,
+     "Tag protocol", NULL},
     {NULL}  /* Sentinel */
 };
 

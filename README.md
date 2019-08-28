@@ -62,8 +62,7 @@ Specifies the antennas and protocol to use for a search:
    * `"IPX64"`, IPX (64kbps link rate)
    * `"IPX256"`, IPX (256kbps link rate)
    * `"ATA"`
- * *epc_target* defines EPC or (when supported by your reader) list of EPC
-   of the tag(s) to read. Each EPC is defined as a hexa-string, e.g. `b'E2002047381502180820C296'`
+ * *epc_target* defines tags to be addressed (see Filtering)
  * *bank* defines the memory banks to read. Supported values are:
    * `"reserved"`
    * `"epc"`
@@ -79,6 +78,46 @@ reader.set_read_plan([1], "GEN2")
 or
 ```python
 reader.set_read_plan([1], "GEN2", bank=["user"], read_power=1900)
+```
+
+#### Target filtering
+
+The *epc_target* may be:
+ * *None* to address all tags
+ * Single hexa-string, e.g. `b'E2002047381502180820C296'` to address a tag
+   with specific data (non-protocol-specific)
+ * Single tuple or a list of tuples to address a given tag population using
+   the Gen2 Select.
+
+The Gen2 Select filter is one or more tuples **(*EPC*, [*action*])**, where
+ * *EPC* defines the hexa-string with a target EPC
+ * *action* defines the filter action on tags matching and not-matching the
+   *EPC* (if not specified, *on&off* is used)
+
+   Action   | Tag Matching | Tag Not-Matching
+  ----------|--------------|------------------
+  *on&off*  | Assert SL    | Deassert SL
+  *on&nop*  | Assert SL    | Do nothing
+  *nop&off* | Do nothing   | Deassert SL
+  *neg&nop* | Negate SL    | Do nothing
+  *off&on*  | Deassert SL  | Assert SL
+  *off&nop* | Deassert SL  | Do nothing
+  *nop&on*  | Do nothing   | Assert SL
+  *nop&neg* | Do nothing   | Negate SL
+
+The tuples are processed sequentially and depending on the action the
+selection (SL) of matching and not-matching tags is either *asserted*,
+*deasserted* or *negated*. The read/write operation is applied to the
+tags that remain asserted after processing the entire filter.
+
+Please note that the assertion is a state of the (physical) tag that
+disappears after some time. Therefore, the result of one operation
+may affect another!
+
+To select one tag or another, use *on&off*, followed by a sequence of *on&nop*.
+For example:
+```python
+[(b'E2002047381502180820C296', 'on&off'), (b'0000000000000000C0002403', 'on&nop')]
 ```
 
 #### reader.read(*timeout=500*)
