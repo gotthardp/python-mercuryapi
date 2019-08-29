@@ -62,7 +62,8 @@ Specifies the antennas and protocol to use for a search:
    * `"IPX64"`, IPX (64kbps link rate)
    * `"IPX256"`, IPX (256kbps link rate)
    * `"ATA"`
- * *epc_target* defines EPC of the tag to read as a hexa-string, e.g. `b'E2002047381502180820C296'`
+ * *epc_target* defines EPC (or list of EPC) of the tag(s) to read. Each EPC is defined
+   as a hexa-string, e.g. `b'E2002047381502180820C296'`
  * *bank* defines the memory banks to read. Supported values are:
    * `"reserved"`
    * `"epc"`

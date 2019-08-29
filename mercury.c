@@ -34,7 +34,7 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     TMR_Reader reader;
-    TMR_TagFilter tag_filter;
+    TMR_TagFilter *tag_filter;
     TMR_TagOp tagop;
     uint8_t antennas[MAX_ANTENNA_COUNT];
     TMR_ReadListenerBlock readListener;
@@ -79,6 +79,8 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (self == NULL)
         return NULL;
 
+    self->tag_filter = NULL;
+
     if ((ret = TMR_create(&self->reader, deviceUri)) != TMR_SUCCESS)
         goto fail;
 
@@ -105,8 +107,22 @@ fail:
 }
 
 static void
+reset_filter(TMR_TagFilter **tag_filter)
+{
+    if(*tag_filter != NULL)
+    {
+        if(tag_filter[0]->type == TMR_FILTER_TYPE_MULTI)
+            free(tag_filter[0]->u.multiFilterList.tagFilterList);
+
+        free(*tag_filter);
+        *tag_filter = NULL;
+    }
+}
+
+static void
 Reader_dealloc(Reader* self)
 {
+    reset_filter(&self->tag_filter);
     TMR_destroy(&self->reader);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -189,6 +205,79 @@ static int str2bank(PyObject *name)
     }
 }
 
+static int
+parse_filter(TMR_Reader *reader, TMR_TagFilter *tag_filter, PyObject *arg)
+{
+    Py_buffer data;
+    TMR_TagData target;
+    TMR_Status ret;
+
+    if(PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE))
+    {
+        target.epcByteCount = data.len/2;
+        TMR_hexToBytes(data.buf, target.epc, target.epcByteCount, NULL);
+
+        PyBuffer_Release(&data);
+
+        if ((ret = TMR_TF_init_tag(tag_filter, &target)) != TMR_SUCCESS)
+        {
+            PyErr_SetString(PyExc_TypeError, TMR_strerr(reader, ret));
+            return 0;
+        }
+        else
+            return 1;
+    }
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "byte string expected");
+        return 0;
+    }
+}
+
+static int
+parse_multifilter(TMR_Reader *reader, TMR_TagFilter **tag_filter, PyObject *arg)
+{
+    if(PyObject_CheckBuffer(arg))
+    {
+        *tag_filter = (TMR_TagFilter*)malloc(sizeof(TMR_TagFilter));
+        return parse_filter(reader, *tag_filter, arg);
+    }
+    else if(PyList_Check(arg))
+    {
+        Py_ssize_t i;
+        Py_ssize_t size = PyList_Size(arg);
+        /* we need one for the multifilter and then one for each of its items */
+        *tag_filter = (TMR_TagFilter*)malloc((size+1)*sizeof(TMR_TagFilter));
+
+        tag_filter[0]->type = TMR_FILTER_TYPE_MULTI;
+        tag_filter[0]->u.multiFilterList.tagFilterList = (TMR_TagFilter**)malloc(size*sizeof(TMR_TagFilter*));
+        tag_filter[0]->u.multiFilterList.max = size;
+        tag_filter[0]->u.multiFilterList.len = size;
+
+        for(i = 0; i < size; i++)
+        {
+            if(parse_filter(reader, tag_filter[i+1], PyList_GET_ITEM(arg, i)))
+                tag_filter[0]->u.multiFilterList.tagFilterList[i] = tag_filter[i+1];
+            else
+            {
+                reset_filter(tag_filter);
+                return 0;
+            }
+        }
+        return 1;
+    }
+    else if (arg == Py_None)
+    {
+        *tag_filter = NULL;
+        return 1;
+    }
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "byte strings expected");
+        return 0;
+    }
+}
+
 static PyObject *
 Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
 {
@@ -199,15 +288,13 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
     TMR_Status ret;
     int i;
     uint8_t ant_count;
-    char* epc_target = NULL;
-    int target_len;
-    TMR_TagData target;
+    PyObject *epc_target = NULL;
     PyObject *bank = NULL;
     int readPower = 0;
 
     static char *kwlist[] = {"antennas", "protocol", "epc_target", "bank", "read_power", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|z#Oi", kwlist, &PyList_Type, &list, &s, &epc_target, &target_len, &bank, &readPower))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!s|OOi", kwlist, &PyList_Type, &list, &s, &epc_target, &bank, &readPower))
         return NULL;
 
     if ((protocol = str2protocol(s)) == TMR_TAG_PROTOCOL_NONE)
@@ -237,18 +324,11 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
     if ((ret = TMR_RP_init_simple(&plan, ant_count, self->antennas, protocol, 1000)) != TMR_SUCCESS)
         goto fail;
 
-    if(epc_target != NULL)
-    {
-        target.epcByteCount = target_len/2;
-        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
-
-        if ((ret = TMR_TF_init_tag(&self->tag_filter, &target)) != TMR_SUCCESS)
-            goto fail;
-
-        TMR_RP_set_filter(&plan, &self->tag_filter);
-    }
+    reset_filter(&self->tag_filter);
+    if(parse_multifilter(&self->reader, &self->tag_filter, epc_target))
+        TMR_RP_set_filter(&plan, self->tag_filter);
     else
-        TMR_RP_set_filter(&plan, NULL);
+        return NULL;
 
     if (bank != NULL)
     {
@@ -299,16 +379,15 @@ static PyObject *
 Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 {
     char* epc_data;
-    char* epc_target = NULL;
-    int data_len, target_len;
+    PyObject *epc_target = NULL;
+    int data_len;
     TMR_Status ret;
     TMR_TagData data;
-    TMR_TagData target;
-    TMR_TagFilter tag_filter, *filter;
+    TMR_TagFilter *tag_filter = NULL;
 
     // Read call arguments.
     static char *kwlist[] = {"epc_code", "epc_target", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#|z#", kwlist, &epc_data, &data_len, &epc_target, &target_len))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#|O", kwlist, &epc_data, &data_len, &epc_target))
         return NULL;
 
     /* build data tag to be writen */
@@ -316,19 +395,12 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
     TMR_hexToBytes(epc_data, data.epc, data.epcByteCount, NULL);
 
     /* build target tag to search */
-    if(epc_target != NULL)
-    {
-        target.epcByteCount = target_len/2;
-        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
-
-        filter = &tag_filter;
-        TMR_TF_init_tag(filter, &target);
-    }
-    else
-        filter = NULL;
+    if(!parse_multifilter(&self->reader, &tag_filter, epc_target))
+        return NULL;
 
     // Write data tag on target tag.
-    ret = TMR_writeTag(&self->reader, filter, &data);
+    ret = TMR_writeTag(&self->reader, tag_filter, &data);
+    reset_filter(&tag_filter);
     // In case of not target tag found.
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
         Py_RETURN_FALSE;
@@ -526,33 +598,22 @@ static PyObject *
 Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
 {
     TMR_Status ret;
-    char* epc_target = NULL;
-    int target_len;
+    PyObject *epc_target = NULL;
     uint32_t bank, address, count;
-
-    TMR_TagData target;
-    TMR_TagFilter tag_filter, *filter;
+    TMR_TagFilter *tag_filter = NULL;
     uint8_t *buf;
     PyObject *result;
 
     static char *kwlist[] = {"bank", "address", "count", "epc_target", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "III|z#", kwlist, &bank, &address, &count, &epc_target, &target_len))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "III|O", kwlist, &bank, &address, &count, &epc_target))
         return NULL;
 
-    if(epc_target != NULL)
-    {
-        /* build target tag to search */
-        target.epcByteCount = target_len/2;
-        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
-
-        filter = &tag_filter;
-        TMR_TF_init_tag(filter, &target);
-    }
-    else
-        filter = NULL;
+    if(!parse_multifilter(&self->reader, &tag_filter, epc_target))
+        return NULL;
 
     buf = malloc(count);
-    ret = TMR_readTagMemBytes(&self->reader, filter, bank, address, (uint16_t)count, buf);
+    ret = TMR_readTagMemBytes(&self->reader, tag_filter, bank, address, (uint16_t)count, buf);
+    reset_filter(&tag_filter);
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
         Py_RETURN_NONE;
     else if (ret != TMR_SUCCESS)
@@ -572,31 +633,20 @@ static PyObject *
 Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
 {
     TMR_Status ret;
-    char* epc_target = NULL;
-    int target_len;
+    PyObject *epc_target = NULL;
     uint32_t bank, address;
     PyObject *data;
-
-    TMR_TagData target;
-    TMR_TagFilter tag_filter, *filter;
+    TMR_TagFilter *tag_filter = NULL;
 
     static char *kwlist[] = {"bank", "address", "data", "epc_target", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIO!|z#", kwlist, &bank, &address, &PyByteArray_Type, &data, &epc_target, &target_len))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIO!|O", kwlist, &bank, &address, &PyByteArray_Type, &data, &epc_target))
         return NULL;
 
-    if(epc_target != NULL)
-    {
-        /* build target tag to search */
-        target.epcByteCount = target_len/2;
-        TMR_hexToBytes(epc_target, target.epc, target.epcByteCount, NULL);
+    if(!parse_multifilter(&self->reader, &tag_filter, epc_target))
+        return NULL;
 
-        filter = &tag_filter;
-        TMR_TF_init_tag(filter, &target);
-    }
-    else
-        filter = NULL;
-
-    ret = TMR_writeTagMemBytes(&self->reader, filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
+    ret = TMR_writeTagMemBytes(&self->reader, tag_filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
+    reset_filter(&tag_filter);
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
         Py_RETURN_FALSE;
     else if (ret != TMR_SUCCESS)
