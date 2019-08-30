@@ -94,16 +94,16 @@ The Gen2 Select filter is one or more tuples **(*EPC*, [*action*])**, where
  * *action* defines the filter action on tags matching and not-matching the
    *EPC* (if not specified, *on&off* is used)
 
-   Action   | Tag Matching | Tag Not-Matching
-  ----------|--------------|------------------
-  *on&off*  | Assert SL    | Deassert SL
-  *on&nop*  | Assert SL    | Do nothing
-  *nop&off* | Do nothing   | Deassert SL
-  *neg&nop* | Negate SL    | Do nothing
-  *off&on*  | Deassert SL  | Assert SL
-  *off&nop* | Deassert SL  | Do nothing
-  *nop&on*  | Do nothing   | Assert SL
-  *nop&neg* | Do nothing   | Negate SL
+  Action   | Tag Matching | Tag Not-Matching
+ ----------|--------------|------------------
+ *on&off*  | Assert SL    | Deassert SL
+ *on&nop*  | Assert SL    | Do nothing
+ *nop&off* | Do nothing   | Deassert SL
+ *neg&nop* | Negate SL    | Do nothing
+ *off&on*  | Deassert SL  | Assert SL
+ *off&nop* | Deassert SL  | Do nothing
+ *nop&on*  | Do nothing   | Assert SL
+ *nop&neg* | Do nothing   | Negate SL
 
 The tuples are processed sequentially and depending on the action the
 selection (SL) of matching and not-matching tags is either *asserted*,
