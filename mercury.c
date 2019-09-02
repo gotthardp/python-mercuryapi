@@ -258,7 +258,7 @@ static TMR_GEN2_Select_action str2action(const char *name)
     Actions *act;
 
     if(name == NULL)
-        return ON_N_OFF; // default action
+        return ON_N_OFF;
 
     for(act = Reader_actions; act->name != NULL; act++)
     {
@@ -270,26 +270,118 @@ static TMR_GEN2_Select_action str2action(const char *name)
 }
 
 static int
-parse_gen2filter(TMR_TagFilter *tag_filter, PyObject *arg)
+parse_gen2mask(TMR_TagFilter *tag_filter, TMR_GEN2_Bank bank, uint32_t offset, PyObject *mask)
 {
-    char* target_str;
-    int target_len;
-    char* action = NULL;
+    Py_buffer data;
     uint8_t *target;
 
-    if(!PyArg_ParseTuple(arg, "s#|z", &target_str, &target_len, &action))
-        return 0;
-
-    target = (uint8_t*)malloc(target_len/2);
-    TMR_hexToBytes(target_str, target, target_len/2, NULL);
-
-    /* EPC starts at bit 32 */
-    TMR_TF_init_gen2_select(tag_filter, false, TMR_GEN2_BANK_EPC, 32, 8*target_len/2, target);
-    if((tag_filter->u.gen2Select.action = str2action(action)) == -1)
+    if(PyObject_GetBuffer(mask, &data, PyBUF_SIMPLE) == 0)
     {
-        PyErr_SetString(PyExc_TypeError, "invalid action name");
-        /* target will be freed by the caller */
+        target = (uint8_t*)malloc(data.len/2);
+        TMR_hexToBytes(data.buf, target, data.len/2, NULL);
+        PyBuffer_Release(&data);
+
+        TMR_TF_init_gen2_select(tag_filter, false, bank, offset, 8*data.len/2, target);
+        return 1;
+    }
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "byte string expected");
         return 0;
+    }
+}
+
+static int
+parse_gen2filter(TMR_TagFilter *tag_filter, PyObject *arg, TMR_GEN2_Select_action defaction)
+{
+    if(PyObject_CheckBuffer(arg))
+    {
+        /* EPC starts at bit 32 */
+        if(!parse_gen2mask(tag_filter, TMR_GEN2_BANK_EPC, 32, arg))
+            return 0;
+
+        tag_filter->u.gen2Select.action = defaction;
+    }
+    else
+    {
+        PyObject *obj;
+        /* parse bank and mask, set defaults */
+        if((obj = PyDict_GetItemString(arg, "reserved")) != NULL)
+        {
+            if(!parse_gen2mask(tag_filter, TMR_GEN2_BANK_RESERVED, 0, obj))
+                return 0;
+        }
+        else if((obj = PyDict_GetItemString(arg, "epc")) != NULL)
+        {
+            /* EPC starts at bit 32 */
+            if(!parse_gen2mask(tag_filter, TMR_GEN2_BANK_EPC, 32, obj))
+                return 0;
+        }
+        else if((obj = PyDict_GetItemString(arg, "tid")) != NULL)
+        {
+            if(!parse_gen2mask(tag_filter, TMR_GEN2_BANK_TID, 0, obj))
+                return 0;
+        }
+        else if((obj = PyDict_GetItemString(arg, "user")) != NULL)
+        {
+            if(!parse_gen2mask(tag_filter, TMR_GEN2_BANK_USER, 0, obj))
+                return 0;
+        }
+        else
+        {
+            PyErr_SetString(PyExc_TypeError, "reserved, epc, tid or user mask expected");
+            return 0;
+        }
+
+        if((obj = PyDict_GetItemString(arg, "invert")) != NULL)
+        {
+            if(obj == Py_False)
+                tag_filter->u.gen2Select.invert = 0;
+            else if(obj == Py_True)
+                tag_filter->u.gen2Select.invert = 1;
+            else
+            {
+                PyErr_SetString(PyExc_TypeError, "invalid invert flag: boolean expected");
+                /* target will be freed by the caller */
+                return 0;
+            }
+        }
+
+        if((obj = PyDict_GetItemString(arg, "bit")) != NULL)
+        {
+            if(PyLong_Check(obj))
+                tag_filter->u.gen2Select.bitPointer = PyLong_AsLong(obj);
+            else
+            {
+                PyErr_SetString(PyExc_TypeError, "invalid bit offset: number expected");
+                return 0;
+            }
+        }
+
+        if((obj = PyDict_GetItemString(arg, "len")) != NULL)
+        {
+            if(PyLong_Check(obj))
+                tag_filter->u.gen2Select.maskBitLength = PyLong_AsLong(obj);
+            else
+            {
+                PyErr_SetString(PyExc_TypeError, "invalid mask length: number expected");
+                return 0;
+            }
+        }
+
+
+        if((obj = PyDict_GetItemString(arg, "action")) != NULL)
+        {
+            if (!PyUnicode_Check(arg) ||
+                (tag_filter->u.gen2Select.action = str2action(PyUnicode_AsUTF8(arg)) == -1))
+            {
+                PyErr_SetString(PyExc_TypeError, "invalid action");
+                return 0;
+            }
+        }
+        else
+            tag_filter->u.gen2Select.action = defaction;
+
     }
 
     return 1;
@@ -328,10 +420,10 @@ parse_multifilter(TMR_TagFilter **tag_filter, PyObject *arg)
         }
     }
     /* Gen2 Select filter */
-    else if(PyTuple_Check(arg))
+    else if(PyDict_Check(arg))
     {
         *tag_filter = (TMR_TagFilter*)calloc(1, sizeof(TMR_TagFilter));
-        if(parse_gen2filter(*tag_filter, arg))
+        if(parse_gen2filter(*tag_filter, arg, ON_N_OFF))
             return 1;
         else
         {
@@ -354,7 +446,7 @@ parse_multifilter(TMR_TagFilter **tag_filter, PyObject *arg)
 
         for(i = 0; i < size; i++)
         {
-            if(parse_gen2filter(*tag_filter+(i+1), PyList_GetItem(arg, i)))
+            if(parse_gen2filter(*tag_filter+(i+1), PyList_GetItem(arg, i), i == 0 ? ON_N_OFF : ON_N_NOP))
                 (*tag_filter)[0].u.multiFilterList.tagFilterList[i] = *tag_filter+(i+1);
             else
             {

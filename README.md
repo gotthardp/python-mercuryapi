@@ -86,13 +86,20 @@ The *epc_target* may be:
  * *None* to address all tags
  * Single hexa-string, e.g. `b'E2002047381502180820C296'` to address a tag
    with specific data (non-protocol-specific)
- * Single tuple or a list of tuples to address a given tag population using
-   the Gen2 Select.
+ * List of hexa-strings to address multiple Gen2 tags with given EPC
+ * List of Gen2 Select filters (or even a single filter) to address a given tag
+   population (see below).
 
-The Gen2 Select filter is one or more tuples **(*EPC*, [*action*])**, where
- * *EPC* defines the hexa-string with a target EPC
- * *action* defines the filter action on tags matching and not-matching the
-   *EPC* (if not specified, *on&off* is used)
+The Gen2 Select filter is a Dict with arguments:
+ * *reserved*, *epc*, *tid*, or *user* that defines the mask as a hexa-string.
+   This also determines the memory bank in which to compare the mask.
+ * *invert* flag to match tags **not** matching the mask (by default *false*)
+ * *bit* indicating the location (in bits) at which to begin comparing the mask
+   (by default 32 for the *epc* bank and 0 otherwise)
+ * *len* indicating length (in bits) of the mask (by default, the entire
+   hexa-string given will be matched)
+ * *action* defines the filter action on the matching and not-matching tags
+   (by default, *on&off* for the first filter in the list and *on&nop* otherwise)
 
   Action   | Tag Matching | Tag Not-Matching
  ----------|--------------|------------------
@@ -110,15 +117,19 @@ selection (SL) of matching and not-matching tags is either *asserted*,
 *deasserted* or *negated*. The read/write operation is applied to the
 tags that remain asserted after processing the entire filter.
 
-Please note that the assertion is a state of the (physical) tag that
-disappears after some time. Therefore, the result of one operation
-may affect another!
-
 To select one tag or another, use *on&off*, followed by a sequence of *on&nop*.
 For example:
 ```python
-[(b'E2002047381502180820C296', 'on&off'), (b'0000000000000000C0002403', 'on&nop')]
+[b'E2002047381502180820C296', b'0000000000000000C0002403']
 ```
+is equivalent to
+```python
+[{'epc':b'E2002047381502180820C296', 'bit':32, 'action':'on&off'}, {'epc':b'0000000000000000C0002403', 'bit':32, 'action':'on&nop'}]
+```
+
+Please note that the assertion is a state of the (physical) tag that
+disappears after some time. Therefore, the result of one operation
+may affect another!
 
 #### reader.read(*timeout=500*)
 Performs a synchronous read, and then returns a list of *TagReadData* objects resulting from the search.
