@@ -87,8 +87,8 @@ The *epc_target* may be:
  * Single hexa-string, e.g. `b'E2002047381502180820C296'` to address a tag
    with specific data (non-protocol-specific)
  * List of hexa-strings to address multiple Gen2 tags with given EPC
- * List of Gen2 Select filters (or even a single filter) to address a given tag
-   population (see below).
+ * List of Gen2 Select filters (or even a single Gen2 filter) to address a given
+   tag population (see below).
 
 The Gen2 Select filter is a Dict with arguments:
  * *reserved*, *epc*, *tid*, or *user* that defines the mask as a hexa-string.
@@ -124,7 +124,7 @@ For example:
 ```
 is equivalent to
 ```python
-[{'epc':b'E2002047381502180820C296', 'bit':32, 'action':'on&off'}, {'epc':b'0000000000000000C0002403', 'bit':32, 'action':'on&nop'}]
+[{'epc':b'E2002047381502180820C296', 'action':'on&off'}, {'epc':b'0000000000000000C0002403', 'action':'on&nop'}]
 ```
 
 Please note that the assertion is a state of the (physical) tag that
