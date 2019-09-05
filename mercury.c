@@ -62,17 +62,58 @@ static PyTypeObject TagReadDataType;
 static void
 invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cookie);
 
+typedef struct {
+    const char* name;
+    TMR_TagProtocol protocol;
+} Protocols;
+
+static Protocols Reader_protocols[] = {
+    {"ISO180006B", TMR_TAG_PROTOCOL_ISO180006B},
+    {"GEN2", TMR_TAG_PROTOCOL_GEN2},
+    {"UCODE", TMR_TAG_PROTOCOL_ISO180006B_UCODE},
+    {"IPX64", TMR_TAG_PROTOCOL_IPX64},
+    {"IPX256", TMR_TAG_PROTOCOL_IPX256},
+    {"ATA", TMR_TAG_PROTOCOL_ATA},
+    {NULL, TMR_TAG_PROTOCOL_NONE}
+};
+
+static TMR_TagProtocol str2protocol(const char *name)
+{
+    Protocols *prot;
+    for(prot = Reader_protocols; prot->name != NULL; prot++)
+    {
+        if(strcmp(prot->name, name) == 0)
+            return prot->protocol;
+    }
+
+    return TMR_TAG_PROTOCOL_NONE;
+}
+
+static const char* protocol2str(TMR_TagProtocol protocol)
+{
+    Protocols *prot;
+    for(prot = Reader_protocols; prot->name != NULL; prot++)
+    {
+        if(prot->protocol == protocol)
+            return prot->name;
+    }
+
+    return NULL;
+}
+
 static PyObject *
 Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     Reader *self;
     char *deviceUri;
-    int baudRate = 0;
+    uint32_t baudRate = 0;
+    uint8_t antenna = 255;
+    char *protostr = NULL;
     TMR_Status ret;
 
-    static char *kwlist[] = {"uri", "baudrate", NULL};
+    static char *kwlist[] = {"uri", "baudrate", "antenna", "protocol", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, &deviceUri, &baudRate))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|Ibs", kwlist, &deviceUri, &baudRate, &antenna, &protostr))
         return NULL;
 
     self = (Reader *)type->tp_alloc(type, 0);
@@ -99,9 +140,29 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if ((ret = TMR_connect(&self->reader)) != TMR_SUCCESS)
         goto fail;
 
+    if (antenna < 255)
+    {
+        if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_TAGOP_ANTENNA, &antenna)) != TMR_SUCCESS)
+            goto fail;
+    }
+
+    if (protostr != NULL)
+    {
+        TMR_TagProtocol protocol;
+        if ((protocol = str2protocol(protostr)) == TMR_TAG_PROTOCOL_NONE)
+        {
+            PyErr_SetString(PyExc_TypeError, "unknown protocol");
+            goto error;
+        }
+
+        if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_TAGOP_PROTOCOL, &protocol)) != TMR_SUCCESS)
+            goto fail;
+    }
+
     return (PyObject *)self;
 fail:
     PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+error:
     Py_TYPE(self)->tp_free((PyObject*)self);
     return NULL;
 }
@@ -144,45 +205,6 @@ Reader_dealloc(Reader* self)
     reset_filter(&self->tag_filter);
     TMR_destroy(&self->reader);
     Py_TYPE(self)->tp_free((PyObject*)self);
-}
-
-typedef struct {
-    const char* name;
-    TMR_TagProtocol protocol;
-} Protocols;
-
-static Protocols Reader_protocols[] = {
-    {"ISO180006B", TMR_TAG_PROTOCOL_ISO180006B},
-    {"GEN2", TMR_TAG_PROTOCOL_GEN2},
-    {"UCODE", TMR_TAG_PROTOCOL_ISO180006B_UCODE},
-    {"IPX64", TMR_TAG_PROTOCOL_IPX64},
-    {"IPX256", TMR_TAG_PROTOCOL_IPX256},
-    {"ATA", TMR_TAG_PROTOCOL_ATA},
-    {NULL, TMR_TAG_PROTOCOL_NONE}
-};
-
-static TMR_TagProtocol str2protocol(const char *name)
-{
-    Protocols *prot;
-    for(prot = Reader_protocols; prot->name != NULL; prot++)
-    {
-        if(strcmp(prot->name, name) == 0)
-            return prot->protocol;
-    }
-
-    return TMR_TAG_PROTOCOL_NONE;
-}
-
-static const char* protocol2str(TMR_TagProtocol protocol)
-{
-    Protocols *prot;
-    for(prot = Reader_protocols; prot->name != NULL; prot++)
-    {
-        if(prot->protocol == protocol)
-            return prot->name;
-    }
-
-    return NULL;
 }
 
 static
