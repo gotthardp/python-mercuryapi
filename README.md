@@ -197,8 +197,12 @@ reader.stop_reading()
 Reads bytes from the memory bank of a tag. Returns a *bytearray* or None if no
 tag was found. Upon failure an exception is raised.
 
+The read-plan is not used. Use the *antenna* and *protocol* parameters in the
+Reader constuctor.
+
 For example:
 ```python
+reader = mercury.Reader("tmr:///dev/ttyUSB0", baudrate=9600, protocol="GEN2")
 print(reader.read_tag_mem(1, 0x08, 8))
 bytearray(b'\x00\x00\x00\x16\x12\x00\x00\x61')
 ```
@@ -206,6 +210,9 @@ bytearray(b'\x00\x00\x00\x16\x12\x00\x00\x61')
 #### reader.write_tag_mem(*bank*, *address*, *data*, *epc_target=None*)
 Writes bytes to the memory bank of a tag. Returns *True* upon success, or
 *False* if no tag was found. Upon failure an exception is raised.
+
+The read-plan is not used. Use the *antenna* and *protocol* parameters in the
+Reader constuctor.
 
 For example:
 ```python
@@ -217,7 +224,7 @@ Returns value of a GPIO *pin*, or *None* is the pin is not configured as input (
 
 For example:
 ```python
-print(get_gpio_inputs())
+print(reader.get_gpio_inputs())
 [1]
 print(reader.gpi_get(1))
 True
@@ -228,7 +235,7 @@ Sets value of a GPIO *pin* configured as output (see `get_gpio_outputs`).
 
 For example:
 ```python
-print(get_gpio_outputs())
+print(reader.get_gpio_outputs())
 [1]
 reader.gpo_set(1, False)
 ```
