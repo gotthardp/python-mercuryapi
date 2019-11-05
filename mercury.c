@@ -977,8 +977,6 @@ static Regions Reader_regions[] = {
     {"KR",   TMR_REGION_KR},
     {"IN",   TMR_REGION_IN},
     {"JP",   TMR_REGION_JP},
-    {"JP3",  TMR_REGION_JP2},
-    {"JP2",  TMR_REGION_JP3},
     {"PRC",  TMR_REGION_PRC},
     {"EU2",  TMR_REGION_EU2},
     {"EU3",  TMR_REGION_EU3},
@@ -989,12 +987,21 @@ static Regions Reader_regions[] = {
     {"NA2",  TMR_REGION_NA2},
     {"NA3",  TMR_REGION_NA3},
     {"IS",   TMR_REGION_IS},
-    {"open", TMR_REGION_OPEN},
+    {"MY",   TMR_REGION_MY}
+    {"ID",   TMR_REGION_ID},
+    {"PH",   TMR_REGION_PH},
+    {"TW",   TMR_REGION_TW},
+    {"MO",   TMR_REGION_MO},
+    {"RU",   TMR_REGION_RU},
+    {"SG",   TMR_REGION_SG},
+    {"JP2",  TMR_REGION_JP2},
+    {"JP3",  TMR_REGION_JP3},
     {"VN",   TMR_REGION_VN},
     {"TH",   TMR_REGION_TH},
     {"AR",   TMR_REGION_AR},
     {"HK",   TMR_REGION_HK},
     {"BD",   TMR_REGION_BD}, 
+    {"open", TMR_REGION_OPEN},
     {NULL,   TMR_REGION_NONE}
 };
 
