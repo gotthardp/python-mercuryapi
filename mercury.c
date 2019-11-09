@@ -38,7 +38,10 @@ typedef struct {
     TMR_TagOp tagop;
     uint8_t antennas[MAX_ANTENNA_COUNT];
     TMR_ReadListenerBlock readListener;
+    TMR_StatsListenerBlock statsListener;
+    TMR_ReadExceptionListenerBlock exceptionListener;
     PyObject *readCallback;
+    PyObject *statsCallback;
 } Reader;
 
 typedef struct {
@@ -57,10 +60,25 @@ typedef struct {
     PyObject *reservedMemData;
 } TagReadData;
 
+typedef struct {
+    PyObject_HEAD
+    int8_t temperature;
+    PyObject *protocol;
+    uint16_t antenna;
+    uint32_t frequency;
+} ReaderStatsData;
+
 static PyTypeObject TagReadDataType;
+static PyTypeObject ReaderStatsDataType;
 
 static void
 invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *tag, void *cookie);
+
+static void
+invoke_stats_callback(TMR_Reader *reader,const TMR_Reader_StatsValues *reader_stats, void *cookie);
+
+static void
+invoke_exception_callback(TMR_Reader *reader, const TMR_Status ret, void *cookie);
 
 typedef struct {
     const char* name;
@@ -136,6 +154,18 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     self->readListener.cookie = self;
     if ((ret = TMR_addReadListener(&self->reader, &self->readListener)) != TMR_SUCCESS)
         goto fail;
+
+    /* install callback wrapper for asychronous stats */
+    self->statsListener.listener = invoke_stats_callback;
+    self->statsListener.cookie = self;
+    if ((ret = TMR_addStatsListener(&self->reader, &self->statsListener)) != TMR_SUCCESS)
+        goto fail;
+
+    self->exceptionListener.listener = invoke_exception_callback;
+    self->exceptionListener.cookie = self;
+    if ((ret = TMR_addReadExceptionListener(&self->reader, &self->exceptionListener)) != TMR_SUCCESS)
+        goto fail;
+
 
     if ((ret = TMR_connect(&self->reader)) != TMR_SUCCESS)
         goto fail;
@@ -703,6 +733,36 @@ Reader_read(Reader *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+Reader_start_stats(Reader *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *temp;
+    TMR_Status ret;
+    TMR_Reader_StatsFlag setFlag = TMR_READER_STATS_FLAG_TEMPERATURE | TMR_READER_STATS_FLAG_FREQUENCY | TMR_READER_STATS_FLAG_PROTOCOL | TMR_READER_STATS_FLAG_ANTENNA_PORTS;
+    static char *kwlist[] = {"callback" , NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &temp))
+        return NULL;
+
+    if (!PyCallable_Check(temp))
+    {
+        PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
+        return NULL;
+    }
+
+    Py_XDECREF(self->statsCallback);
+    Py_XINCREF(temp);
+    self->statsCallback = temp;
+
+    if ((ret = TMR_paramSet(&self->reader,TMR_PARAM_READER_STATS_ENABLE,&setFlag)) != TMR_SUCCESS)
+    {
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, ret));
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
 {
     PyObject *temp;
@@ -747,6 +807,12 @@ Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
 }
 
 static void
+invoke_exception_callback(TMR_Reader *reader, const TMR_Status error, void *cookie){
+    Reader *self = (Reader *)cookie;
+    PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, error));
+}
+
+static void
 invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *pdata, void *cookie)
 {
     Reader *self = (Reader *)cookie;
@@ -780,24 +846,70 @@ invoke_read_callback(TMR_Reader *reader, const TMR_TagReadData *pdata, void *coo
     }
 }
 
+static void
+invoke_stats_callback(TMR_Reader *reader, const TMR_Reader_StatsValues *pdata, void *cookie){
+    Reader *self = (Reader *)cookie;
+
+    if(self && self->statsCallback)
+    {
+        ReaderStatsData *stats;
+        PyObject *arglist;
+        PyObject *result;
+        PyGILState_STATE gstate;
+        gstate = PyGILState_Ensure();
+
+        stats = PyObject_New(ReaderStatsData, &ReaderStatsDataType);
+        if (TMR_READER_STATS_FLAG_TEMPERATURE & pdata->valid)
+            stats->temperature = pdata->temperature;
+        if (TMR_READER_STATS_FLAG_PROTOCOL & pdata->valid)
+            stats->protocol = Py_BuildValue("s", protocol2str(pdata->protocol));
+        if (TMR_READER_STATS_FLAG_ANTENNA_PORTS & pdata->valid)
+            stats->antenna = pdata->antenna;
+        if (TMR_READER_STATS_FLAG_FREQUENCY & pdata->valid)
+            stats->frequency = pdata->frequency;
+
+        arglist = Py_BuildValue("(O)", stats);
+        result = PyObject_CallObject(self->statsCallback, arglist);
+        if(result != NULL)
+            Py_DECREF(result);
+        else
+            PyErr_Print();
+        Py_DECREF(arglist);
+        Py_DECREF(stats);
+
+        PyGILState_Release(gstate);
+    }
+}
+
+
 static PyObject *
 Reader_stop_reading(Reader* self)
 {
     PyObject *temp = self->readCallback;
+    PyObject *temp2 = self->statsCallback;
     TMR_Status ret;
 
     /* avoid deadlock as calling stopReading will invoke the callback */
     self->readCallback = NULL;
+    self->statsCallback = NULL;
 
     if ((ret = TMR_stopReading(&self->reader)) != TMR_SUCCESS)
     {
         self->readCallback = temp; /* revert back as the function will fail */
+        self->statsCallback = temp2;
 
         PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
 
     Py_XDECREF(temp);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+Reader_destroy_reader(Reader* self)
+{
+    TMR_destroy(&self->reader);
     Py_RETURN_NONE;
 }
 
@@ -987,7 +1099,7 @@ static Regions Reader_regions[] = {
     {"NA2",  TMR_REGION_NA2},
     {"NA3",  TMR_REGION_NA3},
     {"IS",   TMR_REGION_IS},
-    {"MY",   TMR_REGION_MY}
+    {"MY",   TMR_REGION_MY},
     {"ID",   TMR_REGION_ID},
     {"PH",   TMR_REGION_PH},
     {"TW",   TMR_REGION_TW},
@@ -1000,7 +1112,7 @@ static Regions Reader_regions[] = {
     {"TH",   TMR_REGION_TH},
     {"AR",   TMR_REGION_AR},
     {"HK",   TMR_REGION_HK},
-    {"BD",   TMR_REGION_BD}, 
+    {"BD",   TMR_REGION_BD},
     {"open", TMR_REGION_OPEN},
     {NULL,   TMR_REGION_NONE}
 };
@@ -1703,8 +1815,14 @@ static PyMethodDef Reader_methods[] = {
     {"start_reading", (PyCFunction)Reader_start_reading, METH_VARARGS | METH_KEYWORDS,
      "Start reading tags asynchronously"
     },
+    {"start_stats", (PyCFunction)Reader_start_stats, METH_VARARGS | METH_KEYWORDS,
+     "Return readers stats during asynchronous tag reads"
+    },
     {"stop_reading", (PyCFunction)Reader_stop_reading, METH_NOARGS,
      "Stop asynchronous reading"
+    },
+    {"destroy",(PyCFunction)Reader_destroy_reader,METH_NOARGS,
+      "Remove reader object"
     },
     {"read_tag_mem", (PyCFunction)Reader_read_tag_mem, METH_VARARGS | METH_KEYWORDS,
      "Read bytes from the memory bank of a tag"
@@ -2106,6 +2224,68 @@ static PyTypeObject TagReadDataType = {
     0,                         /* tp_new */
 };
 
+static void
+ReaderStatsData_dealloc(ReaderStatsData* self)
+{
+    Py_TYPE(self)->tp_free((PyObject*)self);
+};
+
+static PyMethodDef ReaderStatsData_methods[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyMemberDef ReaderStatsData_members[] = {
+    {"temperature", T_BYTE, offsetof(ReaderStatsData, temperature), READONLY, "Reader Temperature"},
+    {"protocol", T_OBJECT, offsetof(ReaderStatsData,protocol), READONLY, "Current tag protocol"},
+    {"antenna", T_USHORT, offsetof(ReaderStatsData,antenna), READONLY, "Current Antenna"},
+    {"frequency", T_UINT, offsetof(ReaderStatsData,frequency), READONLY, "Current RF carrier frequency(KHZ"},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject ReaderStatsDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "mercury.ReaderStatsData",     /* tp_name */
+    sizeof(ReaderStatsData),       /* tp_basicsize */
+    0,                            /* tp_itemsize */
+    (destructor)ReaderStatsData_dealloc, /* tp_dealloc */
+    0,                         /* tp_print */
+    0,                         /* tp_getattr */
+    0,                         /* tp_setattr */
+    0,                         /* tp_reserved */
+    0,                         /* tp_repr */
+    0,                         /* tp_as_number */
+    0,                         /* tp_as_sequence */
+    0,                         /* tp_as_mapping */
+    0,                         /* tp_hash  */
+    0,                         /* tp_call */
+    0,                         /* tp_str */
+    0,                         /* tp_getattro */
+    0,                         /* tp_setattro */
+    0,                         /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT |
+        Py_TPFLAGS_BASETYPE,   /* tp_flags */
+    "ReaderStatsData object",      /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    ReaderStatsData_methods,       /* tp_methods */
+    ReaderStatsData_members,       /* tp_members */
+    0,     /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    0,                         /* tp_new */
+};
+
+
+
 #if PY_MAJOR_VERSION >= 3
 static PyModuleDef mercurymodule = {
     PyModuleDef_HEAD_INIT,
@@ -2128,7 +2308,8 @@ initmercury(void)
 
     if (PyType_Ready(&ReaderType) < 0
         || PyType_Ready(&TagDataType) < 0
-        || PyType_Ready(&TagReadDataType) < 0)
+        || PyType_Ready(&TagReadDataType) < 0
+        || PyType_Ready(&ReaderStatsDataType) < 0)
 #if PY_MAJOR_VERSION >= 3
         return NULL;
 
@@ -2148,6 +2329,8 @@ initmercury(void)
     PyModule_AddObject(m, "TagData", (PyObject *)&TagDataType);
     Py_INCREF(&TagReadDataType);
     PyModule_AddObject(m, "TagReadData", (PyObject *)&TagReadDataType);
+    Py_INCREF(&ReaderStatsDataType);
+    PyModule_AddObject(m, "ReaderStatsData", (PyObject *)&ReaderStatsDataType);
 #if PY_MAJOR_VERSION >= 3
     return m;
 #endif
