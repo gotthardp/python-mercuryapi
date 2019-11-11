@@ -177,7 +177,13 @@ The function must be called before `reader.start_reading()`.
 
 For example:
 ```python
-def callback(stats):
+def stats_received(stats):
+    print({"temp" : stats.temperature})
+    print({"antenna" : stats.antenna})
+    print({"protocol" : stats.protocol})
+    print({"frequency" : stats.frequency})
+
+reader.enable_stats(stats_received)
 ```
 
 #### reader.start_reading(*callback*, *on_time=250*, *off_time=0*)
