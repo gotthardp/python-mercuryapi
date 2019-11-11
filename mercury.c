@@ -733,7 +733,7 @@ Reader_read(Reader *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
-Reader_start_stats(Reader *self, PyObject *args, PyObject *kwds)
+Reader_enable_stats(Reader *self, PyObject *args, PyObject *kwds)
 {
     PyObject *temp;
     TMR_Status ret;
@@ -1812,11 +1812,11 @@ static PyMethodDef Reader_methods[] = {
     {"read", (PyCFunction)Reader_read, METH_VARARGS | METH_KEYWORDS,
      "Read the tags"
     },
+    {"enable_stats", (PyCFunction)Reader_enable_stats, METH_VARARGS | METH_KEYWORDS,
+     "Provide reader stats during asynchronous tag reads"
+    },
     {"start_reading", (PyCFunction)Reader_start_reading, METH_VARARGS | METH_KEYWORDS,
      "Start reading tags asynchronously"
-    },
-    {"start_stats", (PyCFunction)Reader_start_stats, METH_VARARGS | METH_KEYWORDS,
-     "Return readers stats during asynchronous tag reads"
     },
     {"stop_reading", (PyCFunction)Reader_stop_reading, METH_NOARGS,
      "Stop asynchronous reading"

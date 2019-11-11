@@ -170,6 +170,16 @@ else:
     print('No tag found')
 ```
 
+#### reader.enable_stats(*callback*)
+Provide reader stats during asynchronous tag reads.
+
+The function must be called before `reader.start_reading()`.
+
+For example:
+```python
+def callback(stats):
+```
+
 #### reader.start_reading(*callback*, *on_time=250*, *off_time=0*)
 Starts asynchronous reading. It returns immediately and begins a sequence of
 reads or a continuous read. The results are passed to the *callback*.
