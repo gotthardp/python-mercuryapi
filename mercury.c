@@ -1073,6 +1073,12 @@ Reader_get_model(Reader* self)
 }
 
 static PyObject *
+Reader_get_software_version(Reader* self)
+{
+    return get_string(&self->reader, TMR_PARAM_VERSION_SOFTWARE);
+}
+
+static PyObject *
 Reader_get_serial(Reader* self)
 {
     return get_string(&self->reader, TMR_PARAM_VERSION_SERIAL);
@@ -1839,6 +1845,9 @@ static PyMethodDef Reader_methods[] = {
     /* Reader parameters */
     {"get_model", (PyCFunction)Reader_get_model, METH_NOARGS,
      "Returns the model name"
+    },
+    {"get_software_version", (PyCFunction)Reader_get_software_version, METH_NOARGS,
+     "Returns the software version of the reader"
     },
     {"get_serial", (PyCFunction)Reader_get_serial, METH_NOARGS,
      "Returns a serial number of the reader, the same number printed on the barcode label"
