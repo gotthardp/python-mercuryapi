@@ -265,6 +265,16 @@ print(reader.get_model())
 M6e Nano
 ```
 
+#### reader.get_software_version()
+Returns the software version of the reader hardware
+For example:
+```python
+print(reader.get_sofware_version())
+01.0B.03.11-20.19.07.12-BL12.12.13.00
+```
+01.0B.03 is the current firmware version
+
+
 #### reader.get_serial()
 Returns a serial number of the reader, the same number printed on the barcode label.
 
