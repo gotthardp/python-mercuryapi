@@ -18,7 +18,7 @@ print(reader.read())
 On Windows, use the pre-compiled binary installer.
 
 On Linux:
- * Check prerequisites using `apt-get install unzip patch xsltproc gcc libreadline-dev python-dev python-setuptools`,
+ * Check prerequisites using `apt-get install unzip patch xsltproc gcc libreadline-dev`,
  * Then build and install using `pip install python-mercuryapi`.
 
 Note: The build process will (temporarily) require upto 500MB of free space in `/tmp`.
