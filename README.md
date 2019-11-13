@@ -17,7 +17,9 @@ print(reader.read())
 ## Installation
 On Windows, use the pre-compiled binary installer.
 
-On Linux, build and install using `pip install python-mercuryapi`.
+On Linux:
+ * Check prerequisites using `apt-get install unzip patch xsltproc gcc libreadline-dev python-dev python-setuptools`,
+ * Then build and install using `pip install python-mercuryapi`.
 
 Note: The build process will (temporarily) require upto 500MB of free space in `/tmp`.
 If your `/tmp` is smaller, use e.g. `pip install python-mercuryapi -b $HOME/tmp` to redirect.
