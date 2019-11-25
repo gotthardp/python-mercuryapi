@@ -1,6 +1,6 @@
 # Python wrapper for the ThingMagic Mercury API
 
-The [ThingMagic Mercury API](http://www.thingmagic.com/mercuryapi) is used to discover,
+The [ThingMagic Mercury API](https://www.jadaktech.com/products/thingmagic-rfid/thingmagic-mercury-api) is used to discover,
 provision and control ThingMagic RFID readers.
 
 Reading RFID tags is as simple as this:
@@ -618,8 +618,8 @@ If you get the "ImportError: DLL load failed", make sure you have the
 installed.
 
 To build an installer for other Python releases you need to:
- * Download the latest [Mercury API](https://www.jadaktech.com/documentation/rfid/mercuryapi), e.g.
-   [mercuryapi-1.31.2.zip](https://www.jadaktech.com/wp-content/uploads/2018/11/mercuryapi-1.31.2.zip).
+ * Download the latest [Mercury API](https://www.jadaktech.com/products/thingmagic-rfid/thingmagic-mercury-api), e.g.
+   [mercuryapi-1.31.1.36-2.zip](https://www.jadaktech.com/wp-content/uploads/2019/10/mercuryapi-1.31.1.36-2.zip).
  * Go to mercuryapi-1.31.2.40\c\src\api\ltkc_win32 and run `gencode.bat`
  * Open mercuryapi-1.31.2.40\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
    the block of `typedef` for `int_fast8_t` through `uint_fast64_t` (8 lines)
@@ -653,7 +653,7 @@ git clone https://github.com/gotthardp/python-mercuryapi.git
 cd python-mercuryapi
 make
 ```
-This will download and build the [Mercury API SDK](http://www.thingmagic.com/index.php/manuals-firmware)
+This will download and build the [Mercury API SDK](https://www.jadaktech.com/products/thingmagic-rfid/thingmagic-mercury-api)
 and then it will build the Python module itself.
 
 The `make` command will automatically determine which Python version is installed. If both
