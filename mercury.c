@@ -2243,6 +2243,7 @@ static PyTypeObject TagReadDataType = {
 static void
 ReaderStatsData_dealloc(ReaderStatsData* self)
 {
+    Py_XDECREF(self->protocol);
     Py_TYPE(self)->tp_free((PyObject*)self);
 };
 
