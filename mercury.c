@@ -809,7 +809,14 @@ Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
 static void
 invoke_exception_callback(TMR_Reader *reader, const TMR_Status error, void *cookie){
     Reader *self = (Reader *)cookie;
-    PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, error));
+    if(self && self->statsCallback)
+    {
+        PyGILState_STATE gstate;
+        gstate = PyGILState_Ensure();
+        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, error));
+        PyErr_Print();
+        PyGILState_Release(gstate);
+    }
 }
 
 static void
