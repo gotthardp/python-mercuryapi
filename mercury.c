@@ -42,6 +42,7 @@ typedef struct {
     TMR_ReadExceptionListenerBlock exceptionListener;
     PyObject *readCallback;
     PyObject *statsCallback;
+    PyObject *exceptionCallback;
 } Reader;
 
 typedef struct {
@@ -762,6 +763,28 @@ Reader_enable_stats(Reader *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE;
 }
 
+
+static PyObject *
+Reader_enable_exception_handler(Reader *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *temp;
+    static char  *kwlist[] = {"callback" , NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &temp))
+        return NULL;
+
+    if (!PyCallable_Check(temp))
+    {
+        PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
+        return NULL;
+    }
+
+    Py_XDECREF(self->exceptionCallback);
+    Py_XINCREF(temp);
+    self->exceptionCallback = temp;
+    Py_RETURN_NONE;
+}
+
 static PyObject *
 Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
 {
@@ -809,12 +832,21 @@ Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
 static void
 invoke_exception_callback(TMR_Reader *reader, const TMR_Status error, void *cookie){
     Reader *self = (Reader *)cookie;
-    if(self && self->statsCallback)
+    if(self && self->exceptionCallback)
     {
+        PyObject *arglist;
+        PyObject *result;
         PyGILState_STATE gstate;
         gstate = PyGILState_Ensure();
-        PyErr_SetString(PyExc_TypeError, TMR_strerr(&self->reader, error));
-        PyErr_Print();
+
+        arglist = Py_BuildValue("(s)", TMR_strerr(&self->reader, error));
+        result = PyObject_CallObject(self->exceptionCallback, arglist);
+        if(result != NULL)
+            Py_DECREF(result);
+        else
+            PyErr_Print();
+        Py_DECREF(arglist);
+
         PyGILState_Release(gstate);
     }
 }
@@ -1827,6 +1859,9 @@ static PyMethodDef Reader_methods[] = {
     },
     {"enable_stats", (PyCFunction)Reader_enable_stats, METH_VARARGS | METH_KEYWORDS,
      "Provide reader stats during asynchronous tag reads"
+    },
+    {"enable_exception_handler",(PyCFunction)Reader_enable_exception_handler, METH_VARARGS | METH_KEYWORDS,
+     "Provide callback for reader exception handling"
     },
     {"start_reading", (PyCFunction)Reader_start_reading, METH_VARARGS | METH_KEYWORDS,
      "Start reading tags asynchronously"
