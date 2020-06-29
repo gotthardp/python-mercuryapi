@@ -292,6 +292,19 @@ print(reader.get_sofware_version())
 #### reader.get_serial()
 Returns a serial number of the reader, the same number printed on the barcode label.
 
+#### reader.get_read_state()
+Returns the read state of the reader.
+
+The avaiable states are :
+```
+TMR_READ_STATE_IDLE
+TMR_READ_STATE_STARTING
+TMR_READ_STATE_STARTED
+TMR_READ_STATE_ACTIVE
+TMR_READ_STATE_DONE
+UNKNOWN
+```
+
 #### reader.set_region(*region*)
 Controls the Region of Operation for the connected device:
  * *region* represents the regulatory region that the device will operate in. Supported values are:

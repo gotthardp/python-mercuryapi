@@ -1123,6 +1123,26 @@ Reader_get_serial(Reader* self)
     return get_string(&self->reader, TMR_PARAM_VERSION_SERIAL);
 }
 
+static PyObject *
+Reader_get_read_state(Reader* self)
+{
+    switch (self->reader.readState)
+    {
+         case TMR_READ_STATE_IDLE:
+            return PyUnicode_FromString("TMR_READ_STATE_IDLE");
+         case TMR_READ_STATE_STARTING:
+            return PyUnicode_FromString("TMR_READ_STATE_STARTING");
+         case TMR_READ_STATE_STARTED:
+            return PyUnicode_FromString("TMR_READ_STATE_STARTED");
+         case TMR_READ_STATE_ACTIVE:
+            return PyUnicode_FromString("TMR_READ_STATE_ACTIVE");
+         case TMR_READ_STATE_DONE:
+            return PyUnicode_FromString("TMR_READ_STATE_DONE");
+         default:
+            return PyUnicode_FromString("UNKNOWN");
+    }
+}
+
 typedef struct {
     const char* name;
     TMR_Region region;
@@ -1989,6 +2009,9 @@ static PyMethodDef Reader_methods[] = {
     },
     {"get_temperature", (PyCFunction)Reader_get_temperature, METH_NOARGS,
      "Returns the chip temperature"
+    },
+    {"get_read_state", (PyCFunction)Reader_get_read_state, METH_NOARGS,
+     "Returns the current state of the reader"
     },
     {NULL}  /* Sentinel */
 };
