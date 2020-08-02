@@ -188,6 +188,18 @@ def stats_received(stats):
 reader.enable_stats(stats_received)
 ```
 
+### reader.enable_exception_handler(*callback*)
+Provide reader exception handling
+The function must be called before `reader.start_reading()`.
+
+For example:
+```python
+def exeception_handle(e):
+    print(e)
+
+reader.enable_exception_handler(exeception_handle)
+```
+
 #### reader.start_reading(*callback*, *on_time=250*, *off_time=0*)
 Starts asynchronous reading. It returns immediately and begins a sequence of
 reads or a continuous read. The results are passed to the *callback*.
