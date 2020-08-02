@@ -296,18 +296,21 @@ Returns a serial number of the reader, the same number printed on the barcode la
 Controls the Region of Operation for the connected device:
  * *region* represents the regulatory region that the device will operate in. Supported values are:
     * `"NA"`, North America/FCC
-    * `"NA2"`
-    * `"NA3"`
+    * `"NA2"`, Reduced FCC region
+    * `"NA3"`, 5MHZ FCC band
     * `"EU"`, European Union/ETSI EN 302 208
     * `"EU2"`, European Union/ETSI EN 300 220
     * `"EU3"`, European Union/ETSI Revised EN 302 208
+    * `"EU4"`, 4 channels (916.3MHz, 917.5MHz, 918.7MHz)
     * `"IS"`, Israel
     * `"IN"`, India
     * `"JP"`, Japan
+    * `"JP2"`, Japan 24dBm with 13 channels
+    * `"JP3"`, Japan 24dBm with 6 channels
     * `"KR"`, Korea MIC
     * `"KR2"`, Korea KCC
     * `"PRC"`, China
-    * `"PRC2"`
+    * `"PRC2", China 840MHZ
     * `"AU"`, Australia/AIDA LIPD Variation 2011
     * `"NZ"`, New Zealand
 
