@@ -634,13 +634,13 @@ installed.
 
 To build an installer for other Python releases you need to:
  * Download the latest [Mercury API](https://www.jadaktech.com/products/thingmagic-rfid/thingmagic-mercury-api), e.g.
-   [mercuryapi-1.31.1.36-2.zip](https://www.jadaktech.com/wp-content/uploads/2019/10/mercuryapi-1.31.1.36-2.zip).
- * Go to mercuryapi-1.31.2.40\c\src\api\ltkc_win32 and run `gencode.bat`
- * Open mercuryapi-1.31.2.40\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
+   [mercuryapi-YEATS-1.31.4.35-1.zip](https://www.jadaktech.com/wp-content/uploads/2020/01/mercuryapi-YEATS-1.31.4.35-1.zip).
+ * Go to mercuryapi-1.31.4.35\c\src\api\ltkc_win32 and run `gencode.bat`
+ * Open mercuryapi-1.31.4.35\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
    the block of `typedef` for `int_fast8_t` through `uint_fast64_t` (8 lines)
  * Download the [latest pthreads-win32](ftp://sourceware.org/pub/pthreads-win32/dll-latest)
    binaries (both .dll and .lib) for your architecture and put them into
-   mercuryapi-1.31.2.40\c\src\pthreads-win32\x86 or \x64
+   mercuryapi-1.31.4.35\c\src\pthreads-win32\x86 or \x64
  * Obtain Microsoft Visual Studio 2017, including the Python extensions
  * Open the Solution and review the
    [setup-win.py](https://github.com/gotthardp/python-mercuryapi/blob/master/setup-win.py)
@@ -710,4 +710,4 @@ Or simply do `python setup.py build install`
 The python-mercuryapi is distributed under the terms of the MIT License.
 See the [LICENSE](LICENSE).
 
-Copyright (c) 2016-2019 Petr Gotthard
+Copyright (c) 2016-2020 Petr Gotthard
