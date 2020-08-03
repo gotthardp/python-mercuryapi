@@ -309,18 +309,21 @@ UNKNOWN
 Controls the Region of Operation for the connected device:
  * *region* represents the regulatory region that the device will operate in. Supported values are:
     * `"NA"`, North America/FCC
-    * `"NA2"`
-    * `"NA3"`
+    * `"NA2"`, Reduced FCC region
+    * `"NA3"`, 5MHZ FCC band
     * `"EU"`, European Union/ETSI EN 302 208
     * `"EU2"`, European Union/ETSI EN 300 220
     * `"EU3"`, European Union/ETSI Revised EN 302 208
+    * `"EU4"`, 4 channels (916.3MHz, 917.5MHz, 918.7MHz)
     * `"IS"`, Israel
     * `"IN"`, India
     * `"JP"`, Japan
+    * `"JP2"`, Japan 24dBm with 13 channels
+    * `"JP3"`, Japan 24dBm with 6 channels
     * `"KR"`, Korea MIC
     * `"KR2"`, Korea KCC
     * `"PRC"`, China
-    * `"PRC2"`
+    * `"PRC2", China 840MHZ
     * `"AU"`, Australia/AIDA LIPD Variation 2011
     * `"NZ"`, New Zealand
 
@@ -644,13 +647,13 @@ installed.
 
 To build an installer for other Python releases you need to:
  * Download the latest [Mercury API](https://www.jadaktech.com/products/thingmagic-rfid/thingmagic-mercury-api), e.g.
-   [mercuryapi-1.31.1.36-2.zip](https://www.jadaktech.com/wp-content/uploads/2019/10/mercuryapi-1.31.1.36-2.zip).
- * Go to mercuryapi-1.31.2.40\c\src\api\ltkc_win32 and run `gencode.bat`
- * Open mercuryapi-1.31.2.40\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
+   [mercuryapi-YEATS-1.31.4.35-1.zip](https://www.jadaktech.com/wp-content/uploads/2020/01/mercuryapi-YEATS-1.31.4.35-1.zip).
+ * Go to mercuryapi-1.31.4.35\c\src\api\ltkc_win32 and run `gencode.bat`
+ * Open mercuryapi-1.31.4.35\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
    the block of `typedef` for `int_fast8_t` through `uint_fast64_t` (8 lines)
  * Download the [latest pthreads-win32](ftp://sourceware.org/pub/pthreads-win32/dll-latest)
    binaries (both .dll and .lib) for your architecture and put them into
-   mercuryapi-1.31.2.40\c\src\pthreads-win32\x86 or \x64
+   mercuryapi-1.31.4.35\c\src\pthreads-win32\x86 or \x64
  * Obtain Microsoft Visual Studio 2017, including the Python extensions
  * Open the Solution and review the
    [setup-win.py](https://github.com/gotthardp/python-mercuryapi/blob/master/setup-win.py)
@@ -720,4 +723,4 @@ Or simply do `python setup.py build install`
 The python-mercuryapi is distributed under the terms of the MIT License.
 See the [LICENSE](LICENSE).
 
-Copyright (c) 2016-2019 Petr Gotthard
+Copyright (c) 2016-2020 Petr Gotthard
