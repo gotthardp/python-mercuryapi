@@ -188,6 +188,16 @@ def stats_received(stats):
 reader.enable_stats(stats_received)
 ```
 
+#### reader.enable_transportlog()
+Print the transport logs logs to stdout
+
+The function must be called before `reader.start_reading()`.
+
+For example:
+```python
+reader.enable_transportlog()
+```
+
 ### reader.enable_exception_handler(*callback*)
 Provide reader exception handling
 The function must be called before `reader.start_reading()`.
@@ -291,6 +301,19 @@ print(reader.get_sofware_version())
 
 #### reader.get_serial()
 Returns a serial number of the reader, the same number printed on the barcode label.
+
+#### reader.get_read_state()
+Returns the read state of the reader.
+
+The avaiable states are :
+```
+TMR_READ_STATE_IDLE
+TMR_READ_STATE_STARTING
+TMR_READ_STATE_STARTED
+TMR_READ_STATE_ACTIVE
+TMR_READ_STATE_DONE
+UNKNOWN
+```
 
 #### reader.set_region(*region*)
 Controls the Region of Operation for the connected device:
