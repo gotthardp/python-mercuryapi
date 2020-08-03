@@ -40,9 +40,11 @@ typedef struct {
     TMR_ReadListenerBlock readListener;
     TMR_StatsListenerBlock statsListener;
     TMR_ReadExceptionListenerBlock exceptionListener;
+    TMR_TransportListenerBlock transportLogListener;
     PyObject *readCallback;
     PyObject *statsCallback;
     PyObject *exceptionCallback;
+    PyObject *transportLogCallback;
 } Reader;
 
 typedef struct {
@@ -96,6 +98,11 @@ object2str(PyObject *name)
         return NULL;
     }
 }
+static void
+invoke_transportlog_callback_serial(bool tx, uint32_t dataLen, const uint8_t data[],uint32_t timeout, void *cookie);
+
+static void
+invoke_transportlog_callback_string(bool tx, uint32_t dataLen, const uint8_t data[],uint32_t timeout, void *cookie);
 
 typedef struct {
     const char* name;
@@ -188,6 +195,14 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if ((ret = TMR_addReadExceptionListener(&self->reader, &self->exceptionListener)) != TMR_SUCCESS)
         goto fail;
 
+    if(TMR_READER_TYPE_SERIAL == self->reader.readerType ){
+        self->transportLogListener.listener = invoke_transportlog_callback_serial;
+    }
+    else{
+        self->transportLogListener.listener = invoke_transportlog_callback_string;
+    }
+    self->transportLogListener.cookie = stdout;
+ 
 
     if ((ret = TMR_connect(&self->reader)) != TMR_SUCCESS)
         goto fail;
@@ -768,6 +783,14 @@ Reader_enable_stats(Reader *self, PyObject *args, PyObject *kwds)
 
 
 static PyObject *
+Reader_enable_transportlog(Reader *self){
+   int ret;
+   if ((ret = TMR_addTransportListener(&self->reader, &self->transportLogListener)) != TMR_SUCCESS)
+        return NULL;
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 Reader_enable_exception_handler(Reader *self, PyObject *args, PyObject *kwds)
 {
     PyObject *temp;
@@ -830,6 +853,32 @@ Reader_start_reading(Reader *self, PyObject *args, PyObject *kwds)
     }
 
     Py_RETURN_NONE;
+}
+
+
+static void
+invoke_transportlog_callback_string(bool tx, uint32_t dataLen, const uint8_t data[],
+                   uint32_t timeout, void *cookie){
+    FILE *out = cookie;
+    fprintf(out, "%s", tx ? "Sending: " : "Received:");
+    fprintf(out, "%s\n", data);
+}
+
+static void
+invoke_transportlog_callback_serial(bool tx, uint32_t dataLen, const uint8_t data[],
+                   uint32_t timeout, void *cookie){
+    FILE *out = cookie;
+
+    uint32_t i;
+    printf("tranport_log\n");
+    fprintf(out, "%s", tx ? "Sending: " : "Received:");
+    for (i = 0; i < dataLen; i++)
+    {
+        if (i > 0 && (i & 15) == 0)
+        fprintf(out, "\n         ");
+        fprintf(out, " %02x", data[i]);
+    }
+    fprintf(out, "\n");
 }
 
 static void
@@ -1888,6 +1937,9 @@ static PyMethodDef Reader_methods[] = {
     },
     {"enable_exception_handler",(PyCFunction)Reader_enable_exception_handler, METH_VARARGS | METH_KEYWORDS,
      "Provide callback for reader exception handling"
+    },
+    {"enable_transportlog",(PyCFunction)Reader_enable_transportlog, METH_VARARGS | METH_KEYWORDS,
+     "Provide callback for reader transport logs"
     },
     {"start_reading", (PyCFunction)Reader_start_reading, METH_VARARGS | METH_KEYWORDS,
      "Start reading tags asynchronously"

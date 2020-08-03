@@ -188,6 +188,16 @@ def stats_received(stats):
 reader.enable_stats(stats_received)
 ```
 
+#### reader.enable_transportlog()
+Print the transport logs logs to stdout
+
+The function must be called before `reader.start_reading()`.
+
+For example:
+```python
+reader.enable_transportlog()
+```
+
 ### reader.enable_exception_handler(*callback*)
 Provide reader exception handling
 The function must be called before `reader.start_reading()`.
