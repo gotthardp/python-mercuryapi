@@ -6,11 +6,11 @@ from setuptools import setup, find_packages
 from setuptools.extension import Extension
 
 # you need to download https://www.jadaktech.com/documentation/rfid/mercuryapi
-# https://www.jadaktech.com/wp-content/uploads/2019/10/mercuryapi-1.31.1.36-2.zip
+# https://www.jadaktech.com/wp-content/uploads/2020/01/mercuryapi-YEATS-1.31.4.35-1.zip
 # FIXME: make sure the patch matches the mercuryapi version you have
-mercuryapi = "mercuryapi-1.31.1.36/c/src/"
+mercuryapi = "mercuryapi-1.31.4.35/c/src/"
 
-setup(name="mercuryapi", version="0.5.3",
+setup(name="mercuryapi", version="0.5.4",
       ext_modules=[Extension("mercury",
                              [mercuryapi + "api/hex_bytes.c",
                               mercuryapi + "api/llrp_reader.c",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 Petr Gotthard <petr.gotthard@centrum.cz>
+ * Copyright (c) 2016-2020 Petr Gotthard <petr.gotthard@centrum.cz>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,6 +81,22 @@ invoke_stats_callback(TMR_Reader *reader,const TMR_Reader_StatsValues *reader_st
 static void
 invoke_exception_callback(TMR_Reader *reader, const TMR_Status ret, void *cookie);
 
+static const char *
+object2str(PyObject *name)
+{
+    if (PyBytes_Check(name))
+        return PyBytes_AsString(name);
+#if PY_MAJOR_VERSION >= 3
+    else if (PyUnicode_Check(name))
+        return PyUnicode_AsUTF8(name);
+#endif
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "expecting string");
+        return NULL;
+    }
+}
+
 typedef struct {
     const char* name;
     TMR_TagProtocol protocol;
@@ -99,12 +115,17 @@ static Protocols Reader_protocols[] = {
 static TMR_TagProtocol str2protocol(const char *name)
 {
     Protocols *prot;
+
+    if (name == NULL)
+        return TMR_TAG_PROTOCOL_NONE;
+
     for(prot = Reader_protocols; prot->name != NULL; prot++)
     {
         if(strcmp(prot->name, name) == 0)
             return prot->protocol;
     }
 
+    PyErr_SetString(PyExc_TypeError, "unknown protocol");
     return TMR_TAG_PROTOCOL_NONE;
 }
 
@@ -181,10 +202,7 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     {
         TMR_TagProtocol protocol;
         if ((protocol = str2protocol(protostr)) == TMR_TAG_PROTOCOL_NONE)
-        {
-            PyErr_SetString(PyExc_TypeError, "unknown protocol");
             goto error;
-        }
 
         if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_TAGOP_PROTOCOL, &protocol)) != TMR_SUCCESS)
             goto fail;
@@ -258,21 +276,10 @@ uint8_t as_uint8(PyObject *item)
     return (uint8_t)num;
 }
 
-static int str2bank(PyObject *name)
+static int str2bank(const char *text)
 {
-    const char *text;
-
-    if (PyBytes_Check(name))
-        text = PyBytes_AsString(name);
-#if PY_MAJOR_VERSION >= 3
-    else if (PyUnicode_Check(name))
-        text = PyUnicode_AsUTF8(name);
-#endif
-    else
-    {
-        PyErr_SetString(PyExc_TypeError, "expecting string");
+    if (text == NULL)
         return 0;
-    }
 
     if(strcmp(text, "reserved") == 0)
         return TMR_GEN2_BANK_RESERVED_ENABLED;
@@ -310,8 +317,8 @@ static TMR_GEN2_Select_action str2action(const char *name)
 {
     Actions *act;
 
-    if(name == NULL)
-        return ON_N_OFF;
+    if (name == NULL)
+        return -1;
 
     for(act = Reader_actions; act->name != NULL; act++)
     {
@@ -319,6 +326,7 @@ static TMR_GEN2_Select_action str2action(const char *name)
             return act->action;
     }
 
+    PyErr_SetString(PyExc_TypeError, "invalid action");
     return -1;
 }
 
@@ -425,12 +433,10 @@ parse_gen2filter(TMR_TagFilter *tag_filter, PyObject *arg, TMR_GEN2_Select_actio
 
         if((obj = PyDict_GetItemString(arg, "action")) != NULL)
         {
-            if (!PyUnicode_Check(arg) ||
-                (tag_filter->u.gen2Select.action = str2action(PyUnicode_AsUTF8(arg)) == -1))
-            {
-                PyErr_SetString(PyExc_TypeError, "invalid action");
+            if (obj == Py_None)
+                tag_filter->u.gen2Select.action = defaction;
+            else if ((tag_filter->u.gen2Select.action = str2action(object2str(obj))) == -1)
                 return 0;
-            }
         }
         else
             tag_filter->u.gen2Select.action = defaction;
@@ -536,10 +542,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
         return NULL;
 
     if ((protocol = str2protocol(s)) == TMR_TAG_PROTOCOL_NONE)
-    {
-        PyErr_SetString(PyExc_TypeError, "unknown protocol");
         return NULL;
-    }
 
     if ((ant_count = PyList_Size(list)) > MAX_ANTENNA_COUNT)
     {
@@ -578,7 +581,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
             {
                 int op2;
 
-                if ((op2 = str2bank(PyList_GetItem(bank, i))) == 0)
+                if ((op2 = str2bank(object2str(PyList_GetItem(bank, i)))) == 0)
                     return NULL;
 
                 op |= op2;
@@ -586,7 +589,7 @@ Reader_set_read_plan(Reader *self, PyObject *args, PyObject *kwds)
         }
         else
         {
-            if ((op = str2bank(bank)) == 0)
+            if ((op = str2bank(object2str(bank))) == 0)
                 return NULL;
         }
 
@@ -1178,6 +1181,7 @@ static Regions Reader_regions[] = {
     {"AR",   TMR_REGION_AR},
     {"HK",   TMR_REGION_HK},
     {"BD",   TMR_REGION_BD},
+    {"EU4",  TMR_REGION_EU4},
     {"open", TMR_REGION_OPEN},
     {NULL,   TMR_REGION_NONE}
 };
@@ -1185,12 +1189,17 @@ static Regions Reader_regions[] = {
 static TMR_Region str2region(const char *name)
 {
     Regions *reg;
+
+    if (name == NULL)
+        return TMR_REGION_NONE;
+
     for(reg = Reader_regions; reg->name != NULL; reg++)
     {
         if(strcmp(reg->name, name) == 0)
             return reg->region;
     }
 
+    PyErr_SetString(PyExc_TypeError, "unknown region");
     return TMR_REGION_NONE;
 }
 
@@ -1217,10 +1226,7 @@ Reader_set_region(Reader *self, PyObject *args)
         return NULL;
 
     if ((region = str2region(s)) == TMR_REGION_NONE)
-    {
-        PyErr_SetString(PyExc_TypeError, "Unknown region");
         return NULL;
-    }
 
     if ((ret = TMR_paramSet(&self->reader, TMR_PARAM_REGION_ID, &region)) != TMR_SUCCESS)
     {
@@ -2110,7 +2116,7 @@ TagData_set_protocol(TagData *self, PyObject *value, void *closure)
     else
     {
         TMR_TagProtocol protocol;
-        if((protocol = str2protocol(PyUnicode_AsUTF8(value))) == TMR_TAG_PROTOCOL_NONE)
+        if((protocol = str2protocol(object2str(value))) == TMR_TAG_PROTOCOL_NONE)
             return -1;
 
         self->tag.protocol = protocol;
