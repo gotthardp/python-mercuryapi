@@ -628,8 +628,10 @@ EPC(b'E2000087071401930700D206')
 Use the Windows installer for the
 [latest release](https://github.com/gotthardp/python-mercuryapi/releases) and Python 3.6.
 
+*Note: Recent version might not have a Windows installer. Use an older version or follow the instructions below to create one yourself. Feel free to submit a PR if you successfully build an installer not listed in releases.*
+
 If you get the "ImportError: DLL load failed", make sure you have the
-[Microsoft Visual C++ 2010 Redistributable Package](https://www.microsoft.com/en-us/download/details.aspx?id=5555)
+[Microsoft Visual C++ 2010 Redistributable Package](https://www.microsoft.com/en-us/download/details.aspx?id=26999)
 installed.
 
 To build an installer for other Python releases you need to:
