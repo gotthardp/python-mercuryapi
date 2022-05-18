@@ -43,6 +43,7 @@ typedef struct {
     PyObject *readCallback;
     PyObject *statsCallback;
     PyObject *exceptionCallback;
+    pthread_mutex_t stopReadingLock;
 } Reader;
 
 typedef struct {
@@ -161,6 +162,7 @@ Reader_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         return NULL;
 
     self->tag_filter = NULL;
+    pthread_mutex_init(&self->stopReadingLock, NULL);
 
     if ((ret = TMR_create(&self->reader, deviceUri)) != TMR_SUCCESS)
         goto fail;
@@ -254,6 +256,7 @@ Reader_dealloc(Reader* self)
     reset_filter(&self->tag_filter);
     TMR_destroy(&self->reader);
     Py_TYPE(self)->tp_free((PyObject*)self);
+    pthread_mutex_destroy(&self->stopReadingLock);
 }
 
 static
@@ -927,24 +930,18 @@ invoke_stats_callback(TMR_Reader *reader, const TMR_Reader_StatsValues *pdata, v
 static PyObject *
 Reader_stop_reading(Reader* self)
 {
-    PyObject *temp = self->readCallback;
-    PyObject *temp2 = self->statsCallback;
     TMR_Status ret;
-
-    /* avoid deadlock as calling stopReading will invoke the callback */
-    self->readCallback = NULL;
-    self->statsCallback = NULL;
-
-    if ((ret = TMR_stopReading(&self->reader)) != TMR_SUCCESS)
+    Py_BEGIN_ALLOW_THREADS  // release the GIL to avoid deadlock
+    // use mutex to prevent concurrent calls to TMR_stopReading
+    pthread_mutex_lock(&self->stopReadingLock);
+    ret = TMR_stopReading(&self->reader);
+    pthread_mutex_unlock(&self->stopReadingLock);
+    Py_END_ALLOW_THREADS  // reacquire the GIL
+    if (ret != TMR_SUCCESS)
     {
-        self->readCallback = temp; /* revert back as the function will fail */
-        self->statsCallback = temp2;
-
         PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
         return NULL;
     }
-
-    Py_XDECREF(temp);
     Py_RETURN_NONE;
 }
 
