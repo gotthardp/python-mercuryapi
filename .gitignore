@@ -3,5 +3,7 @@ build
 dist
 *.egg-info
 mercuryapi-*
+mercury.cpython*
 Examples/
 Tests/
+venv/

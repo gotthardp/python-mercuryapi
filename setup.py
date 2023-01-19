@@ -27,5 +27,5 @@ setup(name="python-mercuryapi", version="0.5.4",
       ext_modules=[Extension("mercury",
                              sources=["mercury.c"],
                              libraries=["mercuryapi", "ltkc", "ltkctm"],
-                             include_dirs=['build/mercuryapi/include'],
-                             library_dirs=['build/mercuryapi/lib'])])
+                             include_dirs=['mercuryapi/include'],
+                             library_dirs=['mercuryapi/lib'])])
