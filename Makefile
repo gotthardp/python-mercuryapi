@@ -12,7 +12,7 @@ install: mercuryapi
 mercuryapi: 
 	patch -p0 -d mercuryapi-$(APIVER) < mercuryapi.patch
 
-	make -C mercuryapi-$(APIVER)/c/src/api
+	make -C mercuryapi-$(APIVER)/c/src/api all clean
 
 	mkdir -p mercuryapi/include
 	find mercuryapi-*/c/src/api -type f -name '*.h' ! -name '*_imp.h' ! -path '*ltkc_win32*' -exec cp {} mercuryapi/include/ \;
