@@ -1,0 +1,14 @@
+diff -auNr LTK.orig/LTKC/Library/ltkc_base.h LTK/LTKC/Library/ltkc_base.h
+--- LTK.orig/LTKC/Library/ltkc_base.h	2011-05-04 20:15:10.000000000 +0530
++++ LTK/LTKC/Library/ltkc_base.h	2011-05-04 20:16:37.000000000 +0530
+@@ -474,8 +474,8 @@
+  * During decode operations types can be looked up
+  * by code (vendor and typenum) or by name.
+  */
+-#define LTKC_MAX_CUSTOM_MESSAGE     10u
+-#define LTKC_MAX_CUSTOM_PARAMETER   30u
++#define LTKC_MAX_CUSTOM_MESSAGE     100u
++#define LTKC_MAX_CUSTOM_PARAMETER   300u
+ struct LLRP_STypeRegistry
+ {
+     /* Standard messages subscripted by type number */

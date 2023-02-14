@@ -1,0 +1,112 @@
+############################################################################
+#   Copyright 2007,2008 Impinj, Inc.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+############################################################################
+
+
+INSTALLING AND BUILDING THE LLRP Tool Kit for C
+Last updated 28 Jan 2008
+
+
+
+
+INTRODUCTION
+============
+
+These are the instructions for obtaining and building
+the LLRP Tool Kit for C (LTKC) on Linux.
+
+The most recent versions of and news about the
+LLRP Tool Kit is available on SourceForge.net
+
+    http://sourceforge.net/projects/llrp-toolkit/
+
+
+
+
+PREREQUISITES
+=============
+
+You need:
+    1) A Linux system
+    2) gcc(1) and make(1) installed including the C++
+       libraries and header files
+    3) The LTK distribution
+
+
+
+
+OBTAIN THE LTK DISTRIBUTION USING ANONYMOUS CVS FROM LINUX
+==========================================================
+
+Using anonymous CVS, obtain the LLRP Tool Kit
+distribution from SourceForge.net
+
+   cvs -d:pserver:anonymous@llrp-toolkit.cvs.sourceforge.net:/cvsroot/llrp-toolkit login
+
+[press ENTER when prompted for the password]
+ 
+   cvs -z3 -d:pserver:anonymous@llrp-toolkit.cvs.sourceforge.net:/cvsroot/llrp-toolkit co -P LTK
+
+
+
+
+OBTAIN THE LTK DISTRIBUTION AS A ZIP FILE
+=========================================
+
+TODO
+
+
+
+
+BUILD ON LINUX
+==============
+
+    cd LTK/LTKC
+    make
+
+
+
+
+VERIFICATION
+============
+
+Try dx101, the stand-alone self-test. It needs no reader.
+
+    cd LTK/LTKC/Tests
+    sh RUN101
+
+Expect this output
+
+    ./dx101 ../../Tests/dx101/dx101_a_in.bin > dx101_out.tmp
+    PASSED
+
+If you have a LLRP reader available, you may want to try dx201
+
+    cd LTK/LTKC/Tests
+    dx201 -v MyReaderHostName
+
+Try example1
+
+    cd LTK/LTKC/Examples
+    example1 -v MyReaderHostName
+
+
+
+
+FOR FURTHER INFORMATION OR TO GET HELP
+======================================
+
+Visit the LLRP Tool Kit project on SourceForge.net

@@ -7,8 +7,9 @@ import os, platform
 class my_build(build):
     def run(self):
         if platform.system() == 'Darwin':
-            os.system("cp -f mercuryapi_osx.patch mercuryapi.patch")
-        os.system("make mercuryapi")
+          os.system("make mercuryapi PLATFORM=posix")
+        else:
+          os.system("make mercuryapi PLATFORM=linux")
         build.run(self)
 
 setup(name="python-mercuryapi", version="0.5.4",

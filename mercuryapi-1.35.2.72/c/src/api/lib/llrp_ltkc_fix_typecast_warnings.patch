@@ -1,0 +1,20 @@
+--- LTK-orig/LTKC/Library/ltkc_xmltextencode.c	2011-03-04 12:26:16.000000000 +0530
++++ LTK/LTKC/Library/ltkc_xmltextencode.c	2011-04-07 12:52:03.000000000 +0530
+@@ -1498,7 +1498,7 @@
+         return;
+     }
+ 
+-    strcpy(&pEncoder->pBuffer[pEncoder->iNext], aHoldBuf);
++    strcpy((char *)&pEncoder->pBuffer[pEncoder->iNext], aHoldBuf);
+ 
+     pEncoder->iNext += nHoldBuf;
+ }
+@@ -1542,7 +1542,7 @@
+     /*
+      * Construct an XML encoder
+      */
+-    pXMLEncoder = LLRP_XMLTextEncoder_construct(pBuffer, nBuffer);
++    pXMLEncoder = LLRP_XMLTextEncoder_construct((unsigned char *)pBuffer, nBuffer);
+     if(NULL == pXMLEncoder)
+     {
+         strcpy(pBuffer, "ERROR: XMLTextEncoder_construct failed\n");

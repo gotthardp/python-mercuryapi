@@ -1,0 +1,64 @@
+diff -ubr LTK.orig/LTKC/Library/LLRP.org/Makefile LTK/LTKC/Library/LLRP.org/Makefile
+--- LTK.orig/LTKC/Library/LLRP.org/Makefile	2011-06-13 17:39:48.000000000 -0400
++++ LTK/LTKC/Library/LLRP.org/Makefile	2011-06-13 18:01:29.414194087 -0400
+@@ -21,6 +21,9 @@
+ CFLAGS      ?= -g -Wall
+ CFLAGS      += -I..
+ 
++# Position-independent code required for shared libraries
++CFLAGS          += -fpic
++
+ TMDEF      = ../../../Definitions/LLRP.org/llrp-control-def.xml
+ 
+ CODE_GEN_H_XSLT = ../ltkc_gen_h.xslt
+@@ -39,11 +42,17 @@
+ TM_LTKC_OBJS = \
+ 	tm_ltkc_genout.o
+ 
++TM_LTKC_SONAME = $(TM_LTKC_LIB:.a=.so.1)
++TM_LTKC_SHARED_LIB = $(TM_LTKC_SONAME).0.0
++
+ all:    $(TM_LTKC_LIB)
+ 
+ $(TM_LTKC_LIB) : $(TM_LTKC_OBJS)
+ 	$(AR) crv $(TM_LTKC_LIB) $(TM_LTKC_OBJS)
+ 
++$(TM_LTKC_SHARED_LIB) : $(TM_LTKC_OBJS)
++	$(CC) -shared -Wl,-soname,$(TM_LTKC_SONAME) -o $(TM_LTKC_SHARED_LIB) $(TM_LTKC_OBJS)
++
+ $(TM_LTKC_OBJS) : $(LTKC_HDRS)
+ 
+ tm_ltkc_genout.o : out_tm_ltkc.inc
+diff -ubr LTK.orig/LTKC/Library/Makefile LTK/LTKC/Library/Makefile
+--- LTK.orig/LTKC/Library/Makefile	2011-06-13 17:39:48.000000000 -0400
++++ LTK/LTKC/Library/Makefile	2011-06-13 17:59:11.054192752 -0400
+@@ -20,6 +20,9 @@
+ CC              ?= gcc
+ CFLAGS          ?= -g -Wall
+ 
++# Position-independent code required for shared libraries
++CFLAGS          += -fpic
++
+ LLRPDEF         = ../../Definitions/Core/llrp-1x0-def.xml
+ 
+ CODE_GEN_H_XSLT = ltkc_gen_h.xslt
+@@ -50,6 +53,9 @@
+ 	ltkc_genout.o
+ 
+ 
++LTKC_SONAME = $(LTKC_LIB:.a=.so.1)
++LTKC_SHARED_LIB = $(LTKC_SONAME).0.0
++
+ all:    $(LTKC_LIB)
+ 	cd LLRP.org; make all
+ 
+@@ -59,6 +65,9 @@
+ $(LTKC_LIB) : $(LTKC_OBJS)
+ 	$(AR) crv $(LTKC_LIB) $(LTKC_OBJS)
+ 
++$(LTKC_SHARED_LIB) : $(LTKC_OBJS)
++	$(CC) -shared -Wl,-soname,$(LTKC_SONAME) -o $(LTKC_SHARED_LIB) $(LTKC_OBJS)
++
+ $(LTKC_OBJS) : $(LTKC_HDRS)
+ 
+ ltkc_array.o       : ltkc_array.c

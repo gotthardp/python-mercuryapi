@@ -1,0 +1,174 @@
+diff -auNr LTK.orig/LTKC/Library/LLRP.org/Makefile LTK/LTKC/Library/LLRP.org/Makefile
+--- LTK.orig/LTKC/Library/LLRP.org/Makefile	2011-04-08 13:58:59.000000000 +0530
++++ LTK/LTKC/Library/LLRP.org/Makefile	2011-04-08 14:32:44.000000000 +0530
+@@ -20,7 +20,7 @@
+ CC          = gcc
+ CFLAGS      = -g -Wall -I..
+ 
+-LLRPORGDEF      = ../../../Definitions/LLRP.org/LLRPOrgExampleDef.xml
++TMDEF      = ../../../Definitions/LLRP.org/llrp-control-def.xml
+ 
+ CODE_GEN_H_XSLT = ../ltkc_gen_h.xslt
+ CODE_GEN_C_XSLT = ../ltkc_gen_c.xslt
+@@ -33,35 +33,35 @@
+ 	../ltkc_platform.h	\
+ 	../out_ltkc.h
+ 
+-LLRPORG_LTKC_LIB = libltkcllrporg.a
+-LLRPORG_LTKC_OBJS = \
+-	llrporg_ltkc_genout.o
+ 
+-
+-all:    $(LLRPORG_LTKC_LIB)
+-
+-$(LLRPORG_LTKC_LIB) : $(LLRPORG_LTKC_OBJS)
+-	$(AR) crv $(LLRPORG_LTKC_LIB) $(LLRPORG_LTKC_OBJS)
+-
+-$(LLRPORG_LTKC_OBJS) : $(LTKC_HDRS)
+-
+-llrporg_ltkc_genout.o : out_llrporg_ltkc.inc
+-llrporg_ltkc_genout.o : out_llrporg_ltkc.h
+-llrporg_ltkc_genout.o : llrporg_ltkc_genout.c
+-	$(CC) -c $(CFLAGS) -Wno-unused llrporg_ltkc_genout.c \
+-		-o llrporg_ltkc_genout.o
+-
+-out_llrporg_ltkc.h: $(CODE_GEN_H_XSLT) $(LLRPORGDEF)
+-	xsltproc --stringparam RegistryName LLRPOrg \
+-		-o out_llrporg_ltkc.h \
++TM_LTKC_LIB = libltkctm.a
++TM_LTKC_OBJS = \
++	tm_ltkc_genout.o
++
++all:    $(TM_LTKC_LIB)
++
++$(TM_LTKC_LIB) : $(TM_LTKC_OBJS)
++	$(AR) crv $(TM_LTKC_LIB) $(TM_LTKC_OBJS)
++
++$(TM_LTKC_OBJS) : $(LTKC_HDRS)
++
++tm_ltkc_genout.o : out_tm_ltkc.inc
++tm_ltkc_genout.o : out_tm_ltkc.h
++tm_ltkc_genout.o : tm_ltkc_genout.c
++	$(CC) -c $(CFLAGS) -Wno-unused tm_ltkc_genout.c \
++		-o tm_ltkc_genout.o
++
++out_tm_ltkc.h: $(CODE_GEN_H_XSLT) $(TMDEF)
++	xsltproc --stringparam RegistryName Tm \
++		-o out_tm_ltkc.h \
+ 		$(CODE_GEN_H_XSLT) \
+-		$(LLRPORGDEF)
++		$(TMDEF)
+ 
+-out_llrporg_ltkc.inc: $(CODE_GEN_C_XSLT) $(LLRPORGDEF)
+-	xsltproc --stringparam RegistryName LLRPOrg \
+-		-o out_llrporg_ltkc.inc \
++out_tm_ltkc.inc: $(CODE_GEN_C_XSLT) $(TMDEF)
++	xsltproc --stringparam RegistryName Tm \
++		-o out_tm_ltkc.inc \
+ 		$(CODE_GEN_C_XSLT) \
+-		$(LLRPORGDEF)
++		$(TMDEF)
+ 
+ clean:
+ 	rm -f *.o *.core core.[0-9]*
+diff -auNr LTK.orig/LTKC/Library/LLRP.org/tm_ltkc_genout.c LTK/LTKC/Library/LLRP.org/tm_ltkc_genout.c
+--- LTK.orig/LTKC/Library/LLRP.org/tm_ltkc_genout.c	1970-01-01 05:30:00.000000000 +0530
++++ LTK/LTKC/Library/LLRP.org/tm_ltkc_genout.c	2011-04-08 14:14:26.000000000 +0530
+@@ -0,0 +1,38 @@
++
++/*
++ ***************************************************************************
++ *  Copyright 2007,2008 Impinj, Inc.
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License");
++ *  you may not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ *
++ ***************************************************************************
++ */
++
++
++#include "ltkc.h"
++#include "tm_ltkc.h"
++
++#include "ltkc_genoutmac.h"
++
++#include "out_tm_ltkc.inc"
++
++
++static char     ident[] = {
++    "$" "Id: libltkctm "
++    TM_LTKC_VERSION_STR
++    "  Built: "
++    __DATE__
++    " "
++    __TIME__
++    " $"
++};
+diff -auNr LTK.orig/LTKC/Library/LLRP.org/tm_ltkc.h LTK/LTKC/Library/LLRP.org/tm_ltkc.h
+--- LTK.orig/LTKC/Library/LLRP.org/tm_ltkc.h	1970-01-01 05:30:00.000000000 +0530
++++ LTK/LTKC/Library/LLRP.org/tm_ltkc.h	2011-04-08 14:14:38.000000000 +0530
+@@ -0,0 +1,35 @@
++
++/*
++ ***************************************************************************
++ *  Copyright 2007,2008 Impinj, Inc.
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License");
++ *  you may not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ *
++ ***************************************************************************
++ */
++
++
++#ifndef _TM_LTKC_H
++#define _TM_LTKC_H
++
++#include "out_tm_ltkc_wrapper.h"
++
++/*
++ * Version is four each 8-bit numbers:
++ * major, minor, maintenance, progress number
++ */
++#define TM_LTKC_VERSION        0x01000008
++#define TM_LTKC_VERSION_STR    "1.0.0.8"
++
++#endif /* !_TM_LTKC_H */
++
+diff -auNr LTK.orig/LTKC/Release/Makefile LTK/LTKC/Release/Makefile
+--- LTK.orig/LTKC/Release/Makefile	2011-04-08 13:58:59.000000000 +0530
++++ LTK/LTKC/Release/Makefile	2011-04-08 14:38:17.000000000 +0530
+@@ -24,9 +24,13 @@
+ 	$(LIBDIR)/ltkc_frame.h		\
+ 	$(LIBDIR)/ltkc_platform.h	\
+ 	$(LIBDIR)/ltkc_xmltext.h	\
+-	$(LIBDIR)/out_ltkc.h
+-
+-LTKC_LIB_A          = $(LIBDIR)/libltkc.a
++	$(LIBDIR)/out_ltkc.h		\
++	$(LIBDIR)/tm_ltkc.h		\
++	$(LIBDIR)/out_tm_ltkc.h
++
++LTKC_LIB_A          = \
++	$(LIBDIR)/libltkc.a		\
++	$(LIBDIR)/libltkctm.a
+ LTKC_LIBS           = $(LTKC_LIB_A)
+ LTKC_FILES          = $(LTKC_HDRS) $(LTKC_LIBS)
+ 

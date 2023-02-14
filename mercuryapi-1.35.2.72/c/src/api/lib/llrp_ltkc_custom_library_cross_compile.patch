@@ -1,0 +1,15 @@
+diff -auNr LTK.orig/LTKC/Library/LLRP.org/Makefile LTK/LTKC/Library/LLRP.org/Makefile
+--- LTK.orig/LTKC/Library/LLRP.org/Makefile	2011-04-21 11:55:26.000000000 +0530
++++ LTK/LTKC/Library/LLRP.org/Makefile	2011-04-21 11:56:19.000000000 +0530
+@@ -17,8 +17,9 @@
+ 
+ #CFLAGS     = -O -Wall -I..
+ AR          = ar
+-CC          = gcc
+-CFLAGS      = -g -Wall -I..
++CC          ?= gcc
++CFLAGS      ?= -g -Wall
++CFLAGS      += -I..
+ 
+ TMDEF      = ../../../Definitions/LLRP.org/llrp-control-def.xml
+ 

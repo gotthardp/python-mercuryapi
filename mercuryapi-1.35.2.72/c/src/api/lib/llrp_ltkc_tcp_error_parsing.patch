@@ -1,0 +1,26 @@
+diff -auNr LTK.orig/LTKC/Library/ltkc_base.h LTK/LTKC/Library/ltkc_base.h
+--- LTK.orig/LTKC/Library/ltkc_base.h	2011-09-30 15:22:36.000000000 +0530
++++ LTK/LTKC/Library/ltkc_base.h	2011-09-30 15:24:13.000000000 +0530
+@@ -238,6 +238,7 @@
+     const LLRP_tSFieldDescriptor *pRefField;
+     const char *                pWhatStr;
+     int                         OtherDetail;
++    llrp_u8_t                   tcpErrno;
+ };
+ 
+ extern void
+diff -auNr LTK.orig/LTKC/Library/ltkc_connection.c LTK/LTKC/Library/ltkc_connection.c
+--- LTK.orig/LTKC/Library/ltkc_connection.c	2011-09-30 15:22:36.000000000 +0530
++++ LTK/LTKC/Library/ltkc_connection.c	2011-09-30 15:24:22.000000000 +0530
+@@ -590,6 +590,11 @@
+         int             rc;
+ 
+         rc = write(pConn->fd, pConn->Send.pBuffer, pConn->Send.nBuffer);
++        pError->OtherDetail = rc;
++        if (-1 == rc)
++        {
++          pError->tcpErrno = errno;
++        }
+         if(rc != pConn->Send.nBuffer)
+         {
+             /* Yikes! */

@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ -  Copyright 2007 Impinj, Inc.
+ -
+ -  Copyright 2006, 2007 EPCglobal Inc.
+ -     (The proprietary text of EPCglobal Inc. included herein is not
+ -      a Contribution to the work. The right to use the proprietary
+ -      text is limited to reproduction and display thereof within
+ -      the work.)
+
+ -  Licensed under the Apache License, Version 2.0 (the "License");
+ -  you may not use this file except in compliance with the License.
+ -  You may obtain a copy of the License at
+ -
+ -      http://www.apache.org/licenses/LICENSE-2.0
+ -
+ -  Unless required by applicable law or agreed to in writing, software
+ -  distributed under the License is distributed on an "AS IS" BASIS,
+ -  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ -  See the License for the specific language governing permissions and
+ -  limitations under the License.
+ -
+ -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ -->
+
+<llrpdef
+	xmlns="http://www.llrp.org/ltk/schema/core/encoding/binary/1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:h="http://www.w3.org/1999/xhtml"
+        xsi:schemaLocation="
+		  http://www.llrp.org/ltk/schema/core/encoding/binary/1.0
+		  http://www.llrp.org/ltk/schema/core/encoding/binary/1.0/llrpdef.xsd"
+>
+
+<vendorDefinition       name="llrpOrg" vendorID="29840" />
+<namespaceDefinition    prefix="llrpOrg"
+	URI="http://www.llrp.org/ltk/schema/extension/Sample/xml/1.0/"
+                        schemaLocation="http://www.llrp.org/ltk/schema/extension/Sample/xml/1.0/llrpOrgExample.xsd" />
+
+<!-- Sample enumeration -->
+<customEnumerationDefinition    name="LlrpOrgEnumeration1"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test enumeration to validate they work in extension files</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"        name="v1"/>
+  <entry     value="1"        name="v2"/>
+  <entry     value="2"        name="v3"/>
+  <entry     value="3"        name="v4"/>
+  <entry     value="4"        name="v5"/>
+  <entry     value="5"        name="v6"/>
+</customEnumerationDefinition>
+
+
+<customChoiceDefinition         name="LlrpOrgCustomChoice1"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test choice to validate that they work in extension files</h:p>
+    </description>
+  </annotation>
+  <parameter type="LlrpOrgCustomParameter1"/>
+  <parameter type="LlrpOrgCustomParameter2"/>
+  <parameter type="C1G2Read"/>
+  <parameter type="C1G2Write"/>
+  <parameter type="C1G2Kill"/>
+  <parameter type="C1G2Lock"/>
+  <parameter type="C1G2BlockErase"/>
+  <parameter type="C1G2BlockWrite"/>
+</customChoiceDefinition>
+
+
+<!-- All of the fields possible in regular llrp message -->
+<customMessageDefinition        name="LLRPORG_VENDOR_MESSAGE_1"
+                                vendor="llrpOrg" subtype="100"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test message to ensure that all fields work in extension including reserved fields</h:p>
+      <h:p>Also test core and custom enumerations</h:p>
+    </description>
+  </annotation>
+  <field        type="u1"       name="test_field1_u1"/>
+  <field        type="u2"       name="test_field2_u2"/>
+  <reserved     bitCount="5"/>
+  <field        type="u1v"      name="test_field3_u1v"/>
+  <field        type="u8"       name="test_field4_u8"/>
+  <field        type="s8"       name="test_field5_s8"/>
+  <field        type="u8v"      name="test_field6_u8v"/>
+  <field        type="s8v"      name="test_field7_s8v"/>
+  <field        type="utf8v"    name="test_field8_utf8v"
+                                format="UTF8"/>
+  <field        type="u16"      name="test_field9_u16"/>
+  <field        type="u16v"     name="test_field10_u16v"/>
+  <reserved     bitCount="1"/>
+  <reserved     bitCount="31"/>
+  <field        type="s16"      name="test_field11_s16"/>
+  <field        type="s16v"     name="test_field12_s16v"/>
+  <field        type="u32"      name="test_field13_u32"
+                                enumeration="LlrpOrgEnumeration1"/>
+  <field        type="u32v"     name="test_field14_u32v"/>
+  <field        type="s32"      name="test_field15_s32"/>
+  <field        type="s32v"     name="test_field16_s32v"/>
+  <field        type="u64"      name="test_field17_u64"/>
+  <field        type="u64v"     name="test_field18_u64v"/>
+  <field        type="s64"      name="test_field19_s64"
+                                format="Dec"/>
+  <field        type="s64v"     name="test_field20_s64v"/>
+  <field        type="u96"      name="test_field21_u96"
+                                format="Hex"/>
+  <reserved     bitCount="15"/>
+  <reserved     bitCount="17"/>
+  <field        type="bytesToEnd" name="test_field22_bte"
+                                format="Hex"/>
+</customMessageDefinition>
+
+<!-- All of the fields possible in regular llrp parameter -->
+<customParameterDefinition      name="LlrpOrgCustomParameter1"
+                                vendor="llrpOrg" subtype="2147483647"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test parameter to ensure that all fields work in extension</h:p>
+      <h:p>Also test core and custom enumerations</h:p>
+    </description>
+  </annotation>
+  <field        type="u1"       name="test_field1_u1"/>
+  <field        type="u2"       name="test_field2_u2"/>
+  <reserved     bitCount="5"/>
+  <field        type="u1v"      name="test_field3_u1v"/>
+  <field        type="u8"       name="test_field4_u8"/>
+  <field        type="s8"       name="test_field5_s8"/>
+  <field        type="u8v"      name="test_field6_u8v"/>
+  <field        type="s8v"      name="test_field7_s8v"/>
+  <field        type="utf8v"    name="test_field8_utf8v"
+                                format="UTF8"/>
+  <field        type="u16"      name="test_field9_u16"/>
+  <field        type="u16v"     name="test_field10_u16v"/>
+  <field        type="s16"      name="test_field11_s16"/>
+  <field        type="s16v"     name="test_field12_s16v"/>
+  <reserved     bitCount="1"/>
+  <reserved     bitCount="31"/>
+  <field        type="u32"      name="test_field13_u32"
+                                enumeration="LlrpOrgEnumeration1"/>
+  <field        type="u32v"     name="test_field14_u32v"/>
+  <field        type="s32"      name="test_field15_s32"/>
+  <field        type="s32v"     name="test_field16_s32v"/>
+  <field        type="u64"      name="test_field17_u64"/>
+  <field        type="u64v"     name="test_field18_u64v"/>
+  <field        type="s64"      name="test_field19_s64"
+                                format="Dec"/>
+  <field        type="s64v"     name="test_field20_s64v"/>
+  <field        type="u96"      name="test_field21_u96"
+                                format="Hex"/>
+  <reserved     bitCount="15"/>
+  <reserved     bitCount="17"/>
+  <field        type="bytesToEnd" name="test_field22_bte"
+                                format="Hex"/>
+  <allowedIn    type="SET_READER_CONFIG"        repeat="0-1"/>
+  <allowedIn    type="GET_READER_CONFIG"        repeat="0-1"/>
+  <allowedIn    type="GET_READER_CAPABILITIES"  repeat="0-1"/>
+</customParameterDefinition>
+
+<!--Custom LLRP message with core parameters and
+    custom defined parameters -->
+<customMessageDefinition        name="LLRPORG_VENDOR_MESSAGE_2"
+                                vendor="llrpOrg" subtype="254"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test message to ensure that a message can contain
+           custom and core parameters</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="0-1"    type="LlrpOrgCustomParameter1"/>
+  <parameter    repeat="1"      type="LLRPStatus"/>
+  <parameter    repeat="0-N"    type="AntennaConfiguration"/>
+</customMessageDefinition>
+
+<!--Custom LLRP parameter with core parameters and
+    custom defined parameters -->
+<customParameterDefinition      name="LlrpOrgCustomParameter2"
+                                vendor="llrpOrg" subtype="2147483646"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test parameter to ensure that a message can contain
+           custom and core parameters</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="0-1"    type="LlrpOrgCustomParameter1"/>
+  <parameter    repeat="0-1"    type="RFTransmitter"/>
+  <parameter    repeat="0-1"    type="UTCTimestamp"/>
+  <parameter    repeat="0-1"    type="FirstSeenTimestampUptime"/>
+  <allowedIn    repeat="0-1"    type="SET_READER_CONFIG"/>
+  <allowedIn    repeat="0-1"    type="GET_READER_CONFIG"/>
+  <allowedIn    repeat="0-1"    type="GET_READER_CAPABILITIES"/>
+</customParameterDefinition>
+
+ <!--Custom LLRP message with choice of core and custom parameters -->
+<customMessageDefinition        name="LLRPORG_VENDOR_MESSAGE_3"
+                                vendor="llrpOrg" subtype="253"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test message to test choices of custom and core elements</h:p>
+    </description>
+  </annotation>
+  <choice       repeat="1-N"    type="LlrpOrgCustomChoice1"/>
+</customMessageDefinition>
+
+<!--Custom LLRP parameter with choice of core and custom parameters -->
+<customParameterDefinition      name="LlrpOrgCustomParameter3"
+                                vendor="llrpOrg" subtype="2147483645"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test parameter to test choice of custom and core elements </h:p>
+    </description>
+  </annotation>
+  <choice       repeat="1-N"    type="LlrpOrgCustomChoice1"/>
+  <allowedIn    repeat="0-1"    type="SET_READER_CONFIG"/>
+  <allowedIn    repeat="0-1"    type="GET_READER_CONFIG"/>
+  <allowedIn    repeat="0-1"    type="GET_READER_CAPABILITIES"/>
+</customParameterDefinition>
+
+<!--Custom LLRP message that contains custom extensions,
+    core parameters, and custom parameters -->
+<customMessageDefinition        name="LLRPORG_VENDOR_MESSAGE_4"
+                                vendor="llrpOrg" subtype="252"
+                                namespace="llrpOrg">
+ <annotation>
+   <documentation>
+   </documentation>
+  <description copyright="">
+     <h:p>Test that custom messages can contain undefined
+          custom extensions </h:p>
+  </description>
+  </annotation>
+  <parameter    repeat="0-1"    type="LlrpOrgCustomParameter1"/>
+  <parameter    repeat="1"      type="LLRPStatus"/>
+  <parameter    repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+
+<!--Custom LLRP parameter  that contains custom extensions,
+    core parameters and custom parameters -->
+<customParameterDefinition      name="LlrpOrgCustomParameter4"
+                                vendor="llrpOrg" subtype="2147483644"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test parameter to test customer extensions in
+           custom parameters </h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="0-1"    type="LlrpOrgCustomParameter1"/>
+  <parameter    repeat="1"      type="LLRPStatus"/>
+  <parameter    repeat="0-N"    type="Custom"/>
+  <allowedIn    repeat="0-1"    type="SET_READER_CONFIG"/>
+  <allowedIn    repeat="0-1"    type="GET_READER_CONFIG"/>
+  <allowedIn    repeat="0-1"    type="GET_READER_CAPABILITIES"/>
+</customParameterDefinition>
+
+ <!--A test of an extension to a custom parameters -->
+<customParameterDefinition      name="LlrpOrgCustomParameter5"
+                                vendor="llrpOrg" subtype="2147483643"
+                                namespace="llrpOrg">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>A test parameter to insert into a custom extension
+           within a custom parameter </h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="0-1"    type="LlrpOrgCustomParameter1"/>
+  <parameter    repeat="1"      type="LLRPStatus"/>
+  <parameter    repeat="0-N"    type="Custom"/>
+  <allowedIn    repeat="0-1"    type="LlrpOrgCustomParameter4"/>
+</customParameterDefinition>
+
+</llrpdef>

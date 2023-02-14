@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ -
+ -  Copyright 2007 Impinj Inc.
+ -
+ -  Licensed under the Apache License, Version 2.0 (the "License");
+ -  you may not use this file except in compliance with the License.
+ -  You may obtain a copy of the License at
+ -
+ -       http://www.apache.org/licenses/LICENSE-2.0
+ -
+ -  Unless required by applicable law or agreed to in writing, software
+ -  distributed under the License is distributed on an "AS IS" BASIS,
+ -  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ -  See the License for the specific language governing permissions and
+ -  limitations under the License.
+ -                                                                           -
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ -->
+
+<xs:schema
+  targetNamespace="http://www.llrp.org/ltk/schema/core/encoding/binary/1.0"
+  xmlns:llrpdef="http://www.llrp.org/ltk/schema/core/encoding/binary/1.0"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="qualified"
+  version="1.0">
+
+  <xs:annotation>
+    <xs:documentation xml:lang="en">
+	Copyright 2007 Impinj Inc.
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	     http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="llrpdef" type="llrpdef:llrpDefinition"/>
+
+  <xs:complexType name="llrpDefinition">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="messageDefinition"
+                  type="llrpdef:messageDefinition"/>
+      <xs:element name="parameterDefinition"
+                  type="llrpdef:parameterDefinition"/>
+      <xs:element name="choiceDefinition"
+                  type="llrpdef:choiceDefinition"/>
+      <xs:element name="enumerationDefinition"
+                  type="llrpdef:enumerationDefinition"/>
+      <xs:element name="vendorDefinition"
+                  type="llrpdef:vendorDefinition"/>
+      <xs:element name="namespaceDefinition"
+                  type="llrpdef:namespaceDefinition"/>
+      <xs:element name="customMessageDefinition"
+                  type="llrpdef:customMessageDefinition"/>
+      <xs:element name="customParameterDefinition"
+                  type="llrpdef:customParameterDefinition"/>
+      <xs:element name="customChoiceDefinition"
+                  type="llrpdef:customChoiceDefinition"/>
+      <xs:element name="customEnumerationDefinition"
+                  type="llrpdef:customEnumerationDefinition"/>
+      <xs:element name="annotation" type="llrpdef:annotation"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="messageDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="field"     type="llrpdef:fieldDefinition"/>
+        <xs:element name="reserved"  type="llrpdef:reservedDefinition"/>
+      </xs:choice>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="parameter" type="llrpdef:parameterReference"/>
+        <xs:element name="choice"    type="llrpdef:choiceReference"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name"           type="llrpdef:name"    use="required"/>
+    <xs:attribute name="typeNum"        type="llrpdef:typeNum" use="required"/>
+    <xs:attribute name="required"       type="xs:boolean"      use="optional"/>
+    <xs:attribute name="responseType"   type="llrpdef:name"    use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="parameterDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="field"     type="llrpdef:fieldDefinition"/>
+        <xs:element name="reserved"  type="llrpdef:reservedDefinition"/>
+      </xs:choice>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="parameter" type="llrpdef:parameterReference"/>
+        <xs:element name="choice"    type="llrpdef:choiceReference"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name"           type="llrpdef:name"    use="required"/>
+    <xs:attribute name="typeNum"        type="llrpdef:typeNum" use="required"/>
+    <xs:attribute name="required"       type="xs:boolean"      use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="choiceDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="parameter" type="llrpdef:choiceParameterReference"
+                  minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name"    type="llrpdef:name"    use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="enumerationDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="entry" type="llrpdef:enumerationEntryDefinition"
+                  minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name"    type="llrpdef:name"    use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="enumerationEntryDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name"    type="llrpdef:name"    use="required"/>
+    <xs:attribute name="value"   type="xs:integer"      use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="vendorDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name"       type="llrpdef:name"     use="required"/>
+    <xs:attribute name="vendorID"   type="xs:unsignedInt"   use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="namespaceDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="prefix"         type="llrpdef:name" use="required"/>
+    <xs:attribute name="URI"            type="xs:anyURI"    use="required"/>
+    <xs:attribute name="schemaLocation" type="xs:anyURI"    use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="customMessageDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="field" type="llrpdef:fieldDefinition"/>
+        <xs:element name="reserved" type="llrpdef:reservedDefinition"/>
+      </xs:choice>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="parameter" type="llrpdef:parameterReference"/>
+        <xs:element name="choice"    type="llrpdef:choiceReference"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name"         type="llrpdef:name"    use="required"/>
+    <xs:attribute name="vendor"       type="llrpdef:name"    use="required"/>
+    <xs:attribute name="subtype"      type="llrpdef:customMessageSubtype" use="required"/>
+    <xs:attribute name="namespace"    type="llrpdef:name"    use="required"/>
+    <xs:attribute name="responseType" type="llrpdef:name"    use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="customParameterDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="field"     type="llrpdef:fieldDefinition"/>
+        <xs:element name="reserved"  type="llrpdef:reservedDefinition"/>
+      </xs:choice>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="parameter" type="llrpdef:parameterReference"/>
+        <xs:element name="choice"    type="llrpdef:choiceReference"/>
+      </xs:choice>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="allowedIn"
+                        type="llrpdef:allowedInParameterReference"/>
+      </xs:sequence>
+    </xs:sequence>
+    <xs:attribute name="name"       type="llrpdef:name"     use="required"/>
+    <xs:attribute name="vendor"     type="llrpdef:name"     use="required"/>
+    <xs:attribute name="subtype"    type="xs:unsignedInt"   use="required"/>
+    <xs:attribute name="namespace"  type="llrpdef:name"     use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="customChoiceDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="parameter" type="llrpdef:choiceParameterReference"
+                  minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name"       type="llrpdef:name"     use="required"/>
+    <xs:attribute name="namespace"  type="llrpdef:name"     use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="customEnumerationDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="entry" type="llrpdef:enumerationEntryDefinition"
+                  minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name"       type="llrpdef:name"     use="required"/>
+    <xs:attribute name="namespace"  type="llrpdef:name"     use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="parameterReference">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="type"           type="llrpdef:name"    use="required"/>
+    <xs:attribute name="repeat"         type="llrpdef:repeat"  use="required"/>
+    <xs:attribute name="name"           type="llrpdef:name"    use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="choiceReference">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="type"   type="llrpdef:name"     use="required"/>
+    <xs:attribute name="repeat" type="llrpdef:repeat"   use="required"/>
+    <xs:attribute name="name"   type="llrpdef:name"     use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="choiceParameterReference">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="type"   type="llrpdef:name"     use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="allowedInParameterReference">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="type"   type="llrpdef:name"     use="required"/>
+    <xs:attribute name="repeat" type="llrpdef:allowedInRepeat"
+                                            default="0-N" use="optional"/>
+    <xs:attribute name="name"   type="llrpdef:name"     use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="fieldDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name"   type="llrpdef:name"     use="required"/>
+    <xs:attribute name="type"   type="llrpdef:fieldType" use="required"/>
+    <xs:attribute name="enumeration" type="llrpdef:name" use="optional"/>
+    <xs:attribute name="format" type="llrpdef:fieldFormat" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="reservedDefinition">
+    <xs:sequence>
+      <xs:element name="annotation" type="llrpdef:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="bitCount" type="llrpdef:reservedBitCount"
+                   use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="annotation">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="documentation" type="llrpdef:documentation"/>
+      <xs:element name="description" type="llrpdef:description"/>
+    </xs:choice>
+    <xs:attribute name="source" type="xs:anyURI" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="documentation" mixed="true">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:any processContents="lax"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="description" mixed="true">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:any namespace="http://www.w3.org/1999/xhtml"
+            processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="copyright" type="xs:string"/> 
+  </xs:complexType>
+
+  <xs:simpleType name="name">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z_][a-zA-Z_0-9]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="typeNum">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="1023"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="repeat">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="0-1"/>
+      <xs:enumeration value="0-N"/>
+      <xs:enumeration value="1-N"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="allowedInRepeat">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="0-1"/>
+      <xs:enumeration value="0-N"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="reservedBitCount">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="32"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Custom message subtype 255 is reserved by LTK for later expansion -->
+  <xs:simpleType name="customMessageSubtype">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="254"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="fieldType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="u1"/>
+      <xs:enumeration value="u2"/>
+
+      <xs:enumeration value="u1v"/>
+
+      <xs:enumeration value="u8"/>
+      <xs:enumeration value="s8"/>
+      <xs:enumeration value="u8v"/>
+      <xs:enumeration value="s8v"/>
+
+      <xs:enumeration value="utf8v"/>
+
+      <xs:enumeration value="u16"/>
+      <xs:enumeration value="s16"/>
+      <xs:enumeration value="u16v"/>
+      <xs:enumeration value="s16v"/>
+
+      <xs:enumeration value="u32"/>
+      <xs:enumeration value="s32"/>
+      <xs:enumeration value="u32v"/>
+      <xs:enumeration value="s32v"/>
+
+      <xs:enumeration value="u64"/>
+      <xs:enumeration value="s64"/>
+      <xs:enumeration value="u64v"/>
+      <xs:enumeration value="s64v"/>
+
+      <xs:enumeration value="u96"/>
+
+      <xs:enumeration value="bytesToEnd"/>
+
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="fieldFormat">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Dec"/>
+      <xs:enumeration value="Hex"/>
+      <xs:enumeration value="Datetime"/>
+      <xs:enumeration value="UTF8"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,3226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ -  Copyright 2011 Trimble, Inc.
+
+ -  Copyright 2006, 2007 EPCglobal Inc.
+ -     (The proprietary text of EPCglobal Inc. included herein is not
+ -      a Contribution to the work. The right to use the proprietary
+ -      text is limited to reproduction and display thereof within
+ -      the work.)
+
+ -  Licensed under the Apache License, Version 2.0 (the "License");
+ -  you may not use this file except in compliance with the License.
+ -  You may obtain a copy of the License at
+ -
+ -      http://www.apache.org/licenses/LICENSE-2.0
+ -
+ -  Unless required by applicable law or agreed to in writing, software
+ -  distributed under the License is distributed on an "AS IS" BASIS,
+ -  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ -  See the License for the specific language governing permissions and
+ -  limitations under the License.
+ -
+ -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ -->
+
+<llrpdef
+	xmlns="http://www.llrp.org/ltk/schema/core/encoding/binary/1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:h="http://www.w3.org/1999/xhtml"
+        xsi:schemaLocation="
+		  http://www.llrp.org/ltk/schema/core/encoding/binary/1.0
+		  http://www.llrp.org/ltk/schema/core/encoding/binary/1.0/llrpdef.xsd"
+>
+
+<vendorDefinition       name="thingmagic" vendorID="26554" />
+<namespaceDefinition    prefix="thingmagic"
+	URI="http://www.thingmagic.com/ltk/schema/extension/xml/1.0/"
+                        schemaLocation="http://www.thingmagic.com/ltk/schema/extension/xml/1.0/thingmagic.xsd" />
+<customMessageDefinition        name="THINGMAGIC_CONTROL_REQUEST_POWER_CYCLE_READER"
+                                vendor="thingmagic" subtype="1"
+                                namespace="thingmagic"
+				responseType="THINGMAGIC_CONTROL_RESPONSE_POWER_CYCLE_READER">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>power cycle the ThingMagic reader</h:p>
+    </description>
+  </annotation>
+  <field type="u32" name="MagicNumber"/>
+  <field type="u1" name="BootToSafeMode"/> 
+  <reserved bitCount="7"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_RESPONSE_POWER_CYCLE_READER"
+                                vendor="thingmagic" subtype="2"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Response message to power cycle the ThingMagic reader request</h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="1"      type="LLRPStatus"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_REQUEST_RESET_STATISTICS"
+                                vendor="thingmagic" subtype="3"
+                                namespace="thingmagic"
+                                responseType="THINGMAGIC_CONTROL_RESPONSE_RESET_STATISTICS">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Reset reader statistics</h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_RESPONSE_RESET_STATISTICS"
+                                vendor="thingmagic" subtype="4"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Response message to power cycle the ThingMagic reader request</h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="1"      type="LLRPStatus"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_REQUEST_GET_RESET_TIME"
+                                vendor="thingmagic" subtype="5"
+                                namespace="thingmagic"
+                                responseType="THINGMAGIC_CONTROL_RESPONSE_GET_RESET_TIME">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Time stamp when reader statistics are reset</h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_RESPONSE_GET_RESET_TIME"
+                                vendor="thingmagic" subtype="6"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Response message to Get reset statistics time stamp request </h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="1"      type="LLRPStatus"/>
+  <field type="u64" name="Microseconds" format="Datetime"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_REQUEST_GET_ANTENNA_STATS"
+                                vendor="thingmagic" subtype="7"
+                                namespace="thingmagic"
+                                responseType="THINGMAGIC_CONTROL_RESPONSE_GET_ANTENNA_STATS">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Request to get Reader Antenna statistics.</h:p>
+    </description>
+  </annotation>
+  <field type="u16" name="AntennaID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_RESPONSE_GET_ANTENNA_STATS"
+                                vendor="thingmagic" subtype="8"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Response message to get reader antenna statistics request</h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="1"      type="LLRPStatus"/>
+  <field      type="u32"      name="TagsIdentified"/>
+  <field      type="u32"      name="TagsNotIdentified"/>
+  <field      type="u32"      name="MemoryReadFailures"/>
+  <field      type="u32"      name="WriteOperations"/>
+  <field      type="u32"      name="WriteFailures"/>
+  <field      type="u32"      name="KillOperations"/>
+  <field      type="u32"      name="KillFailures"/>
+  <field      type="u32"      name="EraseOperations"/>
+  <field      type="u32"      name="EraseFailures"/>
+  <field      type="u32"      name="LockOperations"/>
+  <field      type="u32"      name="LockFailures"/>
+  <field      type="u32"      name="NoiseLevel"/>
+  <field      type="u32"      name="TimeEnergised"/>
+  <field      type="u32"      name="PowerLevel"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_REQUEST_GET_READER_STATUS"
+                                vendor="thingmagic" subtype="11"
+                                namespace="thingmagic"
+                                responseType="THINGMAGIC_CONTROL_RESPONSE_GET_READER_STATUS">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Request to get Reader device status.</h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+<customMessageDefinition        name="THINGMAGIC_CONTROL_RESPONSE_GET_READER_STATUS"
+                                vendor="thingmagic" subtype="12"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>Response message to power cycle the ThingMagic reader request</h:p>
+    </description>
+  </annotation>
+  <parameter  repeat="1"      type="LLRPStatus"/>
+  <field      type="u8"   	name="ReaderDeviceOperatingStatus"
+			 	enumeration="ThingMagicReaderOperatingStatus"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+</customMessageDefinition>
+
+<customEnumerationDefinition    name="ThingMagicReaderOperatingStatus"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of ThingMagic Reader Device operating status</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="IDLE"/>
+  <entry     value="1"      name="RUNNING"/>
+  <entry     value="2"      name="ERROR"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="ThingMagicDeviceControlCapabilities"
+                                vendor="thingmagic" subtype="1"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter fills in the control plane capabilities that are specific to a thingmagic reader. </h:p>
+    </description>
+  </annotation>
+  <field     	type="u8"   	name="RequestedData"
+			 	enumeration="ThingMagicControlCapabilities"/>
+  <parameter    repeat="0-N"    type="Custom"/>
+  <allowedIn 	repeat="0-1"    type="GET_READER_CAPABILITIES"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition    name="ThingMagicControlCapabilities"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of ThingMagic Control plane capabilities</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="All"/>
+  <entry     value="1"      name="DeviceInformationCapabilities"/>
+  <entry     value="2"      name="DeviceProtocolCapabilities"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="DeviceInformationCapabilities"
+                                vendor="thingmagic" subtype="2"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the Device information fields required for RM Device Information command. </h:p>
+    </description>
+  </annotation>
+  <field     type="utf8v"   name="ReaderEPC"/>
+  <field     type="utf8v"   name="ReaderSerialNumber"/>
+  <field     type="utf8v"   name="HardwareVersion"/>
+  <field     type="utf8v"   name="AFEVersion"/>
+  <parameter  repeat="0-N"  type="Custom"/>
+  <allowedIn repeat="0-1"   type="GET_READER_CAPABILITIES_RESPONSE"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ThingMagicDeviceControlConfiguration"
+                                vendor="thingmagic" subtype="3"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter fills in the control plane configuration parameters that are specific to a thingmagic reader. </h:p>
+    </description>
+  </annotation>
+  <field type="u16" name="AntennaID"/>
+  <field     type="u8"   		name="RequestedData"
+			 											enumeration="ThingMagicControlConfiguration"/>
+  <parameter repeat="0-N"   type="Custom"/>
+  <allowedIn repeat="0-1"   type="GET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition    name="ThingMagicControlConfiguration"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of ThingMagic Control plane configuration</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="All"/>
+  <entry     value="1"      name="ThingMagicReaderConfiguration"/>
+  <entry     value="2"      name="ThingMagicRegionConfiguration"/>
+  <entry     value="3"      name="ThingMagicProtocolConfiguration"/>
+  <entry     value="4"      name="ThingMagicAntennaConfiguration"/>
+  <entry     value="5"      name="ThingMagicCurrentTime"/>
+  <entry     value="6"      name="ThingMagicDeDuplication"/>
+  <entry     value="7"      name="ThingMagicReaderModuleTemperature"/>
+  <entry     value="8"      name="ThingMagicAntennaDetection"/>
+  <entry     value="9"      name="ThingMagicLicenseKey"/>
+  <entry     value="10"      name="ThingMagicHopTime"/>
+  <entry     value="11"      name="ThingMagicAsyncOFFTime"/>
+  <entry     value="12"      name="ThingMagicLicensedFeatures"/>
+  <entry     value="13"      name="ThingMagicSelectedProtocols"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="ThingMagicReaderConfiguration"
+                                vendor="thingmagic" subtype="4"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic Reader configuration values like Reader Description, Reader Role etc., </h:p>
+    </description>
+  </annotation>
+  <field     		type="utf8v"   name="ReaderDescription"/>
+  <field     		type="utf8v"   name="ReaderRole"/>
+  <field                type="utf8v"   name="ReaderHostName"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn 		repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ThingMagicRegionConfiguration"
+                                vendor="thingmagic" subtype="5"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic specific region information </h:p>
+    </description>
+  </annotation>
+  <field     		type="u8"      name="RegionID"
+			enumeration="ThingMagicRegionID"/>
+  <parameter  		repeat="0-N"   type="Custom"/>
+  <allowedIn 		repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  		repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition    name="ThingMagicRegionID"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of Regulatory Regions supported by ThingMagic Reader</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="UnspecifiedRegion"/>
+  <entry     value="1"      name="NorthAmerica"/>
+  <entry     value="2"      name="EuropeanUnion"/>
+  <entry     value="3"      name="Korea"/>
+  <entry     value="4"      name="India"/>
+  <entry     value="5"      name="Japan"/>
+  <entry     value="6"      name="PeoplesRepublicofChina"/>
+  <entry     value="7"      name="EuropeanUnion2"/>
+  <entry     value="8"      name="EuropeanUnion3"/>
+  <entry     value="9"      name="Korea2"/>
+  <entry     value="11"     name="Australia"/>
+  <entry     value="12"     name="NewZealand"/>
+  <entry     value="255"    name="Open"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="ThingMagicProtocolConfiguration"
+                                vendor="thingmagic" subtype="6"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic specific Protocol information </h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="0-1"   type="Gen2CustomParameters"/>
+  <parameter  	repeat="0-1"   type="ISO18K6BCustomParameters"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="Gen2CustomParameters"
+                                vendor="thingmagic" subtype="7"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic specific Protocol information </h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="0-1"   type="Gen2Q"/>
+  <parameter  	repeat="0-1"   type="ThingMagicTargetStrategy"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ThingMagicAntennaConfiguration"
+                                vendor="thingmagic" subtype="8"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic specific antenna configuration information </h:p>
+    </description>
+  </annotation>
+  <field 	type="u16" 	name="AntennaID"/>
+  <parameter  	repeat="0-1"   type="AntennaMode"/>
+  <parameter  	repeat="0-1"   type="WriteTransmitPower"/>
+  <parameter  	repeat="0-1"   type="ReadPointDescription"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition    name="ThingMagicAntennaMode"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of Antenna Mode</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="MonoStatic"/>
+  <entry     value="1"      name="BiStatic"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="ThingMagicCurrentTime"
+                                vendor="thingmagic" subtype="9"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic current time value </h:p>
+    </description>
+  </annotation>
+  <field     type="utf8v"   name="ReaderCurrentTime"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ThingMagicDeDuplication"
+                                vendor="thingmagic" subtype="10"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic De Duplication related fields </h:p>
+    </description>
+  </annotation>
+  <field type="u1" name="RecordHighestRSSI"/> 
+  <reserved bitCount="7"/> 
+  <field type="u1" name="UniqueByAntenna"/> 
+  <reserved bitCount="7"/> 
+  <field type="u1" name="UniqueByData"/> 
+  <reserved bitCount="7"/> 
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="DeviceProtocolCapabilities"
+                                vendor="thingmagic" subtype="11"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic De Duplication related fields </h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1-N"   type="SupportedProtocols"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn repeat="0-1"   type="GET_READER_CAPABILITIES_RESPONSE"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="SupportedProtocols"
+                                vendor="thingmagic" subtype="12"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic Module supported protocols information </h:p>
+    </description>
+  </annotation>
+  <field     		type="u8"      name="Protocol"
+			enumeration="ProtocolID"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ThingMagicReaderModuleTemperature"
+                                vendor="thingmagic" subtype="13"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic Reader Module Temperature </h:p>
+    </description>
+  </annotation>
+  <field     	type="u8"      name="ReaderModuleTemperature"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition    name="ProtocolID"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of Regulatory Regions supported by ThingMagic Reader</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="UnspecifiedProtocol"/>
+  <entry     value="3"      name="ISO180006B"/>
+  <entry     value="5"      name="GEN2"/>
+  <entry     value="6"      name="ISO180006B_UCODE"/>
+  <entry     value="7"      name="IPX64"/>
+  <entry     value="8"      name="IPX256"/>
+  <entry     value="29"     name="ATA"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="Gen2Q"
+                                vendor="thingmagic" subtype="14"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the Gen2 Q type and value </h:p>
+    </description>
+  </annotation>
+  <field     	type="u8"      name="Gen2QType"
+			       enumeration="QType"/>
+  <field     	type="u8"      name="InitQValue"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition    name="QType"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of Gen2 Q types</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="Dynamic"/>
+  <entry     value="1"      name="Static"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="ThingMagicAntennaDetection"
+                                vendor="thingmagic" subtype="15"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the Antenna Detection value </h:p>
+    </description>
+  </annotation>
+  <field type="u1" name="AntennaDetection"/> 
+  <reserved bitCount="7"/> 
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="WriteTransmitPower"
+                                vendor="thingmagic" subtype="16"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the Custom Write Power </h:p>
+    </description>
+  </annotation>
+  <field 	type="u16" 	name="WriteTransmitPower"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ReadPointDescription"
+                                vendor="thingmagic" subtype="17"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom Antenna Read point Description </h:p>
+    </description>
+  </annotation>
+  <field        type="utf8v"   name="ReadPointDescription"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="AntennaMode"
+                                vendor="thingmagic" subtype="18"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom Antenna Mode </h:p>
+    </description>
+  </annotation>
+  <field     	type="u8"      name="AntennaMode"
+			       enumeration="ThingMagicAntennaMode"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ThingMagicTargetStrategy"
+                                vendor="thingmagic" subtype="19"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom C1G2 Target parameter </h:p>
+    </description>
+  </annotation>
+  <field     	type="u8"      name="ThingMagicTargetStrategyValue"
+			       enumeration="ThingMagicC1G2TargetStrategy"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition    name="ThingMagicC1G2TargetStrategy"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description copyright="">
+      <h:p>An enumeration of C1G2 Target types</h:p>
+    </description>
+  </annotation>
+  <entry     value="0"      name="TargetA"/>
+  <entry     value="1"      name="TargetB"/>
+  <entry     value="2"      name="TargetAB"/>
+  <entry     value="3"      name="TargetBA"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition      name="ThingMagicLicenseKey"
+                                vendor="thingmagic" subtype="20"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom ThingMagic License key parameter </h:p>
+    </description>
+  </annotation>
+  <field     	type="u8v"      name="LicenseKey"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the BlockPermalock specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicBlockPermalock"
+                              vendor="thingmagic" subtype="21"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. ReadLock field determines whether to read the status or PermaLock the blocks specified. [if ReadLock=0, Return the PermaLock status of blocks specified. if ReadLock=1, PermaLock the blocks specified]. MB is the Memory bank whos blocks will be locked. BlockPointer is the starting address for mask. BlockMask is the range of blocks to lock.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u8"       name="ReadLock"/>
+  <field      type="u2"       name="MB"/>
+  <reserved   bitCount="6"/>
+  <field      type="u32"      name="BlockPointer"/>
+  <field      type="u16v"     name="BlockMask"    format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicBlockPermalockOpSpecResult"
+                              vendor="thingmagic" subtype="22"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicBlockPermalock OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u16v"     name="PermalockStatus" format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition  name="ThingMagicCustomTagOpSpecResultType"
+                              namespace="thingmagic">
+  <entry     value="0"        name="Success"/>
+  <entry     value="1"        name="Nonspecific_Tag_Error"/>
+  <entry     value="2"        name="No_Response_From_Tag"/>
+  <entry     value="3"        name="Nonspecific_Reader_Error"/>
+  <entry     value="4"        name="Unsupported_Operation"/>
+  <entry     value="5"        name="Tag_Memory_Overrun_Error"/>
+</customEnumerationDefinition>
+
+<!--
+  This parameter adds Higgs2 PartialLoadImage specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicHiggs2PartialLoadImage"
+                              vendor="thingmagic" subtype="23"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The CurrentAccessPassword field is the password used by the Reader to transition the tag to the secure state. KillPassword is the kill password to write on the tag. AccessPassword is the access password to write on the tag. EPCData is the tag EPC to write to the tag.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="CurrentAccessPassword"/>
+  <field      type="u32"      name="KillPassword"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u8v"      name="EPCData" format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicHiggs2PartialLoadImageOpSpecResult"
+                              vendor="thingmagic" subtype="24"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicHiggs2PartialLoadImage OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds Higgs2 FullLoadImage specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicHiggs2FullLoadImage"
+                              vendor="thingmagic" subtype="25"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The CurrentAccessPassword field is the password used by the Reader to transition the tag to the secure state. KillPassword is the kill password to write on the tag. AccessPassword is the access password to write on the tag. LockBits specify the lock action on the tag according to Alien Higgs Lock Bits. PCWord is the tag's PC Bytes to be written on the tag. EPCData is the tag EPC to write to the tag.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="CurrentAccessPassword"/>
+  <field      type="u32"      name="KillPassword"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u16"      name="LockBits"/>
+  <field      type="u16"      name="PCWord"/>
+  <field      type="u8v"      name="EPCData" format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicHiggs2FullLoadImageOpSpecResult"
+                              vendor="thingmagic" subtype="26"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicHiggs2FullLoadImage OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the Higgs3 FastLoadImage specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicHiggs3FastLoadImage"
+                              vendor="thingmagic" subtype="27"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The CurrentAccessPassword field is the password used by the Reader to transition the tag to the secure state. KillPassword is the kill password to write on the tag. AccessPassword is the access password to write on the tag. PCWord is the tag's PC Bytes to be written on the tag. EPCData is the tag EPC to write to the tag.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="CurrentAccessPassword"/>
+  <field      type="u32"      name="KillPassword"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u16"      name="PCWord"/>
+  <field      type="u8v"      name="EPCData" format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicHiggs3FastLoadImageOpSpecResult"
+                              vendor="thingmagic" subtype="28"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicHiggs3FastLoadImage OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the Higgs3 LoadImage specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicHiggs3LoadImage"
+                              vendor="thingmagic" subtype="29"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The CurrentAccessPassword field is the password used by the Reader to transition the tag to the secure state. KillPassword is the kill password to write on the tag. AccessPassword is the access password to write on the tag. PCWord is the tag's PC Bytes to be written on the tag. EPCAndUserData is the Tag EPC and user data to write to the tag (76 bytes)</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="CurrentAccessPassword"/>
+  <field      type="u32"      name="KillPassword"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u16"      name="PCWord"/>
+  <field      type="u8v"      name="EPCAndUserData" format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicHiggs3LoadImageOpSpecResult"
+                              vendor="thingmagic" subtype="30"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicHiggs3LoadImage OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the Higgs3 BlockReadLock specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicHiggs3BlockReadLock"
+                              vendor="thingmagic" subtype="31"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. LockBits is a bitmask of bits to lock.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u8"       name="LockBits"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicHiggs3BlockReadLockOpSpecResult"
+                              vendor="thingmagic" subtype="32"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicHiggs3BlockReadLock OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2I SetReadProtect specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2ISetReadProtect"
+                              vendor="thingmagic" subtype="33"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2ISetReadProtectOpSpecResult"
+                              vendor="thingmagic" subtype="34"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2ISetReadProtect OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2X SetReadProtect specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2XSetReadProtect"
+                              vendor="thingmagic" subtype="35"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2XSetReadProtectOpSpecResult"
+                              vendor="thingmagic" subtype="36"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2XSetReadProtect OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2I ResetReadProtect specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2IResetReadProtect"
+                              vendor="thingmagic" subtype="37"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2IResetReadProtectOpSpecResult"
+                              vendor="thingmagic" subtype="38"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2IResetReadProtect OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2X ResetReadProtect specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2XResetReadProtect"
+                              vendor="thingmagic" subtype="39"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2XResetReadProtectOpSpecResult"
+                              vendor="thingmagic" subtype="40"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2XResetReadProtect OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2I ChangeEAS specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2IChangeEAS"
+                              vendor="thingmagic" subtype="41"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. Reset is a boolean value. If true, reset the EAS flag on the chosen tags, otherwise set the EAS flag.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u1"       name="Reset"/> 
+  <reserved bitCount="7"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2IChangeEASOpSpecResult"
+                              vendor="thingmagic" subtype="42"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2IChangeEAS OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2X ChangeEAS specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2XChangeEAS"
+                              vendor="thingmagic" subtype="43"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. Reset is a boolean value. If true, reset the EAS flag on the chosen tags, otherwise set the EAS flag.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u1"       name="Reset"/> 
+  <reserved bitCount="7"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2XChangeEASOpSpecResult"
+                              vendor="thingmagic" subtype="44"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2XChangeEAS OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2I EASAlarm specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2IEASAlarm"
+                              vendor="thingmagic" subtype="45"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. DivideRatio specifies the Divide Ratio as per Gen2 (DR). TagEncoding specifies Gen2 M value. PilotTone is a boolean parameter. if true, there is a pilot tone in tag response otherwise no pilot tone.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u8"       name="DivideRatio"
+                              enumeration="ThingMagicGen2DivideRatio"/>
+  <field      type="u8"       name="TagEncoding"
+                              enumeration="ThingMagicGen2TagEncoding"/>
+  <field      type="u1"       name="PilotTone"/> 
+  <reserved bitCount="7"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition  name="ThingMagicGen2DivideRatio"
+                              namespace="thingmagic">
+  <entry      value="0"       name="Divide_Ratio_8"/>
+  <entry      value="1"       name="Divide_Ratio_64_3"/>
+</customEnumerationDefinition>
+
+<customEnumerationDefinition  name="ThingMagicGen2TagEncoding"
+                              namespace="thingmagic">
+  <entry      value="0"       name="FM0"/>
+  <entry      value="1"       name="M2"/>
+  <entry      value="2"       name="M4"/>
+  <entry      value="3"       name="M8"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2IEASAlarmOpSpecResult"
+                              vendor="thingmagic" subtype="46"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2IEASAlarm OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="EASAlarmCode"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2X EASAlarm specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2XEASAlarm"
+                              vendor="thingmagic" subtype="47"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. DivideRatio specifies the Divide Ratio as per Gen2 (DR). TagEncoding specifies Gen2 M value. PilotTone is a boolean parameter. if true, there is a pilot tone in tag response otherwise no pilot tone.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u8"       name="DivideRatio"
+                              enumeration="ThingMagicGen2DivideRatio"/>
+  <field      type="u8"       name="TagEncoding"
+                              enumeration="ThingMagicGen2TagEncoding"/>
+  <field      type="u1"       name="PilotTone"/> 
+  <reserved bitCount="7"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2XEASAlarmOpSpecResult"
+                              vendor="thingmagic" subtype="48"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2XEASAlarm OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="EASAlarmCode"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2I Calibrate specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2ICalibrate"
+                              vendor="thingmagic" subtype="49"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2ICalibrateOpSpecResult"
+                              vendor="thingmagic" subtype="50"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2ICalibrate OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="CalibrateData"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2X Calibrate specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2XCalibrate"
+                              vendor="thingmagic" subtype="51"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2XCalibrateOpSpecResult"
+                              vendor="thingmagic" subtype="52"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2XCalibrate OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="CalibrateData"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds the NXP G2I ChangeConfig specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicNXPG2IChangeConfig"
+                              vendor="thingmagic" subtype="53"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. ThingMagicNXPConfigWord defines the configword to write on the tag.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="1"      type="ThingMagicNXPConfigWord"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPG2IChangeConfigOpSpecResult"
+                              vendor="thingmagic" subtype="54"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicNXPG2IChangeConfig OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u16"      name="ConfigData"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicNXPConfigWord"
+                              vendor="thingmagic" subtype="55"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the config word to write on NXP G2IL tags. Each field here represents the single bit in config word.</h:p>
+    </description>
+  </annotation>
+  <field      type="u1"       name="PSFAlarm"/>
+  <field      type="u1"       name="ReadProtectTID"/>
+  <field      type="u1"       name="ReadProtectEPC"/>
+  <field      type="u1"       name="ReadProtectUser"/>
+  <field      type="u1"       name="PrivacyMode"/>
+  <field      type="u1"       name="DigitalOutput"/>
+  <field      type="u1"       name="MaxBackscatterStrength"/>
+  <field      type="u1"       name="ConditionalReadRangeReduction_OpenShort"/>
+  <field      type="u1"       name="ConditionalReadRangeReduction_OnOff"/>
+  <field      type="u1"       name="DataMode"/>
+  <field      type="u1"       name="TransparentMode"/>
+  <field      type="u1"       name="InvertDigitalOutput"/>
+  <field      type="u1"       name="ExternalSupply"/>
+  <field      type="u1"       name="TamperAlarm"/>
+  <reserved   bitCount="2"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds Impinj Monza4 specific OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicImpinjMonza4QTReadWrite"
+                              vendor="thingmagic" subtype="56"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <parameter  repeat="1"      type="ThingMagicMonza4ControlByte"/>
+  <parameter  repeat="1"      type="ThingMagicMonza4Payload"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicImpinjMonza4QTReadWriteOpSpecResult"
+                              vendor="thingmagic" subtype="57"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicImpinjMonza4QTReadWrite OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u16"      name="Payload"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicMonza4ControlByte"
+                              vendor="thingmagic" subtype="58"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The ReadWrite bit indicates whether the tag reads or writes QT control data. [ReadWrite=0 means read the QT control bits in cache, otherwise write the QT control bits]. If Read/Write=1, the Persistence field indicates whether the QT control is written to nonvolatile (NVM) or volatile memory. [Persistence=0 means write to volatile memory, otherwise write to NVM memory].</h:p>
+    </description>
+  </annotation>
+  <field      type="u1"       name="Persistance"/>
+  <field      type="u1"       name="ReadWrite"/>
+  <reserved   bitCount="6"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicMonza4Payload"
+                              vendor="thingmagic" subtype="59"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>QT_MEM is used to set the QT data profile. [If QT_MEM = 1, Tag uses Public Memory Map otherwise uses Private Memory Map]. QT_SR is used to set the access range. [if QT_SR = 1, Tag reduces range if in or about to be in OPEN or SECURED state. if QT_SR = 0, Tag does not reduce range].</h:p>
+    </description>
+  </annotation>
+  <field      type="u1"       name="QT_MEM"/>
+  <field      type="u1"       name="QT_SR"/>
+  <reserved   bitCount="14"/> 
+  <parameter  repeat="0-N"    type="Custom"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds C1G2 WriteTag OpSpec and OpSpec result
+ -->
+<customParameterDefinition    name="ThingMagicWriteTag"
+                              vendor="thingmagic" subtype="60"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The AccessPassword field is the password used by the Reader to transition the tag to the secure state. WriteData is the EPC to write.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u32"      name="AccessPassword"/>
+  <field      type="u16v"     name="WriteData" format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicWriteTagOpSpecResult"
+                              vendor="thingmagic" subtype="61"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicWriteTag OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field     type="u16"       name="NumWordsWritten"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustomAirProtocolList">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This is the identifier of custom air protocols. It continues from maximum value of standard protocols supported by the specification. </h:p>
+    </description>
+  </annotation>
+  <entry     value="2"    name="Iso180006b"/>
+  <entry     value="3"    name="IPX64"/>
+  <entry     value="4"    name="IPX256"/>
+  <entry     value="5"    name="Ata"/>
+</customEnumerationDefinition>
+
+<customEnumerationDefinition name="ThingMagicISO180006BFilterType">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This is the identifier of ThingMagic ISO180006B FilterType. </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="ISO180006BSelect"/>
+  <entry     value="1"    name="ISO180006BTagData"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition name="ThingMagicISO180006BInventoryCommand"
+                           vendor="thingmagic" subtype="62"
+                           namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+        <h:p>This parameter describes the ISO180006B tag specification.</h:p>
+    </description>
+  </annotation>
+  <parameter repeat="0-1"       type="ThingMagicISO180006BTagPattern"/>
+  <allowedIn  repeat="0-N"    type="AccessCommand"/>
+  <allowedIn  repeat="0-1"    type="AirProtocolInventoryCommandSettings"/>
+</customParameterDefinition>
+
+<customParameterDefinition name="ThingMagicISO180006BTagPattern"
+                           vendor="thingmagic" subtype="63"
+                           namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+        <h:p>This parameter describes the ISO180006B tag pattern. Unlike C1G2 tag spec, this can be used for both inventory and tag operation.</h:p>
+    </description>
+  </annotation>
+  <field     type="u1"    name="FilterType"
+                          enumeration="ThingMagicISO180006BFilterType"/>
+  <reserved bitCount="7"/> 
+  <field     type="u1"    name="Invert"/>
+  <reserved bitCount="7"/> 
+  <field     type="u2"    name="SelectOp"/>
+  <reserved bitCount="6"/> 
+  <field     type="u8"    name="Address"/>
+  <field     type="u8"    name="Mask"/>
+  <field     type="u8v"   name="TagData" format="Hex"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicISO180006BRead"
+                              vendor="thingmagic" subtype="64"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The parameter describes ISO180006B Read Operation.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field     type="u16"        name="ByteAddress"/>
+  <field     type="u16"        name="ByteLen"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicISO180006BReadOpSpecResult"
+                              vendor="thingmagic" subtype="65"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicISO180006BRead OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field     type="u8v"       name="ReadData" format="Hex"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition name="ThingMagicCustomAirProtocols"
+                           vendor="thingmagic" subtype="66"
+                           namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+        <h:p>This parameter describes the custom air protocol.</h:p>
+    </description>
+  </annotation>
+  <field     type="u8"    name="customProtocolId"
+                          enumeration="ThingMagicCustomAirProtocolList"/>
+  <allowedIn  repeat="0-1"    type="AccessCommand"/>
+  <allowedIn  repeat="0-1"    type="InventoryParameterSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicISO180006BWrite"
+                              vendor="thingmagic" subtype="67"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The parameter describes ISO180006B Write Operation.</h:p>
+    </description>
+  </annotation>
+  <field     type="u16"        name="OpSpecID"/>
+  <field     type="u16"        name="ByteAddress"/>
+  <field     type="u8v"        name="WriteData" format="Hex"/>
+  <allowedIn repeat="0-1"      type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicISO180006BWriteOpSpecResult"
+                              vendor="thingmagic" subtype="68"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicISO180006BWrite OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u16"      name="NumBytesWritten"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicISO180006BLock"
+                              vendor="thingmagic" subtype="69"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>The parameter describes ISO180006B Lock Operation.</h:p>
+    </description>
+  </annotation>
+  <field     type="u16"        name="OpSpecID"/>
+  <field     type="u8"         name="Address"/>
+  <allowedIn repeat="0-1"      type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicISO180006BLockOpSpecResult"
+                              vendor="thingmagic" subtype="70"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagicISO180006BLock OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="ISO18K6BCustomParameters"
+                                vendor="thingmagic" subtype="71"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ISO18K6B protocol related custom parameters</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="0-1"   type="ThingMagicISO180006BDelimiter"/>
+  <parameter    repeat="0-1"   type="ThingMagicISO18K6BModulationDepth"/>
+  <parameter    repeat="0-1"   type="ThingMagicISO18K6BLinkFrequency"/>
+  <parameter    repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+
+<customEnumerationDefinition name="ThingMagicCustom18K6BDelimiter">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various delimiter values for ISO18K6B. </h:p>
+    </description>
+  </annotation>
+  <entry     value="1"    name="ISO180006B_Delimiter1"/>
+  <entry     value="4"    name="ISO180006B_Delimiter4"/>
+</customEnumerationDefinition>
+
+
+<customParameterDefinition    name="ThingMagicISO180006BDelimiter"
+                              vendor="thingmagic" subtype="72"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter provides the custom ISO18K6B delimiter.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="ISO18K6BDelimiter"
+                              enumeration="ThingMagicCustom18K6BDelimiter"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn  	repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustom18K6BModulationDepth">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various modulation depth values for ISO18K6B. </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="ISO180006B_ModulationDepth99percent"/>
+  <entry     value="1"    name="ISO180006B_ModulationDepth11percent"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition    name="ThingMagicISO18K6BModulationDepth"
+                              vendor="thingmagic" subtype="73"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter provides the custom ISO18K6B modulation depth.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="ISO18K6BModulationDepth"
+                              enumeration="ThingMagicCustom18K6BModulationDepth"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn    repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn    repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustom18K6BLinkFrequency">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various Link Frequencies for ISO18K6B. </h:p>
+    </description>
+  </annotation>
+  <entry     value="40"     name="ISO180006B_LINKFREQUENCY_40KHZ"/>
+  <entry     value="160"    name="ISO180006B_LINKFREQUENCY_160KHZ"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition    name="ThingMagicISO18K6BLinkFrequency"
+                              vendor="thingmagic" subtype="74"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter provides the custom ISO18K6B Link Frequency.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="ISO18K6BLinkFrequency"
+                              enumeration="ThingMagicCustom18K6BLinkFrequency"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn    repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn    repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicISO18K6BLLRPCapabilities"
+                              vendor="thingmagic" subtype="75"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter provides the custom ISO18K6B LLRP Air protocol capabilities.</h:p>
+    </description>
+  </annotation>
+    <field     type="u1"    name="CanSupportRead"/>
+    <field     type="u1"    name="CanSupportWrite"/>
+    <field     type="u1"    name="CanSupportLock"/>
+    <reserved  bitCount="5"/>
+  <parameter   repeat="0-N"    type="Custom"/>
+  <allowedIn   repeat="0-1"   type="AirProtocolLLRPCapabilities"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASensorValue"
+                              vendor="thingmagic" subtype="76"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Get Sensor Value command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <field      type="u8"       name="SensorType"
+                              enumeration="ThingMagicCustomIDSSensorType"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ACommandRequest"
+                              vendor="thingmagic" subtype="200"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Get Sensor Value command.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field     type="u32"       name="AccessPassword"/>
+  <field      type="u8"       name="PasswordLevel"
+                              enumeration="ThingMagicCustomIDSPasswordLevel"/>
+  <field     type="u8"        name="CommandCode"/>
+  <field     type="u32"       name="IDSPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASensorValueOpSpecResult"
+                              vendor="thingmagic" subtype="77"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS SL900A Get sensor value OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field     type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field     type="u16"      name="OpSpecID"/>
+  <field     type="u16"       name="reply"/>
+  <field     type="u16"       name="raw"/>
+  <field     type="u1"        name="ADError"/>
+  <reserved  bitCount="7"/>
+  <field     type="u8"        name="RangeLimit"/>
+  <field     type="u16"       name="SensorValue"/>
+  <field     type="u8v"       name="SensorValueByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustomIDSSensorType">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various Sensor types for IDS custom tag operations. </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="IDSSL900A_SENSOR_TEMP"/>
+  <entry     value="1"    name="IDSSL900A_SENSOR_EXT1"/>
+  <entry     value="2"    name="IDSSL900A_SENSOR_EXT2"/>
+  <entry     value="3"    name="IDSSL900A_SENSOR_BATTV"/>
+</customEnumerationDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustomIDSPasswordLevel">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various Password levels for IDS custom tag operations. </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="IDSSL900A_PASSWORD_NOTALLOWED"/>
+  <entry     value="1"    name="IDSSL900A_PASSWORD_SYSTEM"/>
+  <entry     value="2"    name="IDSSL900A_PASSWORD_APPLICATION"/>
+  <entry     value="3"    name="IDSSL900A_PASSWORD_MEASUREMENT"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AGetLogState"
+                              vendor="thingmagic" subtype="78"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Get Log state command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ALogStateOpSpecResult"
+                              vendor="thingmagic" subtype="79"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS SL900A Get Log State OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  	repeat="1"   type="ThingMagicIDSLogState"/>
+  <field     type="u8v"       name="LogStateByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSLogState"
+                              vendor="thingmagic" subtype="80"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS SL900A Get Log State OpSpec.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"     type="ThingMagicIDSLogStateLimitCounter"/>
+  <parameter  	repeat="1"     type="ThingMagicIDSLogStateSystemStatus"/>
+  <parameter  	repeat="1"     type="ThingMagicIDSLogStateStatusFlag"/>
+  <parameter  	repeat="0-1"   type="ThingMagicIDSSLBlock0"/>
+  <parameter  	repeat="0-1"   type="ThingMagicIDSSLBlock1"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSLogStateLimitCounter"
+                              vendor="thingmagic" subtype="81"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS SL900A Get Log State OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field     type="u8"        name="extremeLower"/>
+  <field     type="u8"        name="lower"/>
+  <field     type="u8"        name="upper"/>
+  <field     type="u8"        name="extremeUpper"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSLogStateSystemStatus"
+                              vendor="thingmagic" subtype="82"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS SL900A Get Log State OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field     type="u16"        name="MeasurementAddressPointer"/>
+  <field     type="u8"         name="NumMemReplacements"/>
+  <field     type="u16"        name="NumMeasurements"/>
+  <field     type="u1"         name="Active"/>
+  <reserved  bitCount="7"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSLogStateStatusFlag"
+                              vendor="thingmagic" subtype="83"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS SL900A Get Log State OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field     type="u1"         name="Active"/>
+  <field     type="u1"         name="Full"/>
+  <field     type="u1"         name="Overwritten"/>
+  <field     type="u1"         name="ADError"/>
+  <field     type="u1"         name="LowBattery"/>
+  <field     type="u1"         name="ShelfLifeLow"/>
+  <field     type="u1"         name="ShelfLifeHigh"/>
+  <field     type="u1"         name="ShelfLifeExpired"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetLogMode"
+                              vendor="thingmagic" subtype="84"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Get Log state command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <field      type="u8"       name="LoggingForm"
+                              enumeration="ThingMagicCustomIDSLoggingForm"/>
+  <field      type="u8"       name="StorageRule"
+                              enumeration="ThingMagicCustomIDSStorageRule"/>
+  <field     type="u1"         name="Ext1Enable"/>
+  <field     type="u1"         name="Ext2Enable"/>
+  <field     type="u1"         name="TempEnable"/>
+  <field     type="u1"         name="BattEnable"/>
+  <reserved  bitCount="4"/>
+  <field      type="u16"      name="LogInterval"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetLogModeOpSpecResult"
+                              vendor="thingmagic" subtype="85"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Startlog OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustomIDSLoggingForm">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various Logging forms for IDS custom tag operations. </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="IDSSL900A_LOGGINGFORM_DENSE"/>
+  <entry     value="1"    name="IDSSL900A_LOGGINGFORM_OUTOFLIMITS"/>
+  <entry     value="3"    name="IDSSL900A_LOGGINGFORM_LIMITSCROSSING"/>
+  <entry     value="5"    name="IDSSL900A_LOGGINGFORM_IRQ1"/>
+  <entry     value="6"    name="IDSSL900A_LOGGINGFORM_IRQ2"/>
+  <entry     value="7"    name="IDSSL900A_LOGGINGFORM_IRQ1IRQ2"/>
+</customEnumerationDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustomIDSStorageRule">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various Storage rules for IDS custom tag operations. </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="IDSSL900A_STORAGERULE_NORMAL"/>
+  <entry     value="1"    name="IDSSL900A_STORAGERULE_ROLLING"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AStartLog"
+                              vendor="thingmagic" subtype="86"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Start Log command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <field     type="u32"       name="StartTime"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AStartLogOpSpecResult"
+                              vendor="thingmagic" subtype="87"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Startlog OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AEndLog"
+                              vendor="thingmagic" subtype="88"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS End log command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AEndLogOpSpecResult"
+                              vendor="thingmagic" subtype="89"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Endlog OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AInitialize"
+                              vendor="thingmagic" subtype="90"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Initialize command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  	repeat="1"   type="ThingMagicIDSDelayTime"/>
+  <parameter  	repeat="1"   type="ThingMagicIDSApplicationData"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AInitializeOpSpecResult"
+                              vendor="thingmagic" subtype="91"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Initialize OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AGetMeasurementSetup"
+                              vendor="thingmagic" subtype="92"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Get Measurement Setup command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AGetMeasurementSetupOpSpecResult"
+                              vendor="thingmagic" subtype="93"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Get Measurement Setup OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="1"      type="ThingMagicIDSStartTime"/>
+  <parameter  repeat="1"      type="ThingMagicIDSLogLimits"/>
+  <parameter  repeat="1"      type="ThingMagicIDSLogMode"/>
+  <field      type="u16"      name="logInterval"/>
+  <parameter  repeat="1"      type="ThingMagicIDSDelayTime"/>
+  <parameter  repeat="1"      type="ThingMagicIDSApplicationData"/>
+  <field      type="u8v"      name="measurementByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AGetCalibrationData"
+                              vendor="thingmagic" subtype="94"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Get Calibration Data command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AGetCalibrationDataOpSpecResult"
+                              vendor="thingmagic" subtype="95"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Get Calibration Data OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="1"      type="ThingMagicIDSCalibrationData"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetCalibrationData"
+                              vendor="thingmagic" subtype="96"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Set Calibration Data command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="1"      type="ThingMagicIDSCalibrationData"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetCalibrationDataOpSpecResult"
+                              vendor="thingmagic" subtype="97"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Set Calibration Data OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetSFEParams"
+                              vendor="thingmagic" subtype="98"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Set SFE Parameters command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="1"      type="ThingMagicIDSSFEParam"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetSFEParamsOpSpecResult"
+                              vendor="thingmagic" subtype="99"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Set SFE Parameters OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AAccessFIFOStatus"
+                              vendor="thingmagic" subtype="100"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Access FIFO status command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AAccessFIFOStatusOpSpecResult"
+                              vendor="thingmagic" subtype="101"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Access FIFO Status OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field     type="u1"         name="FIFOStatusBusy"/>
+  <field     type="u1"         name="FIFOStatusDataReady"/>
+  <field     type="u1"         name="FIFOStatusNoData"/>
+  <reserved  bitCount="5"/>
+  <field     type="u8"        name="numValidBytes"/>
+  <field      type="u1"       name="FIFOSource"/>
+  <reserved  bitCount="7"/>
+  <field     type="u8"        name="FIFOStatusRawByte"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AGetBatteryLevel"
+                              vendor="thingmagic" subtype="102"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Get Battery Level command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <field      type="u8"       name="BatteryTrigger"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AGetBatteryLevelOpSpecResult"
+                              vendor="thingmagic" subtype="103"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter is the result of an ThingMagic IDS Get Battery Level OpSpec.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="1"      type="ThingMagicIDSBatteryLevel"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSDelayTime"
+                              vendor="thingmagic" subtype="104"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter defines the individual fields in IDS delay time paramter.</h:p>
+    </description>
+  </annotation>
+  <field     type="u8"        name="delayMode"/>
+  <field     type="u16"       name="delayTime"/>
+  <field     type="u1"        name="timerEnable"/>
+  <reserved  bitCount="7"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSApplicationData"
+                              vendor="thingmagic" subtype="105"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter defines the individual fields in IDS Application Data paramter.</h:p>
+    </description>
+  </annotation>
+  <field     type="u8"        name="brokenWordPointer"/>
+  <field     type="u16"       name="numberOfWords"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSLogMode"
+                              vendor="thingmagic" subtype="106"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter defines the individual fields in IDS Log Mode paramter.</h:p>
+    </description>
+  </annotation>
+  <field     type="u1"         name="Ext1Enable"/>
+  <field     type="u1"         name="Ext2Enable"/>
+  <field     type="u1"         name="TempEnable"/>
+  <field     type="u1"         name="BattEnable"/>
+  <reserved  bitCount="4"/>
+  <field      type="u8"       name="StorageRule"
+                              enumeration="ThingMagicCustomIDSStorageRule"/>
+  <field      type="u8"       name="LoggingForm"
+                              enumeration="ThingMagicCustomIDSLoggingForm"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSLogLimits"
+                              vendor="thingmagic" subtype="107"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter defines the individual fields in IDS Log Limits paramter.</h:p>
+    </description>
+  </annotation>
+  <field     type="u16"        name="extremeLower"/>
+  <field     type="u16"        name="lower"/>
+  <field     type="u16"        name="upper"/>
+  <field     type="u16"        name="extremeUpper"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSStartTime"
+                              vendor="thingmagic" subtype="108"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter defines the individual fields in IDS Start Time paramter.</h:p>
+    </description>
+  </annotation>
+  <field     type="u8"         name="seconds"/>
+  <field     type="u8"         name="minutes"/>
+  <field     type="u8"         name="hours"/>
+  <field     type="u8"         name="day"/>
+  <field     type="u8"         name="month"/>
+  <field     type="u8"         name="year"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSFEParam"
+                              vendor="thingmagic" subtype="109"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter defines the individual fields in IDS SFE paramter.</h:p>
+    </description>
+  </annotation>
+  <field     type="u16"        name="raw"/>
+  <field     type="u8"         name="range"/>
+  <field     type="u8"         name="seti"/>
+  <field     type="u8"         name="Ext1"/>
+  <field     type="u8"         name="Ext2"/>
+  <field     type="u1"         name="AutoRangeDisable"/>
+  <reserved  bitCount="7"/>
+  <field     type="u8"         name="VerifySensorID"/>
+  <field     type="u8"         name="SFEType"
+			       enumeration="ThingMagicCustomIDSSFEType"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSCalibrationData"
+                              vendor="thingmagic" subtype="110"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter defines the individual fields in IDS Calibration paramter.</h:p>
+    </description>
+  </annotation>
+  <field     type="u64"         name="raw"/>
+  <field     type="u8"         name="ad1"/>
+  <field     type="u8"         name="coars1"/>
+  <field     type="u8"         name="ad2"/>
+  <field     type="u8"         name="coars2"/>
+  <field     type="u1"         name="gndSwitch"/>
+  <reserved  bitCount="7"/>
+  <field     type="u8"         name="selp12"/>
+  <field     type="u8"         name="adf"/>
+  <field     type="u8"         name="df"/>
+  <field     type="u1"         name="swExtEn"/>
+  <reserved  bitCount="7"/>
+  <field     type="u8"         name="selp22"/>
+  <field     type="u8"         name="irlev"/>
+  <field     type="u8"         name="ringCal"/>
+  <field     type="u8"         name="offInt"/>
+  <field     type="u8"         name="reftc"/>
+  <field     type="u1"         name="excRes"/>
+  <reserved  bitCount="7"/>
+  <field     type="u8"         name="RFU"/>
+  <field     type="u8"         name="CalibrationType"/>
+  <field     type="u8v"        name="calibrationValueByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicCustomIDSSFEType">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the various SFE types for IDS custom tag operations. </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="IDSSL900A_SFE_RANG"/>
+  <entry     value="1"    name="IDSSL900A_SFE_SETI"/>
+  <entry     value="2"    name="IDSSL900A_SFE_EXT1"/>
+  <entry     value="3"    name="IDSSL900A_SFE_EXT2"/>
+  <entry     value="4"    name="IDSSL900A_SFE_AUTORANGEDISABLE"/>
+  <entry     value="5"    name="IDSSL900A_SFE_VERIFYSENSORID"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AAccessFIFORead"
+                              vendor="thingmagic" subtype="111"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Access FIFO Read command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <field     type="u8"        name="FIFOReadLength"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AAccessFIFOReadOpSpecResult"
+                              vendor="thingmagic" subtype="112"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the custom IDS Access FIFO Read Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="readPayLoad"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+
+<customParameterDefinition    name="ThingMagicIDSSL900AAccessFIFOWrite"
+                              vendor="thingmagic" subtype="113"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Access FIFO write command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <field      type="u8v"       name="writePayLoad"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900AAccessFIFOWriteOpSpecResult"
+                              vendor="thingmagic" subtype="114"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the custom IDS Access FIFO Write Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetLogLimits"
+                              vendor="thingmagic" subtype="115"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Set Log Limits command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="1"      type="ThingMagicIDSLogLimits"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetLogLimitsOpSpecResult"
+                              vendor="thingmagic" subtype="116"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the custom IDS Set Log Limits Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetIDSPassword"
+                              vendor="thingmagic" subtype="117"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom IDS Set Password command.</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <field      type="u8"       name="NewPasswordLevel"
+                              enumeration="ThingMagicCustomIDSPasswordLevel"/>
+  <field     type="u32"       name="NewIDSPassword"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSL900ASetPasswordOpSpecResult" 
+                              vendor="thingmagic" subtype="118"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the custom IDS SetPassword Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSBatteryLevel"
+                              vendor="thingmagic" subtype="120"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in Battery Level .</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"       name="reply"/>
+  <field      type="u1"       name="ADError"/>
+  <reserved   bitCount="7"/>
+  <field      type="u8"       name="batteryType"/>
+  <field      type="u16"       name="batteryValue"/>
+  <field     	type="u8v"    name="batteryValueByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSetShelfLife"
+                              vendor="thingmagic" subtype="121"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for Set Shelf life IDS custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter  	repeat="1"   type="ThingMagicIDSSL900ACommandRequest"/>
+  <parameter  repeat="1"      type="ThingMagicIDSSLBlock0"/>
+  <parameter  repeat="1"      type="ThingMagicIDSSLBlock1"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSLBlock0"
+                              vendor="thingmagic" subtype="122"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the Shelf life block 0 custom parameter .</h:p>
+    </description>
+  </annotation>
+  <field      type="u32"       name="raw"/>
+  <field      type="u8"        name="TimeMax"/>
+  <field      type="u8"        name="TimeMin"/>
+  <field      type="u8"        name="TimeStd"/>
+  <field      type="u8"       name="Ea"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSLBlock1"
+                              vendor="thingmagic" subtype="123"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the Shelf life blok 1 custom parameter</h:p>
+    </description>
+  </annotation>
+  <field      type="u32"       name="raw"/>
+  <field      type="u16"       name="SLInit"/>
+  <field      type="u16"       name="TInit"/>
+  <field      type="u8"        name="SensorID"/>
+  <field      type="u1"        name="enableNegative"/>
+  <field      type="u1"        name="algorithmEnable"/>
+  <reserved   bitCount="6"/>
+  <field      type="u8"        name="RFU"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicIDSSetShelfLifeOpSpecResult"
+                              vendor="thingmagic" subtype="124"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in Set Shelf life IDS command response parameter .</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds custom HopTime parameter. sub type is set to 100 
+ -->
+<customParameterDefinition      name="ThingMagicHopTime"
+                                vendor="thingmagic" subtype="125"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom ThingMagic Hop Time parameter </h:p>
+    </description>
+  </annotation>
+  <field        type="u32"      name="HopTime"/>
+  <parameter    repeat="0-N"   type="Custom"/>
+  <allowedIn 	repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn    repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+
+<customParameterDefinition    name="ThingMagicDenatranIAVActivateSecureMode"
+                              vendor="thingmagic" subtype="126"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for Activate Secure Mode Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVActivateSecureModeOpSpecResult"
+                              vendor="thingmagic" subtype="127"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the Activate Secure Mode Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="ActivateSecureModeByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVAuthenticateOBU"
+                              vendor="thingmagic" subtype="128"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for Authenticate OBU Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVAuthenticateOBUOpSpecResult"
+                              vendor="thingmagic" subtype="129"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the Authenticate OBU Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation> 
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="AuthenitcateOBUByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVActivateSiniavMode"
+                              vendor="thingmagic" subtype="130"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for Activate Siniav mode Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <field      type="u8v"       name="tokenData"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVActivateSiniavModeOpSpecResult"
+                              vendor="thingmagic" subtype="131"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the Activate Siniav Mode Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation> 
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="ActivateSiniavModeByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUAuthenticateID"
+                              vendor="thingmagic" subtype="132"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for OBU Authenticate ID Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+  
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUAuthenticateIDOpSpecResult"
+                              vendor="thingmagic" subtype="133"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the OBU Authenticate ID Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="OBUAuthenticateIDByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUAuthenticateFullPass1"
+                              vendor="thingmagic" subtype="134"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for OBU Authenticate Full Pass 1 Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUAuthenticateFullPass1OpSpecResult"
+                              vendor="thingmagic" subtype="135"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the OBU Authenticate Full Pass 1 Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="OBUAuthenticateFullPass1ByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUAuthenticateFullPass2"
+                              vendor="thingmagic" subtype="136"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for OBU Authenticate Full Pass 2 Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUAuthenticateFullPass2OpSpecResult"
+                              vendor="thingmagic" subtype="137"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the OBU Authenticate Full Pass 2 Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="OBUAuthenticateFullPass2ByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUReadFromMemMap"
+                              vendor="thingmagic" subtype="138"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for OBU Read From Memory Map Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <field    type="u16"   name="ReadPtr"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUReadFromMemMapOpSpecResult"
+                              vendor="thingmagic" subtype="139"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the OBU Read From Memory Map Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="OBUReadMemoryMapByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUWriteToMemMap"
+                              vendor="thingmagic" subtype="140"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for OBU Write To Memory Map Denatran IAV custom opspec command .</h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1"   type="ThingMagicDenatranIAVCommandRequest"/>
+  <field    type="u16"   name="WritePtr"/>
+  <field    type="u16"   name="WordData"/>
+  <field    type="u8v"   name="TagIdentification"/>
+  <field    type="u8v"   name="DataBuf"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVOBUWriteToMemMapOpSpecResult"
+                              vendor="thingmagic" subtype="141"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields in the OBU Write To Memory Map Denatran IAV custom Opspec result.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="Result"
+                              enumeration="ThingMagicCustomTagOpSpecResultType"/>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8v"      name="OBUWriteMemoryMapByteStream"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpecResult"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicDenatranIAVCommandRequest"
+                              vendor="thingmagic" subtype="201"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter defines the fields required for custom Denatran IAV request command.</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"      name="OpSpecID"/>
+  <field      type="u8"       name="PayLoad"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+  <allowedIn  repeat="0-1"    type="AccessCommandOpSpec"/>
+</customParameterDefinition>
+
+
+<customParameterDefinition    name="ThingMagicTagReportContentSelector"
+                              vendor="thingmagic" subtype="142"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter configures additional parameters to be reported via the TagReportData parameter.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="PhaseMode"
+                              enumeration="ThingMagicPhaseMode"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+    <allowedIn  repeat="0-1"    type="ROReportSpec"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicPhaseMode">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the options to enable/disable the Phase in the ROReport </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="Disabled"/>
+  <entry     value="1"    name="Enabled"/>
+</customEnumerationDefinition>
+
+<customParameterDefinition    name="ThingMagicRFPhase"
+                              vendor="thingmagic" subtype="143"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter reports the RF phase .</h:p>
+    </description>
+  </annotation>
+  <field      type="u16"       name="Phase"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+<allowedIn  repeat="0-1"    type="TagReportData"/>
+</customParameterDefinition>
+
+<customParameterDefinition    name="ThingMagicFastSearchMode"
+                              vendor="thingmagic" subtype="144"
+                              namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom parameter configures FastSearch Mode.</h:p>
+    </description>
+  </annotation>
+  <field      type="u8"       name="ThingMagicFastSearch"
+                              enumeration="ThingMagicFastSearchValue"/>
+  <parameter  repeat="0-N"    type="Custom"/>
+    <allowedIn  repeat="0-1"    type="C1G2InventoryCommand"/>
+</customParameterDefinition>
+
+<customEnumerationDefinition name="ThingMagicFastSearchValue">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This custom enumeration provides the options to enable/disable the Fast Search Mode </h:p>
+    </description>
+  </annotation>
+  <entry     value="0"    name="Disabled"/>
+  <entry     value="1"    name="Enabled"/>
+</customEnumerationDefinition>
+
+<!--
+  This parameter adds custom AsyncOFFTime parameter. sub type is set to 145 
+ -->
+<customParameterDefinition      name="ThingMagicAsyncOFFTime"
+                                vendor="thingmagic" subtype="145"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom ThingMagic Async OFF time </h:p>
+    </description>
+  </annotation>
+  <field        type="u32"      name="AsyncOFFTime"/>
+  <parameter    repeat="0-N"   type="Custom"/>
+  <allowedIn    repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+  <allowedIn    repeat="0-1"   type="SET_READER_CONFIG"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds custom LicensedFeatures parameter. sub type is set to 146 
+ -->
+<customParameterDefinition      name="ThingMagicLicensedFeatures"
+                                vendor="thingmagic" subtype="146"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom ThingMagic Licensed features  </h:p>
+    </description>
+  </annotation>
+  <field        type="u8v"     name="LicensedFeatures" format="Hex"/>
+  <parameter    repeat="0-N"   type="Custom"/>
+  <allowedIn    repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+</customParameterDefinition>
+
+<!--
+  This parameter adds custom ProtocolsSelected parameter. sub type is set to 147 
+ -->
+<customParameterDefinition      name="ThingMagicSelectedProtocols"
+                                vendor="thingmagic" subtype="147"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the custom ThingMagic Licensed features  </h:p>
+    </description>
+  </annotation>
+  <parameter    repeat="1-N"   type="SelectedProtocol"/>
+  <parameter    repeat="0-N"   type="Custom"/>
+  <allowedIn    repeat="0-1"   type="GET_READER_CONFIG_RESPONSE"/>
+</customParameterDefinition>
+
+<customParameterDefinition      name="SelectedProtocol"
+                                vendor="thingmagic" subtype="148"
+                                namespace="thingmagic">
+  <annotation>
+    <documentation>
+    </documentation>
+    <description>
+      <h:p>This parameter provides the ThingMagic Module user selected protocols </h:p>
+    </description>
+  </annotation>
+  <field     		type="u8"      name="Protocol"
+			enumeration="ProtocolID"/>
+  <parameter  	repeat="0-N"   type="Custom"/>
+</customParameterDefinition>
+
+</llrpdef>
+

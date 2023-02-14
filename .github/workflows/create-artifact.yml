@@ -1,0 +1,37 @@
+name: Python package release
+
+permissions:
+  id-token: write
+  contents: write
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7.9
+          architecture: x64
+      - name: Adds Linux dependencies
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get install xsltproc
+      - name: Build and package Python package
+        run: |
+          python setup.py sdist
+          mv dist/*.tar.gz mercury_api_linux.tar.gz
+      - name: Release package to repository
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./mercury_api_linux.tar.gz
+          asset_name: mercury_api_linux-${{ github.ref }}.tar.gz
+          asset_content_type: application/gzip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

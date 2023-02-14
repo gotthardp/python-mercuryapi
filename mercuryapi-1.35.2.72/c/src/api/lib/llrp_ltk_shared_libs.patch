@@ -1,0 +1,81 @@
+diff -auNr LTK.orig/LTKC/Library/LLRP.org/Makefile LTK/LTKC/Library/LLRP.org/Makefile
+--- LTK.orig/LTKC/Library/LLRP.org/Makefile	2012-07-16 19:07:14.000000000 +0530
++++ LTK/LTKC/Library/LLRP.org/Makefile	2012-07-18 15:39:37.000000000 +0530
+@@ -23,6 +23,9 @@
+ 
+ # Position-independent code required for shared libraries
+ CFLAGS          += -fpic
++ifeq ($(LTKC_PLATFORM),EMBEDDED)
++CFLAGS          += -mcpu=strongarm -mtune=xscale -mbig-endian
++endif
+ 
+ TMDEF      = ../../../Definitions/LLRP.org/llrp-control-def.xml
+ 
+@@ -39,19 +42,21 @@
+ 
+ 
+ TM_LTKC_LIB = libltkctm.a
++TM_LTKC_SHARED_LIB = libltkctm.so.1
+ TM_LTKC_OBJS = \
+ 	tm_ltkc_genout.o
+ 
+ TM_LTKC_SONAME = $(TM_LTKC_LIB:.a=.so.1)
+-TM_LTKC_SHARED_LIB = $(TM_LTKC_SONAME).0.0
++TM_LTKC_SHARED_LIB = $(TM_LTKC_SONAME)
+ 
+-all:    $(TM_LTKC_LIB)
++all:  $(TM_LTKC_LIB) $(TM_LTKC_SHARED_LIB)
+ 
+ $(TM_LTKC_LIB) : $(TM_LTKC_OBJS)
+ 	$(AR) crv $(TM_LTKC_LIB) $(TM_LTKC_OBJS)
+ 
+ $(TM_LTKC_SHARED_LIB) : $(TM_LTKC_OBJS)
+-	$(CC) -shared -Wl,-soname,$(TM_LTKC_SONAME) -o $(TM_LTKC_SHARED_LIB) $(TM_LTKC_OBJS)
++	$(CC) $(CFLAGS) -shared -Wl,-soname,$(TM_LTKC_SHARED_LIB) -o $(TM_LTKC_SHARED_LIB) $(TM_LTKC_OBJS)
++	$(STRIP) $@
+ 
+ $(TM_LTKC_OBJS) : $(LTKC_HDRS)
+ 
+diff -auNr LTK.orig/LTKC/Library/Makefile LTK/LTKC/Library/Makefile
+--- LTK.orig/LTKC/Library/Makefile	2012-07-16 19:07:14.000000000 +0530
++++ LTK/LTKC/Library/Makefile	2012-07-18 15:39:45.000000000 +0530
+@@ -22,6 +22,9 @@
+ 
+ # Position-independent code required for shared libraries
+ CFLAGS          += -fpic
++ifeq ($(LTKC_PLATFORM),EMBEDDED)
++CFLAGS          += -mcpu=strongarm -mtune=xscale -mbig-endian
++endif
+ 
+ LLRPDEF         = ../../Definitions/Core/llrp-1x0-def.xml
+ 
+@@ -38,6 +41,7 @@
+ 	out_ltkc.h
+ 
+ LTKC_LIB = libltkc.a
++LTKC_SHARED_LIB = libltkc.so.1
+ LTKC_OBJS = \
+ 	ltkc_array.o		\
+ 	ltkc_connection.o	\
+@@ -54,9 +58,9 @@
+ 
+ 
+ LTKC_SONAME = $(LTKC_LIB:.a=.so.1)
+-LTKC_SHARED_LIB = $(LTKC_SONAME).0.0
++LTKC_SHARED_LIB = libltkc.so.1
+ 
+-all:    $(LTKC_LIB)
++all:    $(LTKC_LIB) $(LTKC_SHARED_LIB)
+ 	cd LLRP.org; make all
+ 
+ everything:
+@@ -66,7 +70,8 @@
+ 	$(AR) crv $(LTKC_LIB) $(LTKC_OBJS)
+ 
+ $(LTKC_SHARED_LIB) : $(LTKC_OBJS)
+-	$(CC) -shared -Wl,-soname,$(LTKC_SONAME) -o $(LTKC_SHARED_LIB) $(LTKC_OBJS)
++	$(CC) $(CFLAGS) -shared -Wl,-soname,$(LTKC_SONAME) -o $(LTKC_SHARED_LIB) $(LTKC_OBJS)
++	$(STRIP) $@
+ 
+ $(LTKC_OBJS) : $(LTKC_HDRS)
+ 

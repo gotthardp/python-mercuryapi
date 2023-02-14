@@ -1,0 +1,30 @@
+diff -Naur LTK.orig/Definitions/Core/llrp-1x0-def.xml LTK/Definitions/Core/llrp-1x0-def.xml
+--- LTK.orig/Definitions/Core/llrp-1x0-def.xml	2019-07-30 11:52:08.937881382 +0530
++++ LTK/Definitions/Core/llrp-1x0-def.xml	2019-07-30 14:06:36.103412089 +0530
+@@ -600,6 +600,7 @@
+   <choiceDefinition name="SpecParameter">
+     <parameter type="AISpec"/>
+     <parameter type="RFSurveySpec"/>
++    <parameter type="LoopSpec"/>
+     <parameter type="Custom"/>
+   </choiceDefinition>
+ 
+@@ -878,6 +879,18 @@
+     <entry     value="2"    name="N_Iterations_Through_Frequency_Range"/>
+   </enumerationDefinition>
+ 
++  <parameterDefinition name="LoopSpec" typeNum="189" required="false">
++    <parameter repeat="0-N" type="Custom"/>
++    <annotation>
++      <documentation>
++      </documentation>
++      <description copyright="Copyright 2006, 2007, EPCglobal Inc. The proprietary text of EPCglobal Inc. included here is in not a Contribution to the LLRP toolkit, under Apache License, Version 2.0. The right to use the proprietary text is limited to reproduction and display thereof within the work.">
++          <h:p>This parameter defines Loop Spec opeartion. This parameter instructs the Reader to loop execution of the ROSpec, starting at SpecIndex 1. If present in a ROSpec’s ListOfSpecs, this parameter SHALL be the final parameter in the ListOfSpecs, and at least one AISpec, RFSurveySpec, or Custom parameter SHALL preceed this parameter in the ListOfSpecs.</h:p> 
++      </description>
++    </annotation>
++    <field     type="u32"   name="LoopCount"/>
++  </parameterDefinition>
++
+   <messageDefinition name="ADD_ACCESSSPEC" typeNum="40" required="true" responseType="ADD_ACCESSSPEC_RESPONSE">
+     <annotation>
+       <documentation>

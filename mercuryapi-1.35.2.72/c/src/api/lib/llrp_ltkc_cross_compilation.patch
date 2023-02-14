@@ -1,0 +1,57 @@
+diff -auNr LTK.orig/LTKC/Examples/Example-Makefile LTK/LTKC/Examples/Example-Makefile
+--- LTK.orig/LTKC/Examples/Example-Makefile	2011-03-04 01:56:16.000000000 -0500
++++ LTK/LTKC/Examples/Example-Makefile	2011-03-29 16:27:46.000000000 -0400
+@@ -18,7 +18,8 @@
+ LTKC_DIR = ..
+ LTKC_LIBS = $(LTKC_DIR)/libltkc.a
+ LTKC_INCL = -I$(LTKC_DIR)
+-CFLAGS = -g $(LTKC_INCL)
++CFLAGS ?= -g
++CFLAGS += $(LTKC_INCL)
+ 
+ 
+ example1 : example1.c
+diff -auNr LTK.orig/LTKC/Examples/Makefile LTK/LTKC/Examples/Makefile
+--- LTK.orig/LTKC/Examples/Makefile	2011-03-04 01:56:16.000000000 -0500
++++ LTK/LTKC/Examples/Makefile	2011-03-29 16:26:59.000000000 -0400
+@@ -20,8 +20,9 @@
+ 
+ #CFLAGS = -O -Wall $(INCL)
+ AR          = ar
+-CC          = gcc
+-CFLAGS      = -g -Wall $(INCL)
++CC          ?= gcc
++CFLAGS      ?= -g -Wall
++CFLAGS      += $(INCL)
+ 
+ LTKC_LIB = $(LIBDIR)/libltkc.a
+ LTKC_HDRS = \
+diff -auNr LTK.orig/LTKC/Library/Makefile LTK/LTKC/Library/Makefile
+--- LTK.orig/LTKC/Library/Makefile	2011-03-04 01:56:16.000000000 -0500
++++ LTK/LTKC/Library/Makefile	2011-03-29 16:28:06.000000000 -0400
+@@ -17,8 +17,8 @@
+ 
+ #CFLAGS = -O -Wall
+ AR              = ar
+-CC              = gcc
+-CFLAGS          = -g -Wall
++CC              ?= gcc
++CFLAGS          ?= -g -Wall
+ 
+ LLRPDEF         = ../../Definitions/Core/llrp-1x0-def.xml
+ 
+diff -auNr LTK.orig/LTKC/Tests/Makefile LTK/LTKC/Tests/Makefile
+--- LTK.orig/LTKC/Tests/Makefile	2011-03-04 01:56:16.000000000 -0500
++++ LTK/LTKC/Tests/Makefile	2011-03-29 16:29:02.000000000 -0400
+@@ -20,8 +20,9 @@
+ 
+ #CFLAGS = -O -Wall $(INCL)
+ AR          = ar
+-CC          = gcc
+-CFLAGS      = -g -Wall $(INCL)
++CC          ?= gcc
++CFLAGS      ?= -g -Wall
++CFLAGS      += $(INCL)
+ 
+ LTKC_LIB = $(LIBDIR)/libltkc.a
+ LTKC_HDRS = \

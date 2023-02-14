@@ -1,0 +1,54 @@
+diff -auNr LTK.orig/Definitions/Core/llrp-1x0-def.xml LTK/Definitions/Core/llrp-1x0-def.xml
+--- LTK.orig/Definitions/Core/llrp-1x0-def.xml	2011-12-08 14:40:35.000000000 +0530
++++ LTK/Definitions/Core/llrp-1x0-def.xml	2011-12-08 14:48:08.000000000 +0530
+@@ -150,7 +150,7 @@
+     <parameter repeat="0-1" type="GeneralDeviceCapabilities"/>
+     <parameter repeat="0-1" type="LLRPCapabilities"/>
+     <parameter repeat="0-1" type="RegulatoryCapabilities"/>
+-    <choice    repeat="0-1" type="AirProtocolLLRPCapabilities"/>
++    <choice    repeat="0-N" type="AirProtocolLLRPCapabilities"/>
+     <parameter repeat="0-N" type="Custom"/>
+   </messageDefinition>
+ 
+@@ -1103,6 +1103,8 @@
+     <parameter type="C1G2Lock"/>
+     <parameter type="C1G2BlockErase"/>
+     <parameter type="C1G2BlockWrite"/>
++    <parameter repeat="0-N" type="Custom"/>
++   
+   </choiceDefinition>
+ 
+   <messageDefinition name="GET_READER_CONFIG" typeNum="2" required="true" responseType="GET_READER_CONFIG_RESPONSE">
+@@ -1651,6 +1653,7 @@
+     <parameter type="C1G2LockOpSpecResult"/>
+     <parameter type="C1G2BlockEraseOpSpecResult"/>
+     <parameter type="C1G2BlockWriteOpSpecResult"/>
++    <parameter repeat="0-N" type="Custom"/>
+   </choiceDefinition>
+ 
+   <choiceDefinition name="EPCParameter">
+@@ -2915,6 +2918,8 @@
+     <entry     value="1"    name="Nonspecific_Tag_Error"/>
+     <entry     value="2"    name="No_Response_From_Tag"/>
+     <entry     value="3"    name="Nonspecific_Reader_Error"/>
++    <entry     value="4"    name="Memory_Overrun_Error"/>
++    <entry     value="5"    name="Memory_Locked_Error"/>
+   </enumerationDefinition>
+ 
+   <parameterDefinition name="C1G2WriteOpSpecResult" typeNum="350" required="true">
+@@ -3075,6 +3080,7 @@
+ 
+   <choiceDefinition name="AirProtocolLLRPCapabilities">
+     <parameter type="C1G2LLRPCapabilities"/>
++    <parameter repeat="0-N" type="Custom"/>
+   </choiceDefinition>
+ 
+   <choiceDefinition name="AirProtocolUHFRFModeTable">
+@@ -3083,6 +3087,7 @@
+ 
+   <choiceDefinition name="AirProtocolInventoryCommandSettings">
+     <parameter type="C1G2InventoryCommand"/>
++    <parameter repeat="0-N" type="Custom"/>
+   </choiceDefinition>
+ 
+   <choiceDefinition name="AirProtocolTagSpec">

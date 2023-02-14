@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ClCompile Include="..\..\src\ltkc_array.c" />
+    <ClCompile Include="..\..\src\ltkc_connection.c" />
+    <ClCompile Include="..\..\src\ltkc_element.c" />
+    <ClCompile Include="..\..\src\ltkc_encdec.c" />
+    <ClCompile Include="..\..\src\ltkc_error.c" />
+    <ClCompile Include="..\..\src\ltkc_framedecode.c" />
+    <ClCompile Include="..\..\src\ltkc_frameencode.c" />
+    <ClCompile Include="..\..\src\ltkc_frameextract.c" />
+    <ClCompile Include="..\..\src\ltkc_genout.c" />
+    <ClCompile Include="..\..\src\ltkc_hdrfd.c" />
+    <ClCompile Include="..\..\src\ltkc_typeregistry.c" />
+    <ClCompile Include="..\..\src\ltkc_xmltextencode.c" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4A0067BC-C937-4B56-ADE7-A502832D9FC5}</ProjectGuid>
+    <RootNamespace>libtlkc_WinCE</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>16.0.30804.86</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\inc\ltkc_base.h" />
+    <ClInclude Include="..\..\inc\ltkc_connection.h" />
+    <ClInclude Include="..\..\inc\ltkc_frame.h" />
+    <ClInclude Include="..\..\inc\ltkc_platform.h" />
+    <ClInclude Include="..\..\inc\ltkc_xmltext.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
