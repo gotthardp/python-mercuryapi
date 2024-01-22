@@ -22,6 +22,7 @@
 
 #include <tm_reader.h>
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <structmember.h>
 
@@ -624,7 +625,7 @@ Reader_write(Reader *self, PyObject *args, PyObject *kwds)
 {
     char* epc_data;
     PyObject *epc_target = NULL;
-    int data_len;
+    Py_ssize_t data_len;
     TMR_Status ret;
     TMR_TagData data;
     TMR_TagFilter *tag_filter = NULL;
