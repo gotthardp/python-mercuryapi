@@ -305,7 +305,7 @@ typedef struct {
     TMR_GEN2_Select_action action;
 } Actions;
 
-enum TMR_GEN2_Select_no_action
+enum
 {
   NO_ACTION = 0xFF
 };
@@ -444,7 +444,7 @@ parse_gen2filter(TMR_TagFilter *tag_filter, PyObject *arg, TMR_GEN2_Select_actio
         {
             if (obj == Py_None)
                 tag_filter->u.gen2Select.action = defaction;
-            else if ((tag_filter->u.gen2Select.action = str2action(object2str(obj))) == NO_ACTION)
+            else if ((tag_filter->u.gen2Select.action = str2action(object2str(obj))) == (TMR_GEN2_Select_action)NO_ACTION)
                 return 0;
         }
         else
