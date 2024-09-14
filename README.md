@@ -628,26 +628,28 @@ EPC(b'E2000087071401930700D206')
 Use the Windows installer for the
 [latest release](https://github.com/gotthardp/python-mercuryapi/releases) and Python 3.6.
 
-If you get the "ImportError: DLL load failed", make sure you have the
-[Microsoft Visual C++ 2010 Redistributable Package](https://www.microsoft.com/en-us/download/details.aspx?id=5555)
-installed.
-
 To build an installer for other Python releases you need to:
  * Download the latest [Mercury API](https://www.jadaktech.com/products/thingmagic-rfid/thingmagic-mercury-api), e.g.
-   [mercuryapi-YEATS-1.31.4.35-1.zip](https://www.jadaktech.com/wp-content/uploads/2020/01/mercuryapi-YEATS-1.31.4.35-1.zip).
- * Go to mercuryapi-1.31.4.35\c\src\api\ltkc_win32 and run `gencode.bat`
- * Open mercuryapi-1.31.4.35\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
+   [mercuryapi-AHAB-1.35.2.72-1.zip](https://www.jadaktech.com/documents-downloads/thingmagic-mercury-api-firmware-v1-35-2).
+ * Go to mercuryapi-1.35.2.72\c\src\api\ltkc_win32 and run `gencode.bat`
+ * Open mercuryapi-1.35.2.72\c\src\api\ltkc_win32\inc\stdint_win32.h and comment (or delete)
    the block of `typedef` for `int_fast8_t` through `uint_fast64_t` (8 lines)
- * Download the [latest pthreads-win32](ftp://sourceware.org/pub/pthreads-win32/dll-latest)
+ * Download the [latest pthreads-win32](https://sourceforge.net/projects/pthreads4w/files/pthreads-w32-2-9-1-release.zip/download)
    binaries (both .dll and .lib) for your architecture and put them into
-   mercuryapi-1.31.4.35\c\src\pthreads-win32\x86 or \x64
- * Obtain Microsoft Visual Studio 2017, including the Python extensions
+   mercuryapi-1.35.2.72\c\src\pthreads-win32\x86 or \x64
+ * Obtain [Microsoft Visual Studio 2017](https://visualstudio.microsoft.com/downloads/), including the Python extensions, Visual Studio Desktop development with C++ and the individual component MSVC v142 - VS 2019 C++ x64/x86 build tools 
  * Open the Solution and review the
    [setup-win.py](https://github.com/gotthardp/python-mercuryapi/blob/master/setup-win.py)
    * Verify the `mercuryapi` directory
-   * Set `library_dirs` and `data_files` to the pthreads-win32 you downloaded
+   * Set `library_dirs` and `data_files` to the pthreads-win32 you downloaded and update to `x64` if required
    * Set Script Arguments to `bdist_wininst -p win32` (default) or `bdist_wininst -p amd64`
  * Start setup-win.py (without debugging)
+ * To build with python > 3.8 use `python setup-win.py build install` or `python setup-win.py build -p win-amd64 install`
+
+If you get the "ImportError: DLL load failed", make sure you have the
+[Microsoft Visual C++ 2010 Redistributable Package](https://www.microsoft.com/en-us/download/details.aspx?id=26999)
+installed. Since python 3.8 adding the egg install directory with its dependencies via [add_dll_directory](https://docs.python.org/3/library/os.html#os.add_dll_directory) might be required.
+
 
 ### Linux
 First, make sure you have the required packages
