@@ -2,7 +2,7 @@
 +++ c/src/api/Makefile	2016-07-30 02:44:13.854834003 -0700
 @@ -68,7 +68,7 @@
  HEADERS += tmr_utils.h
- 
+
  DBG ?= -g
 -CWARN = -Werror -Wall
 +CWARN = -Wall
@@ -14,20 +14,20 @@ diff -auNr mercuryapi-1.31.2.orig/c/src/api/Makefile mercuryapi-1.31.2/c/src/api
 +++ c/src/api/Makefile	2019-07-23 23:24:44.000000000 +1000
 @@ -138,7 +138,7 @@
  endif
- 
- ifneq ($(TMR_ENABLE_SERIAL_READER_ONLY), 1)
+
+ ifneq ($(SERIAL_READER_ONLY), 1)
 -all: $(LTKC_LIB) $(STATIC_LIB) $(SHARED_LIB) $(PROGS)
 +all: $(LTKC_LIB) $(STATIC_LIB) $(PROGS)
- 
+
  $(OBJS): $(LTKC_LIB) $(LTKC_TM_IB)
- 
+
 @@ -153,7 +153,7 @@
  	find lib/LTK/LTKC/Library -name '*.h' -exec cp -p {} ltkc_win32/inc/ \;
  	find lib/LTK/LTKC/Library -name '*.c' -exec cp -p {} ltkc_win32/src/ \;
  else
 -all: $(STATIC_LIB) $(SHARED_LIB) $(PROGS)
 +all: $(STATIC_LIB) $(PROGS)
- 
+
  $(OBJS):
  endif
 diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/install_LTKC.sh mercuryapi-1.31.2/c/src/api/lib/install_LTKC.sh
@@ -37,8 +37,8 @@ diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/install_LTKC.sh mercuryapi-1.31.
  patch -p0 -d ${INSTALL_DIR} < ${PATCH_DIR}/llrp_ltk_shared_libs.patch
  #Apply patch that provides specific error messages related to read function. This doesnt cover any additional functionality.
  #patch -p0 -d ${INSTALL_DIR} < ${PATCH_DIR}/llrp_ltkc_read_specific_errors.patch
-+patch -p0 -d ${INSTALL_DIR} < ${PATCH_DIR}/llrp_ltk_osx.patch
- 
++patch -p0 -l -d ${INSTALL_DIR} < ${PATCH_DIR}/llrp_ltk_osx.patch
+
  #This is to avoid multiple includes of out_ltkc_ header files.
  echo '#ifndef __OUT_LTKC_WRAPPER_H' > ${INSTALL_DIR}/LTK/LTKC/Library/out_ltkc_wrapper.h
 diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/llrp_ltk_osx.patch mercuryapi-1.31.2/c/src/api/lib/llrp_ltk_osx.patch
@@ -51,10 +51,10 @@ diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/llrp_ltk_osx.patch mercuryapi-1.
 +@@ -49,7 +49,7 @@
 + TM_LTKC_SONAME = $(TM_LTKC_LIB:.a=.so.1)
 + TM_LTKC_SHARED_LIB = $(TM_LTKC_SONAME)
-+ 
++
 +-all:  $(TM_LTKC_LIB) $(TM_LTKC_SHARED_LIB)
 ++all:  $(TM_LTKC_LIB)
-+ 
++
 + $(TM_LTKC_LIB) : $(TM_LTKC_OBJS)
 + 	$(AR) crv $(TM_LTKC_LIB) $(TM_LTKC_OBJS)
 +diff -auNr LTK.orig/LTKC/Library/Makefile LTK/LTKC/Library/Makefile
@@ -63,11 +63,11 @@ diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/llrp_ltk_osx.patch mercuryapi-1.
 +@@ -60,7 +60,7 @@
 + LTKC_SONAME = $(LTKC_LIB:.a=.so.1)
 + LTKC_SHARED_LIB = libltkc.so.1
-+ 
++
 +-all:    $(LTKC_LIB) $(LTKC_SHARED_LIB)
 ++all:    $(LTKC_LIB)
 + 	cd LLRP.org; make all
-+ 
++
 + everything:
 +diff -auNr LTK.orig/LTKC/Library/ltkc_platform.h LTK/LTKC/Library/ltkc_platform.h
 +--- LTK.orig/LTKC/Library/ltkc_platform.h	2011-03-04 16:56:16.000000000 +1000
@@ -75,7 +75,7 @@ diff -auNr mercuryapi-1.31.2.orig/c/src/api/lib/llrp_ltk_osx.patch mercuryapi-1.
 +@@ -39,8 +39,6 @@
 +  * good to go.
 +  */
-+ 
++
 +-#ifdef _STDINT_H
 +-
 + typedef uint8_t                 llrp_u8_t;
