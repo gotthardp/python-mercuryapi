@@ -305,6 +305,11 @@ typedef struct {
     TMR_GEN2_Select_action action;
 } Actions;
 
+enum
+{
+  NO_ACTION = 0xFF
+};
+
 static Actions Reader_actions[] = {
     {"on&off", ON_N_OFF},
     {"on&nop", ON_N_NOP},
@@ -314,7 +319,7 @@ static Actions Reader_actions[] = {
     {"off&nop", OFF_N_NOP},
     {"nop&on", NOP_N_ON},
     {"nop&neg", NOP_N_NEG},
-    {NULL, -1}
+    {NULL, NO_ACTION}
 };
 
 static TMR_GEN2_Select_action str2action(const char *name)
@@ -322,7 +327,7 @@ static TMR_GEN2_Select_action str2action(const char *name)
     Actions *act;
 
     if (name == NULL)
-        return -1;
+        return NO_ACTION;
 
     for(act = Reader_actions; act->name != NULL; act++)
     {
@@ -331,7 +336,7 @@ static TMR_GEN2_Select_action str2action(const char *name)
     }
 
     PyErr_SetString(PyExc_TypeError, "invalid action");
-    return -1;
+    return NO_ACTION;
 }
 
 static int
@@ -439,7 +444,7 @@ parse_gen2filter(TMR_TagFilter *tag_filter, PyObject *arg, TMR_GEN2_Select_actio
         {
             if (obj == Py_None)
                 tag_filter->u.gen2Select.action = defaction;
-            else if ((tag_filter->u.gen2Select.action = str2action(object2str(obj))) == -1)
+            else if ((tag_filter->u.gen2Select.action = str2action(object2str(obj))) == (TMR_GEN2_Select_action)NO_ACTION)
                 return 0;
         }
         else
@@ -986,35 +991,6 @@ Reader_read_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
     free(buf);
 
     return result;
-}
-
-static PyObject *
-Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
-{
-    TMR_Status ret;
-    PyObject *epc_target = NULL;
-    uint32_t bank, address;
-    PyObject *data;
-    TMR_TagFilter *tag_filter = NULL;
-
-    static char *kwlist[] = {"bank", "address", "data", "epc_target", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIO!|O", kwlist, &bank, &address, &PyByteArray_Type, &data, &epc_target))
-        return NULL;
-
-    if(!parse_multifilter(&tag_filter, epc_target))
-        return NULL;
-
-    ret = TMR_writeTagMemBytes(&self->reader, tag_filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
-    reset_filter(&tag_filter);
-    if (ret == TMR_ERROR_NO_TAGS_FOUND)
-        Py_RETURN_FALSE;
-    else if (ret != TMR_SUCCESS)
-    {
-        PyErr_SetString(PyExc_RuntimeError, TMR_strerr(&self->reader, ret));
-        return NULL;
-    }
-    else
-        Py_RETURN_TRUE;
 }
 
 static PyObject *
@@ -1879,9 +1855,6 @@ static PyMethodDef Reader_methods[] = {
     {"read_tag_mem", (PyCFunction)Reader_read_tag_mem, METH_VARARGS | METH_KEYWORDS,
      "Read bytes from the memory bank of a tag"
     },
-    {"write_tag_mem", (PyCFunction)Reader_write_tag_mem, METH_VARARGS | METH_KEYWORDS,
-     "Write bytes to the memory bank of a tag"
-    },
     {"gpi_get", (PyCFunction)Reader_gpi_get, METH_VARARGS,
      "Gets GPIO pin value"
     },
@@ -2360,8 +2333,9 @@ initmercury(void)
 {
 #endif
     PyObject* m;
+#if PY_MAJOR_VERSION < 3 || (PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION <= 9)
     PyEval_InitThreads();
-
+#endif
     if (PyType_Ready(&ReaderType) < 0
         || PyType_Ready(&TagDataType) < 0
         || PyType_Ready(&TagReadDataType) < 0
