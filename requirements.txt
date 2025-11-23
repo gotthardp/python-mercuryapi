@@ -1,0 +1,4 @@
+# Build dependencies for python-mercuryapi
+setuptools>=65.0.0
+wheel>=0.38.0
+

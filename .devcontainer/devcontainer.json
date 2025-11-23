@@ -1,0 +1,10 @@
+{
+    "name": "Python Mercury API",
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
+    "postCreateCommand": "chmod +x .devcontainer/activate-venv.sh && python3 -m venv /workspaces/python-mercuryapi/.venv && /workspaces/python-mercuryapi/.venv/bin/pip install --upgrade pip && if [ -f requirements.txt ]; then /workspaces/python-mercuryapi/.venv/bin/pip install -r requirements.txt; fi && echo 'source /workspaces/python-mercuryapi/.devcontainer/activate-venv.sh' >> ~/.bashrc && echo 'source /workspaces/python-mercuryapi/.devcontainer/activate-venv.sh' >> ~/.profile",
+    "remoteEnv": {
+        "VIRTUAL_ENV": "/workspaces/python-mercuryapi/.venv",
+        "PATH": "/workspaces/python-mercuryapi/.venv/bin:${containerEnv:PATH}"
+    },
+    "remoteUser": "vscode"
+}

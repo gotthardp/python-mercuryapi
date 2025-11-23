@@ -439,7 +439,7 @@ parse_gen2filter(TMR_TagFilter *tag_filter, PyObject *arg, TMR_GEN2_Select_actio
         {
             if (obj == Py_None)
                 tag_filter->u.gen2Select.action = defaction;
-            else if ((tag_filter->u.gen2Select.action = str2action(object2str(obj))) == -1)
+            else if ((tag_filter->u.gen2Select.action = str2action(object2str(obj))) == (TMR_GEN2_Select_action)-1)
                 return 0;
         }
         else
@@ -1004,7 +1004,7 @@ Reader_write_tag_mem(Reader *self, PyObject *args, PyObject *kwds)
     if(!parse_multifilter(&tag_filter, epc_target))
         return NULL;
 
-    ret = TMR_writeTagMemBytes(&self->reader, tag_filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data));
+    ret = TMR_writeTagMemBytes(&self->reader, tag_filter, bank, address, PyByteArray_Size(data), (uint8_t *)PyByteArray_AsString(data), NULL);
     reset_filter(&tag_filter);
     if (ret == TMR_ERROR_NO_TAGS_FOUND)
         Py_RETURN_FALSE;
@@ -2360,7 +2360,9 @@ initmercury(void)
 {
 #endif
     PyObject* m;
+#if PY_VERSION_HEX < 0x03070000
     PyEval_InitThreads();
+#endif
 
     if (PyType_Ready(&ReaderType) < 0
         || PyType_Ready(&TagDataType) < 0

@@ -4,3 +4,4 @@ include mercuryapi_osx.patch
 include README.md
 include long_description.txt
 include LICENSE
+recursive-include _vendor *

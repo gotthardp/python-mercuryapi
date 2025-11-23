@@ -1,7 +1,9 @@
 .vs
 build
 dist
+mercuryapi-*/
+!_vendor/
 *.egg-info
-mercuryapi-*
 Examples/
 Tests/
+.venv/
