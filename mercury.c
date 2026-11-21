@@ -905,6 +905,20 @@ invoke_stats_callback(TMR_Reader *reader, const TMR_Reader_StatsValues *pdata, v
         gstate = PyGILState_Ensure();
 
         stats = PyObject_New(ReaderStatsData, &ReaderStatsDataType);
+        if (stats == NULL)
+        {
+            PyErr_Print();
+            PyGILState_Release(gstate);
+            return;
+        }
+        /* PyObject_New does not initialize the fields, and each one is only
+         * set below if its flag is in pdata->valid: a report without the
+         * protocol left garbage in stats->protocol, which the dealloc then
+         * Py_XDECREF'd (segfault). */
+        stats->temperature = 0;
+        stats->protocol = NULL;
+        stats->antenna = 0;
+        stats->frequency = 0;
         if (TMR_READER_STATS_FLAG_TEMPERATURE & pdata->valid)
             stats->temperature = pdata->temperature;
         if (TMR_READER_STATS_FLAG_PROTOCOL & pdata->valid)
